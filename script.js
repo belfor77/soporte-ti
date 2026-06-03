@@ -245,6 +245,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function deleteTicket(ticketId) {
+        if (!currentSession || currentSession.role !== 'admin') {
+            alert('No tienes permisos para eliminar este ticket.');
+            return;
+        }
+
         if (!confirm('¿Estás seguro de que deseas eliminar este ticket? Esta acción no se puede deshacer.')) {
             return;
         }
@@ -530,6 +535,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const stateClass = statusClasses[ticket.estado.toLowerCase()] || 'status-abierto';
             const priorityBadge = priorityBadges[ticket.prioridad.toLowerCase()] || priorityBadges['media'];
 
+            const deleteBtnHtml = (currentSession && currentSession.role === 'admin') 
+                ? `<button class="action-btn action-delete" title="Eliminar ticket" style="background-color: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); margin-left: 4px;"><i class="fas fa-trash-alt"></i></button>`
+                : '';
+
             tr.innerHTML = `
                 <td class="ticket-id-cell">
                     <span class="ticket-id">${ticket.codigo || '#TK-2026-xxxx'}</span>
@@ -549,7 +558,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td class="ticket-time">${formatRelativeTime(ticket.created_at)}</td>
                 <td class="ticket-actions">
                     <button class="action-btn action-view" title="Ver ticket"><i class="fas fa-eye"></i></button>
-                    <button class="action-btn action-delete" title="Eliminar ticket" style="background-color: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); margin-left: 4px;"><i class="fas fa-trash-alt"></i></button>
+                    ${deleteBtnHtml}
                 </td>
             `;
 
@@ -557,9 +566,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 openTicketDetailModal(ticket);
             });
 
-            tr.querySelector('.action-delete').addEventListener('click', async () => {
-                await deleteTicket(ticket.id);
-            });
+            const deleteBtn = tr.querySelector('.action-delete');
+            if (deleteBtn) {
+                deleteBtn.addEventListener('click', async () => {
+                    await deleteTicket(ticket.id);
+                });
+            }
 
             tbody.appendChild(tr);
         });
@@ -952,60 +964,38 @@ document.addEventListener('DOMContentLoaded', () => {
         if (currentSession && (currentSession.role === 'admin' || currentSession.role === 'technician')) {
             if (assignmentBox) assignmentBox.style.display = 'flex';
 
-            if (currentSession.role === 'admin') {
-                if (assignmentStatus) {
-                    assignmentStatus.textContent = ticket.tecnico_asignado 
-                        ? `Asignado a: ${ticket.tecnico_asignado}` 
-                        : 'Este ticket no está asignado a ningún técnico.';
-                }
-                if (assignmentControls) {
-                    assignmentControls.innerHTML = `
-                        <select id="modal-assign-tech-select" style="background-color: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-primary); border-radius: 8px; font-weight: 600; padding: 6px 12px; font-family: var(--font-family); cursor: pointer;">
-                            <option value="" ${!ticket.tecnico_asignado ? 'selected' : ''}>Sin asignar</option>
-                            <option value="Felipe Olivares" ${ticket.tecnico_asignado === 'Felipe Olivares' ? 'selected' : ''}>Felipe Olivares</option>
-                            <option value="Omar Gálvez" ${ticket.tecnico_asignado === 'Omar Gálvez' ? 'selected' : ''}>Omar Gálvez</option>
-                            <option value="Belfor Aburto" ${ticket.tecnico_asignado === 'Belfor Aburto' ? 'selected' : ''}>Belfor Aburto</option>
-                        </select>
-                    `;
-                    const select = document.getElementById('modal-assign-tech-select');
-                    select.addEventListener('change', async () => {
-                        const newTech = select.value;
-                        await updateTicketFields(ticket.id, { tecnico_asignado: newTech || null });
-                        if (techBadge) techBadge.textContent = newTech || 'Sin asignar';
-                        if (assignmentStatus) assignmentStatus.textContent = newTech ? `Asignado a: ${newTech}` : 'Este ticket no está asignado a ningún técnico.';
-                        await refreshTickets();
-                    });
-                }
-                if (statusSelect) statusSelect.disabled = false;
-            } else {
-                // Technician
-                const isAssignedToMe = ticket.tecnico_asignado === currentSession.nombre;
-                if (assignmentStatus) {
-                    if (ticket.tecnico_asignado) {
-                        assignmentStatus.textContent = isAssignedToMe ? 'Asignado a ti' : `Asignado a: ${ticket.tecnico_asignado}`;
-                    } else {
-                        assignmentStatus.textContent = 'Este ticket no está asignado.';
+            if (assignmentStatus) {
+                assignmentStatus.textContent = ticket.tecnico_asignado 
+                    ? `Asignado a: ${ticket.tecnico_asignado}` 
+                    : 'Este ticket no está asignado a ningún técnico.';
+            }
+            if (assignmentControls) {
+                assignmentControls.innerHTML = `
+                    <select id="modal-assign-tech-select" style="background-color: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-primary); border-radius: 8px; font-weight: 600; padding: 6px 12px; font-family: var(--font-family); cursor: pointer;">
+                        <option value="" ${!ticket.tecnico_asignado ? 'selected' : ''}>Sin asignar</option>
+                        <option value="Felipe Olivares" ${ticket.tecnico_asignado === 'Felipe Olivares' ? 'selected' : ''}>Felipe Olivares</option>
+                        <option value="Omar Gálvez" ${ticket.tecnico_asignado === 'Omar Gálvez' ? 'selected' : ''}>Omar Gálvez</option>
+                        <option value="Belfor Aburto" ${ticket.tecnico_asignado === 'Belfor Aburto' ? 'selected' : ''}>Belfor Aburto</option>
+                    </select>
+                `;
+                const select = document.getElementById('modal-assign-tech-select');
+                select.addEventListener('change', async () => {
+                    const newTech = select.value;
+                    await updateTicketFields(ticket.id, { tecnico_asignado: newTech || null });
+                    if (techBadge) techBadge.textContent = newTech || 'Sin asignar';
+                    if (assignmentStatus) assignmentStatus.textContent = newTech ? `Asignado a: ${newTech}` : 'Este ticket no está asignado a ningún técnico.';
+                    
+                    const isAssignedToMe = newTech === currentSession.nombre;
+                    if (statusSelect) {
+                        statusSelect.disabled = !(isAssignedToMe || currentSession.role === 'admin');
                     }
-                }
-                if (assignmentControls) {
-                    if (!ticket.tecnico_asignado) {
-                        assignmentControls.innerHTML = `
-                            <button type="button" id="btn-tomar-ticket" class="page-btn" style="background-color: var(--accent-blue); border: none; color: white; padding: 6px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; font-family: var(--font-family); transition: all 0.2s;">Tomar Ticket</button>
-                        `;
-                        const btnTomar = document.getElementById('btn-tomar-ticket');
-                        btnTomar.addEventListener('click', async () => {
-                            await updateTicketFields(ticket.id, { tecnico_asignado: currentSession.nombre });
-                            if (techBadge) techBadge.textContent = currentSession.nombre;
-                            if (assignmentStatus) assignmentStatus.textContent = 'Asignado a ti';
-                            if (assignmentControls) assignmentControls.innerHTML = '';
-                            if (statusSelect) statusSelect.disabled = false;
-                            await refreshTickets();
-                        });
-                    } else {
-                        assignmentControls.innerHTML = '';
-                    }
-                }
-                if (statusSelect) statusSelect.disabled = !isAssignedToMe;
+                    await refreshTickets();
+                });
+            }
+            
+            const isAssignedToMe = ticket.tecnico_asignado === currentSession.nombre;
+            if (statusSelect) {
+                statusSelect.disabled = !(isAssignedToMe || currentSession.role === 'admin');
             }
         } else {
             if (assignmentBox) assignmentBox.style.display = 'none';
@@ -3541,48 +3531,28 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Submit de Login Usuario
+    // Submit de Login Técnico
     if (formUser) {
         formUser.addEventListener('submit', (e) => {
             e.preventDefault();
-            const nombre = document.getElementById('login-user-nombre').value.trim();
-            const rut = document.getElementById('login-user-rut').value.trim();
-            const email = document.getElementById('login-user-email').value.trim();
+            const email = document.getElementById('login-tech-email').value.trim().toLowerCase();
+            const pass = document.getElementById('login-tech-pass').value.trim();
 
-            if (!nombre || !rut || !email) return;
-
-            const session = { role: 'user', nombre, rut, email };
-            localStorage.setItem('session_soporte', JSON.stringify(session));
-            applySession(session);
-        });
-    }
-
-    // Submit de Login Administrador
-    if (formAdmin) {
-        formAdmin.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const pass = document.getElementById('login-admin-pass').value.trim().toLowerCase();
+            if (!email || !pass) return;
 
             let session = null;
-            if (pass === 'admin' || pass === 'belfor') {
-                session = { 
-                    role: 'admin', 
-                    nombre: 'Belfor Aburto', 
-                    email: 'belfor@empresa.com', 
-                    rut: 'belfor' 
-                };
-            } else if (pass === 'felipe') {
+            if (email === 'felipe.olivares@t-sales.cl' && pass === 'felipe2026@@') {
                 session = { 
                     role: 'technician', 
                     nombre: 'Felipe Olivares', 
-                    email: 'felipe.olivares@empresa.com', 
+                    email: 'felipe.olivares@t-sales.cl', 
                     rut: 'felipe' 
                 };
-            } else if (pass === 'omar') {
+            } else if (email === 'omar.galvez@t-sales.cl' && pass === 'omar2026@##') {
                 session = { 
                     role: 'technician', 
                     nombre: 'Omar Gálvez', 
-                    email: 'omar.galvez@empresa.com', 
+                    email: 'omar.galvez@t-sales.cl', 
                     rut: 'omar' 
                 };
             }
@@ -3591,7 +3561,35 @@ document.addEventListener('DOMContentLoaded', () => {
                 localStorage.setItem('session_soporte', JSON.stringify(session));
                 applySession(session);
             } else {
-                alert('Contraseña incorrecta. (Contraseñas de prueba: admin/belfor, felipe, omar)');
+                alert('Correo o contraseña de Técnico incorrectos.');
+            }
+        });
+    }
+
+    // Submit de Login Administrador
+    if (formAdmin) {
+        formAdmin.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const email = document.getElementById('login-admin-email').value.trim().toLowerCase();
+            const pass = document.getElementById('login-admin-pass').value.trim();
+
+            if (!email || !pass) return;
+
+            let session = null;
+            if (email === 'belfor.aburto@t-sales.cl' && pass === '143belfor@') {
+                session = { 
+                    role: 'admin', 
+                    nombre: 'Belfor Aburto', 
+                    email: 'belfor.aburto@t-sales.cl', 
+                    rut: 'belfor' 
+                };
+            }
+
+            if (session) {
+                localStorage.setItem('session_soporte', JSON.stringify(session));
+                applySession(session);
+            } else {
+                alert('Correo o contraseña de Administrador incorrectos.');
             }
         });
     }
