@@ -53,6 +53,64 @@ document.addEventListener('DOMContentLoaded', () => {
         return formatDate(isoString);
     }
 
+    function extractMetadata(ticket) {
+        const meta = {
+            sede: ticket.sede || '',
+            telefono: ticket.telefono || '',
+            dispositivo: ticket.dispositivo || '',
+            impacto: ticket.impacto || '',
+            modalidad: ticket.modalidad || '',
+            cliente_nombre: ticket.cliente_nombre || '',
+            cliente_rut: ticket.cliente_rut || '',
+            cliente_email: ticket.cliente_email || ''
+        };
+
+        if (ticket.descripcion && (!meta.cliente_nombre || !meta.cliente_email || !meta.sede)) {
+            const getVal = (pattern) => {
+                const match = ticket.descripcion.match(pattern);
+                return match ? match[1].trim() : null;
+            };
+
+            const sedeVal = getVal(/Sede:\s*([^|\]]+)/i);
+            if (sedeVal && !meta.sede) meta.sede = sedeVal;
+
+            const telfVal = getVal(/Teléfono:\s*([^|\]]+)/i);
+            if (telfVal && !meta.telefono) meta.telefono = telfVal;
+
+            const dispVal = getVal(/Dispositivo:\s*([^|\]]+)/i);
+            if (dispVal && !meta.dispositivo) meta.dispositivo = dispVal;
+
+            const impVal = getVal(/Impacto:\s*([^|\]]+)/i);
+            if (impVal && !meta.impacto) meta.impacto = impVal;
+
+            const modVal = getVal(/Modalidad:\s*([^|\]]+)/i);
+            if (modVal && !meta.modalidad) meta.modalidad = modVal;
+
+            const clientPart = getVal(/Cliente:\s*([^\]]+)/i);
+            if (clientPart && !meta.cliente_nombre) {
+                const clientMatch = clientPart.match(/^([^(]+)(?:\(([^)]+)\))?\s*-\s*([^\s]+)/);
+                if (clientMatch) {
+                    meta.cliente_nombre = clientMatch[1].trim();
+                    meta.cliente_rut = clientMatch[2] ? clientMatch[2].trim() : '';
+                    meta.cliente_email = clientMatch[3] ? clientMatch[3].trim() : '';
+                } else {
+                    meta.cliente_nombre = clientPart.trim();
+                }
+            }
+        }
+
+        // Final fallbacks
+        if (!meta.sede) meta.sede = 'Santiago - Casa Matriz';
+        if (!meta.telefono) meta.telefono = 'No proporcionado';
+        if (!meta.dispositivo || meta.dispositivo === 'ninguno') meta.dispositivo = 'Ninguno / Otro';
+        if (!meta.modalidad) meta.modalidad = 'Online';
+        if (!meta.cliente_nombre) meta.cliente_nombre = ticket.usuario_nombre || 'S/A';
+        if (!meta.cliente_rut) meta.cliente_rut = ticket.usuario_rut || 'S/A';
+        if (!meta.cliente_email) meta.cliente_email = ticket.usuario_email || 'S/A';
+
+        return meta;
+    }
+
     function escapeHtml(text) {
         if (!text) return '';
         return text
@@ -88,11 +146,20 @@ document.addEventListener('DOMContentLoaded', () => {
                     .order('created_at', { ascending: false });
                 if (error) throw error;
                 
+                // Merge local updates (like assignments or status changes that failed on Supabase)
+                const localUpdates = JSON.parse(localStorage.getItem('ticket_updates')) || {};
+                const mergedData = data.map(t => {
+                    if (localUpdates[t.id]) {
+                        return { ...t, ...localUpdates[t.id] };
+                    }
+                    return t;
+                });
+
                 // Si la sesión actual es de un usuario, filtrar por su RUT
                 if (currentSession && currentSession.role === 'user') {
-                    return data.filter(t => t.usuario_rut === currentSession.rut);
+                    return mergedData.filter(t => t.usuario_rut === currentSession.rut);
                 }
-                return data;
+                return mergedData;
             } catch (err) {
                 console.error('Error fetching tickets from Supabase, using LocalStorage:', err);
             }
@@ -169,14 +236,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (currentSession && currentSession.role === 'admin') {
             const creatorSelect = document.getElementById('ticket-creator-select');
-            if (creatorSelect) {
+            if (creatorSelect && creatorSelect.parentElement && creatorSelect.parentElement.style.display !== 'none') {
                 u_nombre = creatorSelect.value;
                 const emails = {
-                    'Felipe Olivares': 'felipe.olivares@empresa.com',
-                    'Omar Gálvez': 'omar.galvez@empresa.com',
-                    'Belfor Aburto': 'belfor.aburto@empresa.com'
+                    'Felipe Olivares': 'felipe.olivares@t-sales.cl',
+                    'Omar Gálvez': 'omar.galvez@t-sales.cl',
+                    'Belfor Aburto': 'belfor.aburto@t-sales.cl'
                 };
-                u_email = emails[u_nombre] || 'soporte@empresa.com';
+                u_email = emails[u_nombre] || 'soporte@t-sales.cl';
                 u_rut = 'admin';
             }
         }
@@ -197,7 +264,8 @@ document.addEventListener('DOMContentLoaded', () => {
             estado: 'abierto',
             usuario_rut: u_rut,
             usuario_nombre: u_nombre,
-            usuario_email: u_email
+            usuario_email: u_email,
+            tecnico_asignado: null
         };
 
         if (!useLocalFallback && supabase) {
@@ -352,6 +420,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function updateTicketFields(ticketId, fieldsToUpdate) {
+        // Save to local updates first so it is preserved even if Supabase update fails!
+        const localUpdates = JSON.parse(localStorage.getItem('ticket_updates')) || {};
+        localUpdates[ticketId] = { ...(localUpdates[ticketId] || {}), ...fieldsToUpdate };
+        localStorage.setItem('ticket_updates', JSON.stringify(localUpdates));
+
         if (!useLocalFallback && supabase) {
             try {
                 const { error } = await supabase
@@ -531,6 +604,8 @@ document.addEventListener('DOMContentLoaded', () => {
         filtered.forEach(ticket => {
             const tr = document.createElement('tr');
             
+            const meta = extractMetadata(ticket);
+
             const stateLabel = ticket.estado.charAt(0).toUpperCase() + ticket.estado.slice(1);
             const stateClass = statusClasses[ticket.estado.toLowerCase()] || 'status-abierto';
             const priorityBadge = priorityBadges[ticket.prioridad.toLowerCase()] || priorityBadges['media'];
@@ -538,6 +613,15 @@ document.addEventListener('DOMContentLoaded', () => {
             const deleteBtnHtml = (currentSession && currentSession.role === 'admin') 
                 ? `<button class="action-btn action-delete" title="Eliminar ticket" style="background-color: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); margin-left: 4px;"><i class="fas fa-trash-alt"></i></button>`
                 : '';
+
+            const showTakeBtn = !ticket.tecnico_asignado && currentSession && (currentSession.role === 'admin' || currentSession.role === 'technician');
+            const takeBtnHtml = showTakeBtn
+                ? `<button class="action-btn action-take" title="Tomar Ticket" style="background-color: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.25); color: #10b981; font-weight: 600; padding: 6px 12px; border-radius: 6px; font-size: 0.75rem; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 4px; margin-right: 6px;" onmouseover="this.style.backgroundColor='rgba(16, 185, 129, 0.2)'; this.style.color='#059669';" onmouseout="this.style.backgroundColor='rgba(16, 185, 129, 0.12)'; this.style.color='#10b981';"><i class="fas fa-hand-holding"></i> Tomar</button>`
+                : '';
+
+            const techStatusHtml = ticket.tecnico_asignado
+                ? `<span style="background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.2); padding: 1px 6px; border-radius: 4px; font-size: 0.68rem; color: #10b981; font-weight: 600;"><i class="fas fa-user-cog" style="font-size: 0.65rem;"></i> Técnico: ${escapeHtml(ticket.tecnico_asignado)}</span>`
+                : `<span style="background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.2); padding: 1px 6px; border-radius: 4px; font-size: 0.68rem; color: #ef4444; font-weight: 600;"><i class="fas fa-exclamation-circle" style="font-size: 0.65rem;"></i> Sin Asignar</span>`;
 
             tr.innerHTML = `
                 <td class="ticket-id-cell">
@@ -548,15 +632,17 @@ document.addEventListener('DOMContentLoaded', () => {
                     <span class="ticket-asunto">${escapeHtml(ticket.asunto)}</span>
                     <span class="ticket-desc">${escapeHtml(ticket.descripcion)}</span>
                     <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 6px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
-                        <span style="display: inline-flex; align-items: center; gap: 4px;"><i class="fas fa-user" style="color: var(--accent-blue); font-size: 0.7rem;"></i> ${escapeHtml(ticket.cliente_nombre || ticket.usuario_nombre || 'S/A')} (${escapeHtml(ticket.cliente_rut || ticket.usuario_rut || 'S/A')})</span>
-                        <span style="display: inline-flex; align-items: center; gap: 4px;"><i class="fas fa-envelope" style="color: var(--accent-blue); font-size: 0.7rem;"></i> ${escapeHtml(ticket.cliente_email || ticket.usuario_email || 'S/A')}</span>
-                        <span style="background: rgba(97, 62, 234, 0.12); border: 1px solid rgba(97, 62, 234, 0.2); padding: 1px 6px; border-radius: 4px; font-size: 0.68rem; color: var(--accent-purple); font-weight: 600;">${escapeHtml(ticket.modalidad || 'Online')}</span>
+                        <span style="display: inline-flex; align-items: center; gap: 4px;"><i class="fas fa-user" style="color: var(--accent-blue); font-size: 0.7rem;"></i> ${escapeHtml(meta.cliente_nombre)} (${escapeHtml(meta.cliente_rut)})</span>
+                        <span style="display: inline-flex; align-items: center; gap: 4px;"><i class="fas fa-envelope" style="color: var(--accent-blue); font-size: 0.7rem;"></i> ${escapeHtml(meta.cliente_email)}</span>
+                        <span style="background: rgba(97, 62, 234, 0.12); border: 1px solid rgba(97, 62, 234, 0.2); padding: 1px 6px; border-radius: 4px; font-size: 0.68rem; color: var(--accent-purple); font-weight: 600;">${escapeHtml(meta.modalidad)}</span>
+                        ${techStatusHtml}
                     </div>
                 </td>
                 <td><span class="status-badge ${stateClass}">${stateLabel}</span></td>
                 <td>${priorityBadge}</td>
                 <td class="ticket-time">${formatRelativeTime(ticket.created_at)}</td>
                 <td class="ticket-actions">
+                    ${takeBtnHtml}
                     <button class="action-btn action-view" title="Ver ticket"><i class="fas fa-eye"></i></button>
                     ${deleteBtnHtml}
                 </td>
@@ -565,6 +651,19 @@ document.addEventListener('DOMContentLoaded', () => {
             tr.querySelector('.action-view').addEventListener('click', () => {
                 openTicketDetailModal(ticket);
             });
+
+            const takeBtn = tr.querySelector('.action-take');
+            if (takeBtn) {
+                takeBtn.addEventListener('click', async (e) => {
+                    e.stopPropagation();
+                    await updateTicketFields(ticket.id, { 
+                        tecnico_asignado: currentSession.nombre,
+                        estado: 'en progreso'
+                    });
+                    alert(`Has tomado el ticket "${ticket.asunto}". Estado cambiado a En Progreso.`);
+                    await refreshTickets();
+                });
+            }
 
             const deleteBtn = tr.querySelector('.action-delete');
             if (deleteBtn) {
@@ -894,6 +993,8 @@ document.addEventListener('DOMContentLoaded', () => {
     async function openTicketDetailModal(ticket) {
         activeTicketId = ticket.id;
         
+        const meta = extractMetadata(ticket);
+
         document.getElementById('modal-ticket-id').textContent = ticket.codigo || '#TK-2026-xxxx';
         document.getElementById('modal-ticket-asunto').textContent = ticket.asunto;
         document.getElementById('modal-ticket-categoria').textContent = getCategoryLabel(ticket.categoria);
@@ -905,9 +1006,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const modalDispositivo = document.getElementById('modal-ticket-dispositivo');
         const modalImpacto = document.getElementById('modal-ticket-impacto');
 
-        if (modalSede) modalSede.textContent = ticket.sede || 'Santiago - Casa Matriz';
-        if (modalTelefono) modalTelefono.textContent = ticket.telefono || 'No proporcionado';
-        if (modalDispositivo) modalDispositivo.textContent = (ticket.dispositivo === 'ninguno' || !ticket.dispositivo) ? 'Ninguno / Otro' : ticket.dispositivo;
+        if (modalSede) modalSede.textContent = meta.sede;
+        if (modalTelefono) modalTelefono.textContent = meta.telefono;
+        if (modalDispositivo) modalDispositivo.textContent = meta.dispositivo;
         if (modalImpacto) {
             const impactLabels = {
                 'bajo': 'Bloqueo bajo',
@@ -922,10 +1023,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const modalClienteRut = document.getElementById('modal-ticket-cliente-rut');
         const modalClienteEmail = document.getElementById('modal-ticket-cliente-email');
 
-        if (modalModalidad) modalModalidad.textContent = ticket.modalidad || 'Online';
-        if (modalClienteNombre) modalClienteNombre.textContent = ticket.cliente_nombre || ticket.usuario_nombre || 'S/A';
-        if (modalClienteRut) modalClienteRut.textContent = ticket.cliente_rut || ticket.usuario_rut || 'S/A';
-        if (modalClienteEmail) modalClienteEmail.textContent = ticket.cliente_email || ticket.usuario_email || 'S/A';
+        if (modalModalidad) modalModalidad.textContent = meta.modalidad;
+        if (modalClienteNombre) modalClienteNombre.textContent = meta.cliente_nombre;
+        if (modalClienteRut) modalClienteRut.textContent = meta.cliente_rut;
+        if (modalClienteEmail) modalClienteEmail.textContent = meta.cliente_email;
 
         const statusSelect = document.getElementById('modal-status-select');
         if (statusSelect) statusSelect.value = ticket.estado.toLowerCase();
@@ -964,38 +1065,71 @@ document.addEventListener('DOMContentLoaded', () => {
         if (currentSession && (currentSession.role === 'admin' || currentSession.role === 'technician')) {
             if (assignmentBox) assignmentBox.style.display = 'flex';
 
-            if (assignmentStatus) {
-                assignmentStatus.textContent = ticket.tecnico_asignado 
-                    ? `Asignado a: ${ticket.tecnico_asignado}` 
-                    : 'Este ticket no está asignado a ningún técnico.';
-            }
-            if (assignmentControls) {
-                assignmentControls.innerHTML = `
-                    <select id="modal-assign-tech-select" style="background-color: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-primary); border-radius: 8px; font-weight: 600; padding: 6px 12px; font-family: var(--font-family); cursor: pointer;">
-                        <option value="" ${!ticket.tecnico_asignado ? 'selected' : ''}>Sin asignar</option>
-                        <option value="Felipe Olivares" ${ticket.tecnico_asignado === 'Felipe Olivares' ? 'selected' : ''}>Felipe Olivares</option>
-                        <option value="Omar Gálvez" ${ticket.tecnico_asignado === 'Omar Gálvez' ? 'selected' : ''}>Omar Gálvez</option>
-                        <option value="Belfor Aburto" ${ticket.tecnico_asignado === 'Belfor Aburto' ? 'selected' : ''}>Belfor Aburto</option>
-                    </select>
-                `;
-                const select = document.getElementById('modal-assign-tech-select');
-                select.addEventListener('change', async () => {
-                    const newTech = select.value;
-                    await updateTicketFields(ticket.id, { tecnico_asignado: newTech || null });
-                    if (techBadge) techBadge.textContent = newTech || 'Sin asignar';
-                    if (assignmentStatus) assignmentStatus.textContent = newTech ? `Asignado a: ${newTech}` : 'Este ticket no está asignado a ningún técnico.';
-                    
-                    const isAssignedToMe = newTech === currentSession.nombre;
-                    if (statusSelect) {
-                        statusSelect.disabled = !(isAssignedToMe || currentSession.role === 'admin');
+            if (currentSession.role === 'admin') {
+                if (assignmentStatus) {
+                    assignmentStatus.textContent = ticket.tecnico_asignado 
+                        ? `Asignado a: ${ticket.tecnico_asignado}` 
+                        : 'Este ticket no está asignado a ningún técnico.';
+                }
+                if (assignmentControls) {
+                    assignmentControls.innerHTML = `
+                        <select id="modal-assign-tech-select" style="background-color: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-primary); border-radius: 8px; font-weight: 600; padding: 6px 12px; font-family: var(--font-family); cursor: pointer;">
+                            <option value="" ${!ticket.tecnico_asignado ? 'selected' : ''}>Sin asignar</option>
+                            <option value="Felipe Olivares" ${ticket.tecnico_asignado === 'Felipe Olivares' ? 'selected' : ''}>Felipe Olivares</option>
+                            <option value="Omar Gálvez" ${ticket.tecnico_asignado === 'Omar Gálvez' ? 'selected' : ''}>Omar Gálvez</option>
+                            <option value="Belfor Aburto" ${ticket.tecnico_asignado === 'Belfor Aburto' ? 'selected' : ''}>Belfor Aburto</option>
+                        </select>
+                    `;
+                    const select = document.getElementById('modal-assign-tech-select');
+                    select.addEventListener('change', async () => {
+                        const newTech = select.value;
+                        await updateTicketFields(ticket.id, { tecnico_asignado: newTech || null });
+                        if (techBadge) techBadge.textContent = newTech || 'Sin asignar';
+                        if (assignmentStatus) assignmentStatus.textContent = newTech ? `Asignado a: ${newTech}` : 'Este ticket no está asignado a ningún técnico.';
+                        await refreshTickets();
+                    });
+                }
+                if (statusSelect) statusSelect.disabled = false;
+            } else {
+                // Technician
+                const isAssignedToMe = ticket.tecnico_asignado === currentSession.nombre;
+                if (assignmentStatus) {
+                    if (ticket.tecnico_asignado) {
+                        assignmentStatus.textContent = isAssignedToMe ? 'Asignado a ti' : `Asignado a: ${ticket.tecnico_asignado}`;
+                    } else {
+                        assignmentStatus.textContent = 'Este ticket no está asignado.';
                     }
-                    await refreshTickets();
-                });
-            }
-            
-            const isAssignedToMe = ticket.tecnico_asignado === currentSession.nombre;
-            if (statusSelect) {
-                statusSelect.disabled = !(isAssignedToMe || currentSession.role === 'admin');
+                }
+                if (assignmentControls) {
+                    if (!ticket.tecnico_asignado) {
+                        assignmentControls.innerHTML = `
+                            <button type="button" id="btn-tomar-ticket" class="page-btn" style="background-color: var(--accent-green); border: none; color: white; padding: 6px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; font-family: var(--font-family); transition: all 0.2s;">Tomar Ticket</button>
+                        `;
+                        const btnTomar = document.getElementById('btn-tomar-ticket');
+                        btnTomar.addEventListener('click', async () => {
+                            await updateTicketFields(ticket.id, { 
+                                tecnico_asignado: currentSession.nombre,
+                                estado: 'en progreso'
+                            });
+                            if (techBadge) techBadge.textContent = currentSession.nombre;
+                            if (assignmentStatus) assignmentStatus.textContent = 'Asignado a ti';
+                            if (assignmentControls) assignmentControls.innerHTML = '';
+                            if (statusSelect) {
+                                statusSelect.value = 'en progreso';
+                                statusSelect.disabled = false;
+                            }
+                            if (statusBadge) {
+                                statusBadge.className = `status-badge ${statusClasses['en progreso']}`;
+                                statusBadge.textContent = 'En progreso';
+                            }
+                            alert('Has tomado el ticket. Estado cambiado a En Progreso.');
+                            await refreshTickets();
+                        });
+                    } else {
+                        assignmentControls.innerHTML = '';
+                    }
+                }
+                if (statusSelect) statusSelect.disabled = !isAssignedToMe;
             }
         } else {
             if (assignmentBox) assignmentBox.style.display = 'none';
@@ -3405,7 +3539,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const initials = session.nombre ? session.nombre.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : 'A';
             if (headerAvatar) headerAvatar.textContent = initials;
             if (navBase) navBase.style.display = 'block'; // Mostrar inventario al Admin
-            if (creatorGroup) creatorGroup.style.display = 'block';
+            if (creatorGroup) creatorGroup.style.display = 'none';
             if (belforPanel) belforPanel.style.display = (session.nombre === 'Belfor Aburto') ? 'block' : 'none';
         } else if (session.role === 'technician') {
             if (headerName) headerName.textContent = session.nombre;
