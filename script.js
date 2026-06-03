@@ -162,7 +162,25 @@ document.addEventListener('DOMContentLoaded', () => {
         return tickets;
     }
 
-    async function saveTicket(asunto, categoria, descripcion, prioridad, sede = '', telefono = '', dispositivo = '', impacto = '') {
+    async function saveTicket(asunto, categoria, descripcion, prioridad, sede = '', telefono = '', dispositivo = '', impacto = '', modalidad = 'Online', cliente_nombre = '', cliente_rut = '', cliente_email = '') {
+        let u_nombre = currentSession ? currentSession.nombre : 'Usuario Externo';
+        let u_email = currentSession ? currentSession.email : 'correo@empresa.com';
+        let u_rut = currentSession ? currentSession.rut : '';
+
+        if (currentSession && currentSession.role === 'admin') {
+            const creatorSelect = document.getElementById('ticket-creator-select');
+            if (creatorSelect) {
+                u_nombre = creatorSelect.value;
+                const emails = {
+                    'Felipe Olivares': 'felipe.olivares@empresa.com',
+                    'Omar Gálvez': 'omar.galvez@empresa.com',
+                    'Belfor Aburto': 'belfor.aburto@empresa.com'
+                };
+                u_email = emails[u_nombre] || 'soporte@empresa.com';
+                u_rut = 'admin';
+            }
+        }
+
         const ticketData = {
             asunto,
             categoria,
@@ -172,10 +190,14 @@ document.addEventListener('DOMContentLoaded', () => {
             telefono,
             dispositivo,
             impacto,
+            modalidad,
+            cliente_nombre,
+            cliente_rut,
+            cliente_email,
             estado: 'abierto',
-            usuario_rut: currentSession ? currentSession.rut : '',
-            usuario_nombre: currentSession ? currentSession.nombre : 'Usuario Externo',
-            usuario_email: currentSession ? currentSession.email : 'correo@empresa.com'
+            usuario_rut: u_rut,
+            usuario_nombre: u_nombre,
+            usuario_email: u_email
         };
 
         if (!useLocalFallback && supabase) {
@@ -189,7 +211,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     const standardData = {
                         asunto,
                         categoria,
-                        descripcion: `${descripcion}\n\n[Sede: ${sede} | Teléfono: ${telefono} | Dispositivo: ${dispositivo} | Impacto: ${impacto}]`,
+                        descripcion: `${descripcion}\n\n[Sede: ${sede} | Teléfono: ${telefono} | Dispositivo: ${dispositivo} | Impacto: ${impacto} | Modalidad: ${modalidad} | Cliente: ${cliente_nombre} (${cliente_rut}) - ${cliente_email}]`,
                         prioridad,
                         estado: 'abierto',
                         usuario_rut: ticketData.usuario_rut,
@@ -220,6 +242,31 @@ document.addEventListener('DOMContentLoaded', () => {
         tickets.unshift(newTicket);
         localStorage.setItem('local_tickets', JSON.stringify(tickets));
         return newTicket;
+    }
+
+    async function deleteTicket(ticketId) {
+        if (!confirm('¿Estás seguro de que deseas eliminar este ticket? Esta acción no se puede deshacer.')) {
+            return;
+        }
+
+        if (!useLocalFallback && supabase) {
+            try {
+                const { error } = await supabase
+                    .from('tickets')
+                    .delete()
+                    .eq('id', ticketId);
+                if (error) throw error;
+            } catch (err) {
+                console.error('Error deleting ticket from Supabase, using LocalStorage fallback:', err);
+            }
+        }
+
+        const tickets = JSON.parse(localStorage.getItem('local_tickets')) || [];
+        const filtered = tickets.filter(t => t.id !== ticketId);
+        localStorage.setItem('local_tickets', JSON.stringify(filtered));
+
+        alert('Ticket eliminado correctamente.');
+        await refreshTickets();
     }
 
     async function fetchReplies(ticketId) {
@@ -269,16 +316,22 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function updateTicketStatus(ticketId, estado) {
+        const fields = { estado };
+        if (estado === 'resuelto') {
+            fields.resuelto_por = currentSession ? currentSession.nombre : 'Soporte';
+        } else {
+            fields.resuelto_por = null;
+        }
+
         if (!useLocalFallback && supabase) {
             try {
                 const { error } = await supabase
                     .from('tickets')
-                    .update({ estado })
+                    .update(fields)
                     .eq('id', ticketId);
                 if (error) throw error;
-                return true;
             } catch (err) {
-                console.error('Error updating ticket status in Supabase, using LocalStorage:', err);
+                console.warn('Error updating ticket status in Supabase, using LocalStorage fallback:', err);
             }
         }
 
@@ -286,6 +339,30 @@ document.addEventListener('DOMContentLoaded', () => {
         const tIndex = tickets.findIndex(t => t.id === String(ticketId));
         if (tIndex !== -1) {
             tickets[tIndex].estado = estado;
+            tickets[tIndex].resuelto_por = fields.resuelto_por;
+            localStorage.setItem('local_tickets', JSON.stringify(tickets));
+            return true;
+        }
+        return false;
+    }
+
+    async function updateTicketFields(ticketId, fieldsToUpdate) {
+        if (!useLocalFallback && supabase) {
+            try {
+                const { error } = await supabase
+                    .from('tickets')
+                    .update(fieldsToUpdate)
+                    .eq('id', ticketId);
+                if (error) throw error;
+            } catch (err) {
+                console.warn('Error updating ticket fields in Supabase, using LocalStorage fallback:', err);
+            }
+        }
+
+        const tickets = JSON.parse(localStorage.getItem('local_tickets')) || [];
+        const tIndex = tickets.findIndex(t => t.id === String(ticketId));
+        if (tIndex !== -1) {
+            tickets[tIndex] = { ...tickets[tIndex], ...fieldsToUpdate };
             localStorage.setItem('local_tickets', JSON.stringify(tickets));
             return true;
         }
@@ -334,6 +411,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 void targetPage.offsetWidth;
                 targetPage.classList.add('active-page');
             }
+
+            if (targetPageId === 'page-crear-ticket') {
+                prefillTicketClientFields();
+            }
         });
     });
 
@@ -379,6 +460,19 @@ document.addEventListener('DOMContentLoaded', () => {
             const resolvedCount = tickets.filter(t => t.estado === 'resuelto').length;
             statsResolved.textContent = resolvedCount;
         }
+
+        // Feedback de Técnicos (Belfor)
+        const felipeCreated = tickets.filter(t => t.usuario_nombre === 'Felipe Olivares').length;
+        const felipeResolved = tickets.filter(t => t.resuelto_por === 'Felipe Olivares').length;
+        const omarResolved = tickets.filter(t => t.resuelto_por === 'Omar Gálvez').length;
+
+        const felipeCreatedEl = document.getElementById('metric-felipe-created');
+        const felipeResolvedEl = document.getElementById('metric-felipe-resolved');
+        const omarResolvedEl = document.getElementById('metric-omar-resolved');
+
+        if (felipeCreatedEl) felipeCreatedEl.textContent = felipeCreated;
+        if (felipeResolvedEl) felipeResolvedEl.textContent = felipeResolved;
+        if (omarResolvedEl) omarResolvedEl.textContent = omarResolved;
     }
 
     function updateFilterCounts(tickets) {
@@ -444,18 +538,27 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td class="ticket-asunto-cell">
                     <span class="ticket-asunto">${escapeHtml(ticket.asunto)}</span>
                     <span class="ticket-desc">${escapeHtml(ticket.descripcion)}</span>
+                    <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 6px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                        <span style="display: inline-flex; align-items: center; gap: 4px;"><i class="fas fa-user" style="color: var(--accent-blue); font-size: 0.7rem;"></i> ${escapeHtml(ticket.cliente_nombre || ticket.usuario_nombre || 'S/A')} (${escapeHtml(ticket.cliente_rut || ticket.usuario_rut || 'S/A')})</span>
+                        <span style="display: inline-flex; align-items: center; gap: 4px;"><i class="fas fa-envelope" style="color: var(--accent-blue); font-size: 0.7rem;"></i> ${escapeHtml(ticket.cliente_email || ticket.usuario_email || 'S/A')}</span>
+                        <span style="background: rgba(97, 62, 234, 0.12); border: 1px solid rgba(97, 62, 234, 0.2); padding: 1px 6px; border-radius: 4px; font-size: 0.68rem; color: var(--accent-purple); font-weight: 600;">${escapeHtml(ticket.modalidad || 'Online')}</span>
+                    </div>
                 </td>
                 <td><span class="status-badge ${stateClass}">${stateLabel}</span></td>
                 <td>${priorityBadge}</td>
                 <td class="ticket-time">${formatRelativeTime(ticket.created_at)}</td>
                 <td class="ticket-actions">
                     <button class="action-btn action-view" title="Ver ticket"><i class="fas fa-eye"></i></button>
-                    <button class="action-btn action-more" title="Más opciones"><i class="fas fa-ellipsis-h"></i></button>
+                    <button class="action-btn action-delete" title="Eliminar ticket" style="background-color: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); margin-left: 4px;"><i class="fas fa-trash-alt"></i></button>
                 </td>
             `;
 
             tr.querySelector('.action-view').addEventListener('click', () => {
                 openTicketDetailModal(ticket);
+            });
+
+            tr.querySelector('.action-delete').addEventListener('click', async () => {
+                await deleteTicket(ticket.id);
             });
 
             tbody.appendChild(tr);
@@ -586,6 +689,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const categoryText = category ? category.options[category.selectedIndex]?.text : '';
         const priority = document.getElementById('ticket-priority')?.value || '';
         const office = document.getElementById('ticket-office')?.value || '';
+        const modality = document.getElementById('ticket-modalidad')?.value || 'Online';
+        const clientName = document.getElementById('ticket-client-name')?.value.trim() || '';
+        const clientRut = document.getElementById('ticket-client-rut')?.value.trim() || '';
+        const clientEmail = document.getElementById('ticket-client-email')?.value.trim() || '';
         const description = document.getElementById('ticket-description')?.value.trim() || '';
         const phone = document.getElementById('ticket-phone')?.value.trim() || 'No proporcionado';
         const device = document.getElementById('ticket-device')?.value || 'ninguno';
@@ -598,9 +705,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div><span style="color: var(--text-muted);">Categoría:</span> <span class="meta-val">${escapeHtml(categoryText)}</span></div>
                 <div><span style="color: var(--text-muted);">Prioridad:</span> <span class="priority-badge priority-${priority}">${priority.toUpperCase()}</span></div>
                 <div><span style="color: var(--text-muted);">Sede:</span> <span class="meta-val">${escapeHtml(office)}</span></div>
+                <div><span style="color: var(--text-muted);">Modalidad:</span> <span class="meta-val" style="font-weight: 600; color: var(--accent-purple);">${escapeHtml(modality)}</span></div>
                 <div><span style="color: var(--text-muted);">Teléfono:</span> <span class="meta-val">${escapeHtml(phone)}</span></div>
+                
+                <div style="grid-column: span 2; border-top: 1px dashed rgba(255,255,255,0.05); padding-top: 8px; margin-top: 4px;">
+                    <span style="color: var(--text-muted); font-weight: 600; display: block; margin-bottom: 4px;">Persona Afectada:</span>
+                    <div style="display: flex; flex-direction: column; gap: 4px; background: rgba(255,255,255,0.01); border: 1px solid var(--border-color); padding: 8px 12px; border-radius: 8px;">
+                        <div><span style="color: var(--text-muted);">Nombre:</span> <strong style="color: var(--text-primary);">${escapeHtml(clientName)}</strong></div>
+                        <div><span style="color: var(--text-muted);">RUT:</span> <span class="meta-val">${escapeHtml(clientRut)}</span></div>
+                        <div><span style="color: var(--text-muted);">Correo:</span> <span class="meta-val">${escapeHtml(clientEmail)}</span></div>
+                    </div>
+                </div>
+
                 <div><span style="color: var(--text-muted);">Dispositivo:</span> <span class="meta-val">${escapeHtml(device === 'ninguno' ? 'Ninguno / Otro' : device)}</span></div>
-                <div style="grid-column: span 2;"><span style="color: var(--text-muted);">Impacto:</span> <span class="meta-val">${escapeHtml(impactText)}</span></div>
+                <div><span style="color: var(--text-muted);">Impacto:</span> <span class="meta-val">${escapeHtml(impactText)}</span></div>
             </div>
             <div>
                 <span style="color: var(--text-muted); display: block; margin-bottom: 6px;">Descripción:</span>
@@ -641,6 +759,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 const category = document.getElementById('ticket-category').value;
                 const priority = document.getElementById('ticket-priority').value;
                 const office = document.getElementById('ticket-office').value;
+                const modality = document.getElementById('ticket-modalidad').value;
+                const clientName = document.getElementById('ticket-client-name').value.trim();
+                const clientRut = document.getElementById('ticket-client-rut').value.trim();
+                const clientEmail = document.getElementById('ticket-client-email').value.trim();
                 const description = document.getElementById('ticket-description').value.trim();
                 const phone = document.getElementById('ticket-phone').value.trim();
                 const device = document.getElementById('ticket-device').value;
@@ -651,11 +773,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 btnStepperNext.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
 
                 try {
-                    await saveTicket(subject, category, description, priority, office, phone, device, impact);
+                    await saveTicket(subject, category, description, priority, office, phone, device, impact, modality, clientName, clientRut, clientEmail);
                     alert('¡Ticket creado con éxito!');
                     
                     const form = document.getElementById('stepper-ticket-form');
-                    if (form) form.reset();
+                    if (form) {
+                        form.reset();
+                        prefillTicketClientFields();
+                    }
                     
                     const fileZoneText = document.querySelector('.file-upload-zone p');
                     if (fileZoneText) {
@@ -780,6 +905,16 @@ document.addEventListener('DOMContentLoaded', () => {
             modalImpacto.textContent = impactLabels[ticket.impacto] || ticket.impacto || 'Bloqueo medio';
         }
 
+        const modalModalidad = document.getElementById('modal-ticket-modalidad');
+        const modalClienteNombre = document.getElementById('modal-ticket-cliente-nombre');
+        const modalClienteRut = document.getElementById('modal-ticket-cliente-rut');
+        const modalClienteEmail = document.getElementById('modal-ticket-cliente-email');
+
+        if (modalModalidad) modalModalidad.textContent = ticket.modalidad || 'Online';
+        if (modalClienteNombre) modalClienteNombre.textContent = ticket.cliente_nombre || ticket.usuario_nombre || 'S/A';
+        if (modalClienteRut) modalClienteRut.textContent = ticket.cliente_rut || ticket.usuario_rut || 'S/A';
+        if (modalClienteEmail) modalClienteEmail.textContent = ticket.cliente_email || ticket.usuario_email || 'S/A';
+
         const statusSelect = document.getElementById('modal-status-select');
         if (statusSelect) statusSelect.value = ticket.estado.toLowerCase();
 
@@ -803,8 +938,79 @@ document.addEventListener('DOMContentLoaded', () => {
             replyInput.value = '';
             replyInput.style.height = '48px';
         }
-        
 
+        // Lógica de Asignación y Reasignación de Caso
+        const assignmentBox = document.getElementById('modal-assignment-box');
+        const assignmentStatus = document.getElementById('modal-assignment-status');
+        const assignmentControls = document.getElementById('modal-assignment-controls');
+        const techBadge = document.getElementById('modal-ticket-tecnico-badge');
+
+        if (techBadge) {
+            techBadge.textContent = ticket.tecnico_asignado || 'Sin asignar';
+        }
+
+        if (currentSession && (currentSession.role === 'admin' || currentSession.role === 'technician')) {
+            if (assignmentBox) assignmentBox.style.display = 'flex';
+
+            if (currentSession.role === 'admin') {
+                if (assignmentStatus) {
+                    assignmentStatus.textContent = ticket.tecnico_asignado 
+                        ? `Asignado a: ${ticket.tecnico_asignado}` 
+                        : 'Este ticket no está asignado a ningún técnico.';
+                }
+                if (assignmentControls) {
+                    assignmentControls.innerHTML = `
+                        <select id="modal-assign-tech-select" style="background-color: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-primary); border-radius: 8px; font-weight: 600; padding: 6px 12px; font-family: var(--font-family); cursor: pointer;">
+                            <option value="" ${!ticket.tecnico_asignado ? 'selected' : ''}>Sin asignar</option>
+                            <option value="Felipe Olivares" ${ticket.tecnico_asignado === 'Felipe Olivares' ? 'selected' : ''}>Felipe Olivares</option>
+                            <option value="Omar Gálvez" ${ticket.tecnico_asignado === 'Omar Gálvez' ? 'selected' : ''}>Omar Gálvez</option>
+                            <option value="Belfor Aburto" ${ticket.tecnico_asignado === 'Belfor Aburto' ? 'selected' : ''}>Belfor Aburto</option>
+                        </select>
+                    `;
+                    const select = document.getElementById('modal-assign-tech-select');
+                    select.addEventListener('change', async () => {
+                        const newTech = select.value;
+                        await updateTicketFields(ticket.id, { tecnico_asignado: newTech || null });
+                        if (techBadge) techBadge.textContent = newTech || 'Sin asignar';
+                        if (assignmentStatus) assignmentStatus.textContent = newTech ? `Asignado a: ${newTech}` : 'Este ticket no está asignado a ningún técnico.';
+                        await refreshTickets();
+                    });
+                }
+                if (statusSelect) statusSelect.disabled = false;
+            } else {
+                // Technician
+                const isAssignedToMe = ticket.tecnico_asignado === currentSession.nombre;
+                if (assignmentStatus) {
+                    if (ticket.tecnico_asignado) {
+                        assignmentStatus.textContent = isAssignedToMe ? 'Asignado a ti' : `Asignado a: ${ticket.tecnico_asignado}`;
+                    } else {
+                        assignmentStatus.textContent = 'Este ticket no está asignado.';
+                    }
+                }
+                if (assignmentControls) {
+                    if (!ticket.tecnico_asignado) {
+                        assignmentControls.innerHTML = `
+                            <button type="button" id="btn-tomar-ticket" class="page-btn" style="background-color: var(--accent-blue); border: none; color: white; padding: 6px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; font-family: var(--font-family); transition: all 0.2s;">Tomar Ticket</button>
+                        `;
+                        const btnTomar = document.getElementById('btn-tomar-ticket');
+                        btnTomar.addEventListener('click', async () => {
+                            await updateTicketFields(ticket.id, { tecnico_asignado: currentSession.nombre });
+                            if (techBadge) techBadge.textContent = currentSession.nombre;
+                            if (assignmentStatus) assignmentStatus.textContent = 'Asignado a ti';
+                            if (assignmentControls) assignmentControls.innerHTML = '';
+                            if (statusSelect) statusSelect.disabled = false;
+                            await refreshTickets();
+                        });
+                    } else {
+                        assignmentControls.innerHTML = '';
+                    }
+                }
+                if (statusSelect) statusSelect.disabled = !isAssignedToMe;
+            }
+        } else {
+            if (assignmentBox) assignmentBox.style.display = 'none';
+            if (statusSelect) statusSelect.disabled = true;
+        }
 
         await loadRepliesList(ticket.id);
 
@@ -1562,78 +1768,705 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!equipos || equipos.length === 0) {
             equipos = [
                 {
-                    id: 'PC-001-ID',
-                    nombre_codigo: 'PC-001',
-                    tipo: 'laptop',
-                    usuario_nombre: 'Ana Martínez',
-                    usuario_email: 'ana@empresa.com',
-                    marca: 'Dell',
-                    modelo: 'Latitude 5420',
-                    sistema_operativo: 'Windows 11 Pro',
-                    serial: 'ABC12-DEF34-GHI56',
-                    ram: '16 GB',
-                    disco_duro: 'SSD 512 GB',
+                    id: 'eq-1',
+                    nombre_codigo: '1',
+                    usuario_nombre: 'Cristian Illanes',
+                    usuario_email: 'cristian.illanes@t-sales.cl',
+                    empresa: 'T-Sales',
                     estado: 'activo',
+                    serial: '714NPL2',
+                    marca: 'Dell',
+                    modelo: 'Latitude 3280',
+                    cpu: 'i5-7300U',
+                    ram: '16GB',
+                    disco_duro: '256GB SSD',
+                    sistema_operativo: 'Windows 11 Pro',
+                    licencia_usuario: '2024 PP',
+                    tipo: 'laptop',
                     created_at: new Date().toISOString()
                 },
                 {
-                    id: 'PC-002-ID',
-                    nombre_codigo: 'PC-002',
-                    tipo: 'escritorio',
-                    usuario_nombre: 'Juan Rodríguez',
-                    usuario_email: 'juan@empresa.com',
+                    id: 'eq-2',
+                    nombre_codigo: '2',
+                    usuario_nombre: 'Auditoria T-sales',
+                    usuario_email: 'auditoriat@t-sales.cl',
+                    empresa: 'T-Sales',
+                    estado: 'baja',
+                    serial: '2XL8H13',
+                    marca: 'Dell',
+                    modelo: 'Vostro 3400',
+                    cpu: 'i3-1115G4',
+                    ram: '8GB (2x4GB) 2667MHz',
+                    disco_duro: '256GB',
+                    sistema_operativo: 'Windows 10 Pro',
+                    licencia_usuario: '2021 PP',
+                    tipo: 'laptop',
+                    created_at: new Date().toISOString()
+                },
+                {
+                    id: 'eq-3',
+                    nombre_codigo: '3',
+                    usuario_nombre: 'Alicia Monica escobar',
+                    usuario_email: 'alicia.escobar@t-sales.cl',
+                    empresa: 'T-Sales',
+                    estado: 'activo',
+                    serial: '5CG0403P17',
                     marca: 'HP',
-                    modelo: 'ProDesk 400 G7',
+                    modelo: 'Elitebook 840 G3',
+                    cpu: 'i3-6200U',
+                    ram: '8GB (2x4GB) 2133MHz',
+                    disco_duro: '240GB M.2 SATA',
                     sistema_operativo: 'Windows 10 Pro',
-                    serial: 'JKL78-MNO90-PQR12',
-                    ram: '8 GB',
-                    disco_duro: 'SSD 256 GB',
-                    estado: 'activo',
-                    created_at: new Date().toISOString()
-                },
-                {
-                    id: 'PC-003-ID',
-                    nombre_codigo: 'PC-003',
+                    licencia_usuario: 'S/A',
                     tipo: 'laptop',
-                    usuario_nombre: 'Laura Méndez',
-                    usuario_email: 'laura@empresa.com',
-                    marca: 'Lenovo',
-                    modelo: 'ThinkPad T14',
-                    sistema_operativo: 'Windows 11 Pro',
-                    serial: 'STU34-VWX56-YZA78',
-                    ram: '16 GB',
-                    disco_duro: 'SSD 1 TB',
-                    estado: 'mantenimiento',
                     created_at: new Date().toISOString()
                 },
                 {
-                    id: 'PC-004-ID',
-                    nombre_codigo: 'PC-004',
-                    tipo: 'escritorio',
-                    usuario_nombre: 'Diego Castro',
-                    usuario_email: 'diego@empresa.com',
+                    id: 'eq-4',
+                    nombre_codigo: '4',
+                    usuario_nombre: 'Yenifer Perez',
+                    usuario_email: 'yenifer.perez@t-sales.cl',
+                    empresa: 'T-Sales',
+                    estado: 'activo',
+                    serial: '5CG027BQKC',
+                    marca: 'HP',
+                    modelo: 'Elitebook 840 G6',
+                    cpu: 'i7-8375U',
+                    ram: '16GB',
+                    disco_duro: '500GB SSD',
+                    sistema_operativo: 'Windows 11 Pro',
+                    licencia_usuario: '2021 Standard',
+                    tipo: 'laptop',
+                    created_at: new Date().toISOString()
+                },
+                {
+                    id: 'eq-5',
+                    nombre_codigo: '5',
+                    usuario_nombre: 'Anabelen Godoy',
+                    usuario_email: 'anabelen.godoy@t-sales.cl',
+                    empresa: 'T-Sales',
+                    estado: 'activo',
+                    serial: '5CG8527T9G',
+                    marca: 'HP',
+                    modelo: 'ProBook 640 G4',
+                    cpu: 'i5-8250U',
+                    ram: '8GB (1x8GB) 2400MHz',
+                    disco_duro: '256GB NVMe',
+                    sistema_operativo: 'Windows 10 Pro',
+                    licencia_usuario: 'S/A',
+                    tipo: 'laptop',
+                    created_at: new Date().toISOString()
+                },
+                {
+                    id: 'eq-6',
+                    nombre_codigo: '6',
+                    usuario_nombre: 'Daniela Makarena Agu',
+                    usuario_email: 'daniela.aguilera@t-sales.cl',
+                    empresa: 'T-Sales',
+                    estado: 'activo',
+                    serial: '5CG11437TJ',
+                    marca: 'HP',
+                    modelo: '240 G8',
+                    cpu: 'i3-1005G1',
+                    ram: '8GB (2x4GB) 2667MHz',
+                    disco_duro: '240GB SSD',
+                    sistema_operativo: 'Windows 10 Home',
+                    licencia_usuario: '2016',
+                    tipo: 'laptop',
+                    created_at: new Date().toISOString()
+                },
+                {
+                    id: 'eq-7',
+                    nombre_codigo: '7',
+                    usuario_nombre: 'Auditoria T-sales',
+                    usuario_email: 'auditoriat@t-sales.cl',
+                    empresa: 'T-Sales',
+                    estado: 'baja',
+                    serial: '5CG11439TD',
+                    marca: 'HP',
+                    modelo: '240 G8',
+                    cpu: 'i3-1005G1',
+                    ram: '8GB',
+                    disco_duro: '256GB NVMe',
+                    sistema_operativo: 'Windows 10 Home SL',
+                    licencia_usuario: '2024 PP',
+                    tipo: 'laptop',
+                    created_at: new Date().toISOString()
+                },
+                {
+                    id: 'eq-8',
+                    nombre_codigo: '8',
+                    usuario_nombre: 'Maria Jose Alarcon Ara',
+                    usuario_email: 'maria.alarcon@t-sales.cl',
+                    empresa: 'T-Sales',
+                    estado: 'activo',
+                    serial: '6CXVP13',
                     marca: 'Dell',
-                    modelo: 'OptiPlex 7080',
+                    modelo: 'Latitude 5400',
+                    cpu: 'i5-8265U',
+                    ram: '8GB (1x8GB) 2400MHz',
+                    disco_duro: '256GB M.2 SATA',
                     sistema_operativo: 'Windows 10 Pro',
-                    serial: 'BCDS6-EFG78-HIJ90',
-                    ram: '8 GB',
-                    disco_duro: 'SSD 512 GB',
-                    estado: 'activo',
+                    licencia_usuario: '2024 LTSC PP',
+                    tipo: 'laptop',
                     created_at: new Date().toISOString()
                 },
                 {
-                    id: 'PC-005-ID',
-                    nombre_codigo: 'PC-005',
+                    id: 'eq-9',
+                    nombre_codigo: '9',
+                    usuario_nombre: 'Jaime Perez',
+                    usuario_email: 'jaime.perez@t-sales.cl',
+                    empresa: 'T-Sales',
+                    estado: 'baja',
+                    serial: 'HeroBook255G20120077',
+                    marca: 'Chuwi',
+                    modelo: 'HeroBook PRO X3128',
+                    cpu: 'Intel Celeron N4020',
+                    ram: '8GB (4x4) 2133MHz',
+                    disco_duro: '256GB M.2 SATA',
+                    sistema_operativo: 'Windows 10 Pro',
+                    licencia_usuario: '2010 PP',
                     tipo: 'laptop',
-                    usuario_nombre: 'María Pérez',
-                    usuario_email: 'maria@empresa.com',
-                    marca: 'Asus',
-                    modelo: 'ExpertBook B1',
-                    sistema_operativo: 'Windows 11 Pro',
-                    serial: 'KLM12-NOP34-QRS56',
-                    ram: '8 GB',
-                    disco_duro: 'SSD 256 GB',
+                    created_at: new Date().toISOString()
+                },
+                {
+                    id: 'eq-10',
+                    nombre_codigo: '10',
+                    usuario_nombre: 'Nicolás Jaruaque Núñez',
+                    usuario_email: 'nicolas.jaque@t-sales.cl',
+                    empresa: 'T-Sales',
                     estado: 'activo',
+                    serial: '27XNPL2',
+                    marca: 'Dell',
+                    modelo: 'Latitude 5280',
+                    cpu: 'i5-7300U',
+                    ram: '16GB (1x16GB) 2133MHz',
+                    disco_duro: '256GB M.2 SATA',
+                    sistema_operativo: 'Windows 11 Home',
+                    licencia_usuario: '2021 LTSC SD',
+                    tipo: 'laptop',
+                    created_at: new Date().toISOString()
+                },
+                {
+                    id: 'eq-11',
+                    nombre_codigo: '11',
+                    usuario_nombre: 'Camilo Llanquileo',
+                    usuario_email: 'camilo.llanquileo@t-sales.cl',
+                    empresa: 'T-Sales',
+                    estado: 'activo',
+                    serial: '1GM40Z2',
+                    marca: 'Dell',
+                    modelo: 'Latitude 5400',
+                    cpu: 'i5-8365U',
+                    ram: '8GB (2x4GB) 2133MHz',
+                    disco_duro: '250GB M.2 SATA',
+                    sistema_operativo: 'Windows 11 Pro',
+                    licencia_usuario: '2021',
+                    tipo: 'laptop',
+                    created_at: new Date().toISOString()
+                },
+                {
+                    id: 'eq-12',
+                    nombre_codigo: '12',
+                    usuario_nombre: 'Carolina Andrea Lillo E',
+                    usuario_email: 'carolina.lillo@t-sales.cl',
+                    empresa: 'T-Sales',
+                    estado: 'activo',
+                    serial: '5CG9366D32',
+                    marca: 'HP',
+                    modelo: 'ProBook 640 G4',
+                    cpu: 'i5-8350U',
+                    ram: '8GB (2x4GB) 2400MHz',
+                    disco_duro: '250GB M.2 SATA',
+                    sistema_operativo: 'Windows 10 Pro',
+                    licencia_usuario: '2024 PP',
+                    tipo: 'laptop',
+                    created_at: new Date().toISOString()
+                },
+                {
+                    id: 'eq-13',
+                    nombre_codigo: '13',
+                    usuario_nombre: 'Celeste Anai Morales V',
+                    usuario_email: 'celeste.morales@t-sales.cl',
+                    empresa: 'T-Sales',
+                    estado: 'activo',
+                    serial: '5CG1097S0X',
+                    marca: 'HP',
+                    modelo: 'HP 348 G7',
+                    cpu: 'i5-10210U',
+                    ram: '8GB (2x4GB)',
+                    disco_duro: '240GB SSD',
+                    sistema_operativo: 'Win11 Pro',
+                    licencia_usuario: '2010',
+                    tipo: 'laptop',
+                    created_at: new Date().toISOString()
+                },
+                {
+                    id: 'eq-14',
+                    nombre_codigo: '14',
+                    usuario_nombre: 'Auditoria T-sales',
+                    usuario_email: 'auditoriat@t-sales.cl',
+                    empresa: 'T-Sales',
+                    estado: 'activo',
+                    serial: '5CG0435VQ9',
+                    marca: 'HP',
+                    modelo: '14-CF2xxx',
+                    cpu: 'i3-10110U',
+                    ram: '4GB',
+                    disco_duro: '240GB SSD',
+                    sistema_operativo: 'Win11 Home',
+                    licencia_usuario: '365 Personal',
+                    tipo: 'laptop',
+                    created_at: new Date().toISOString()
+                },
+                {
+                    id: 'eq-15',
+                    nombre_codigo: '15',
+                    usuario_nombre: 'Auditoria T-sales',
+                    usuario_email: 'auditoriat@t-sales.cl',
+                    empresa: 'T-Sales',
+                    estado: 'baja',
+                    serial: 'R90VCD24',
+                    marca: 'Lenovo',
+                    modelo: 'Yoga 11e 20LNS0YE00',
+                    cpu: 'm3-7Y30',
+                    ram: '8GB integrado',
+                    disco_duro: '128GB M.2 SATA 2280',
+                    sistema_operativo: 'Win11 Home',
+                    licencia_usuario: '365 Personal',
+                    tipo: 'laptop',
+                    created_at: new Date().toISOString()
+                },
+                {
+                    id: 'eq-16',
+                    nombre_codigo: '16',
+                    usuario_nombre: 'Alejandro Rodrigo San',
+                    usuario_email: 'alejandro.sanmartin@t-sales.cl',
+                    empresa: 'T-Sales',
+                    estado: 'activo',
+                    serial: 'H5LLL13',
+                    marca: 'Dell',
+                    modelo: 'Latitude 5400',
+                    cpu: 'i5-8365U',
+                    ram: '8GB (1x8GB) 2400MHz',
+                    disco_duro: '256GB NVMe',
+                    sistema_operativo: 'Win11 Pro',
+                    licencia_usuario: 'Pro Plus 2010',
+                    tipo: 'laptop',
+                    created_at: new Date().toISOString()
+                },
+                {
+                    id: 'eq-17',
+                    nombre_codigo: '17',
+                    usuario_nombre: 'Dayana Franchesca Go',
+                    usuario_email: 'dayana.gonzalez@t-sales.cl',
+                    empresa: 'T-Sales',
+                    estado: 'activo',
+                    serial: '5CG9036KWL',
+                    marca: 'HP',
+                    modelo: 'ProBook 640 G4',
+                    cpu: 'i5-8350U',
+                    ram: '8GB (1x8GB) 2400MHz',
+                    disco_duro: '256GB NVMe',
+                    sistema_operativo: 'Win10 Pro',
+                    licencia_usuario: 'Standard 2021',
+                    tipo: 'laptop',
+                    created_at: new Date().toISOString()
+                },
+                {
+                    id: 'eq-18',
+                    nombre_codigo: '18',
+                    usuario_nombre: 'Delmira Urrea',
+                    usuario_email: 'delmira.urrea@t-sales.cl',
+                    empresa: 'T-Sales',
+                    estado: 'activo',
+                    serial: 'F4ZNPL2',
+                    marca: 'Dell',
+                    modelo: 'Latitude 5280',
+                    cpu: 'i5-7300U',
+                    ram: '8GB',
+                    disco_duro: '256GB M.2 SATA',
+                    sistema_operativo: 'WINDOWS 10 PRO',
+                    licencia_usuario: 'PROFESSIONAL 2016',
+                    tipo: 'laptop',
+                    created_at: new Date().toISOString()
+                },
+                {
+                    id: 'eq-19',
+                    nombre_codigo: '19',
+                    usuario_nombre: 'Auditoria T-sales',
+                    usuario_email: 'auditoriat@t-sales.cl',
+                    empresa: 'T-Sales',
+                    estado: 'activo',
+                    serial: 'HDGD2W1',
+                    marca: 'Dell',
+                    modelo: 'Latitude 6230',
+                    cpu: 'i5-3320',
+                    ram: '6GB 1333MHz',
+                    disco_duro: '240GB SSD',
+                    sistema_operativo: 'WINDOWS 10 PRO',
+                    licencia_usuario: 'PROFESSIONAL 2016',
+                    tipo: 'laptop',
+                    created_at: new Date().toISOString()
+                },
+                {
+                    id: 'eq-20',
+                    nombre_codigo: '20',
+                    usuario_nombre: 'Carlos Yañez',
+                    usuario_email: 'carlos.yanez@t-sales.cl',
+                    empresa: 'T-Sales',
+                    estado: 'activo',
+                    serial: '44FLL13',
+                    marca: 'Dell',
+                    modelo: 'Latitude 5500',
+                    cpu: 'i5-8365U',
+                    ram: '8GB (1x8GB) 2400MHz',
+                    disco_duro: '250GB NVMe',
+                    sistema_operativo: 'WINDOWS 10 PRO',
+                    licencia_usuario: 'PROFESSIONAL 2024',
+                    tipo: 'laptop',
+                    created_at: new Date().toISOString()
+                },
+                {
+                    id: 'eq-21',
+                    nombre_codigo: '21',
+                    usuario_nombre: 'Carmen Rojas',
+                    usuario_email: 'carmen.rojas@t-sales.cl',
+                    empresa: 'T-Sales',
+                    estado: 'activo',
+                    serial: 'FPKKL13',
+                    marca: 'Dell',
+                    modelo: 'Latitude 5500',
+                    cpu: 'i5-8365U',
+                    ram: '8GB (1x8GB) 2400MHz',
+                    disco_duro: '250GB NVMe',
+                    sistema_operativo: 'WINDOWS 10 PRO',
+                    licencia_usuario: '2024 PRO PLUS',
+                    tipo: 'laptop',
+                    created_at: new Date().toISOString()
+                },
+                {
+                    id: 'eq-22',
+                    nombre_codigo: '22',
+                    usuario_nombre: 'Yenifer Perez',
+                    usuario_email: 'yenifer.perez@t-sales.cl',
+                    empresa: 'T-Sales',
+                    estado: 'activo',
+                    serial: '8038733',
+                    marca: 'Dell',
+                    modelo: 'Latitude 5500',
+                    cpu: 'i5-8200',
+                    ram: '8GB (1x808) 2400MHz',
+                    disco_duro: '250GB NVMe',
+                    sistema_operativo: 'WINDOWS 10 PRO',
+                    licencia_usuario: '2024 PRO PLUS',
+                    tipo: 'laptop',
+                    created_at: new Date().toISOString()
+                },
+                {
+                    id: 'eq-23',
+                    nombre_codigo: '23',
+                    usuario_nombre: 'Genesis Calderon',
+                    usuario_email: 'genesis.calderon@t-sales.cl',
+                    empresa: 'T-Sales',
+                    estado: 'activo',
+                    serial: '3CG1143NL1',
+                    marca: 'HP',
+                    modelo: '14-CF2xxx',
+                    cpu: 'i3-10110U',
+                    ram: '8GB (2x4GB) 2400MHz',
+                    disco_duro: '500GB SSD',
+                    sistema_operativo: 'WINDOWS 10 PRO',
+                    licencia_usuario: '2024 PRO PLUS',
+                    tipo: 'laptop',
+                    created_at: new Date().toISOString()
+                },
+                {
+                    id: 'eq-24',
+                    nombre_codigo: '24',
+                    usuario_nombre: 'Alondra Guisselle Flore',
+                    usuario_email: 'alondra.flores@t-sales.cl',
+                    empresa: 'T-Sales',
+                    estado: 'activo',
+                    serial: '5CG8203R14',
+                    marca: 'HP',
+                    modelo: 'Elitebook 820 G3',
+                    cpu: 'i7-6600U',
+                    ram: '8GB 2133MHz',
+                    disco_duro: '256GB NVMe',
+                    sistema_operativo: 'WINDOWS 10 PRO',
+                    licencia_usuario: '2021',
+                    tipo: 'laptop',
+                    created_at: new Date().toISOString()
+                },
+                {
+                    id: 'eq-25',
+                    nombre_codigo: '25',
+                    usuario_nombre: 'Gissell Solange Mirand',
+                    usuario_email: 'gissell.miranda@t-sales.cl',
+                    empresa: 'T-Sales',
+                    estado: 'activo',
+                    serial: 'FQM92R2',
+                    marca: 'Dell',
+                    modelo: 'Latitude 5400',
+                    cpu: 'i5-8365U',
+                    ram: '8GB (1x8GB) 2400MHz',
+                    disco_duro: '256GB NVMe',
+                    sistema_operativo: 'WINDOWS 10 PRO',
+                    licencia_usuario: '2024',
+                    tipo: 'laptop',
+                    created_at: new Date().toISOString()
+                },
+                {
+                    id: 'eq-26',
+                    nombre_codigo: '26',
+                    usuario_nombre: 'Yenifer Perez',
+                    usuario_email: 'yenifer.perez@t-sales.cl',
+                    empresa: 'T-Sales',
+                    estado: 'activo',
+                    serial: 'NKHVWAL00212415CF',
+                    marca: 'Acer',
+                    modelo: 'Aspire A314-22',
+                    cpu: 'i5-8365U',
+                    ram: '8GB (1x8GB)',
+                    disco_duro: '256GB NVMe',
+                    sistema_operativo: 'WINDOWS 10 PRO',
+                    licencia_usuario: 'PROFESSIONAL 2016',
+                    tipo: 'laptop',
+                    created_at: new Date().toISOString()
+                },
+                {
+                    id: 'eq-27',
+                    nombre_codigo: '27',
+                    usuario_nombre: 'S/A',
+                    usuario_email: '',
+                    empresa: 'T-Sales',
+                    estado: 'activo',
+                    serial: '9X5LLL13',
+                    marca: 'Dell',
+                    modelo: 'Latitude 5500',
+                    cpu: 'i5-8365U',
+                    ram: '8GB (1x8GB)',
+                    disco_duro: '250GB NVMe',
+                    sistema_operativo: 'WINDOWS 10 PRO',
+                    licencia_usuario: 'PROFESSIONAL 2016',
+                    tipo: 'laptop',
+                    created_at: new Date().toISOString()
+                },
+                {
+                    id: 'eq-28',
+                    nombre_codigo: '28',
+                    usuario_nombre: 'Lia villavicencio',
+                    usuario_email: 'lia.villavicencio@t-sales.cl',
+                    empresa: 'T-Sales',
+                    estado: 'activo',
+                    serial: '5CG212C854',
+                    marca: 'HP',
+                    modelo: '14-DQ2023LA',
+                    cpu: 'i3-1115G4',
+                    ram: '4GB',
+                    disco_duro: '250GB NVMe',
+                    sistema_operativo: 'WINDOWS 10 PRO',
+                    licencia_usuario: 'PROFESSIONAL 2010',
+                    tipo: 'laptop',
+                    created_at: new Date().toISOString()
+                },
+                {
+                    id: 'eq-29',
+                    nombre_codigo: '29',
+                    usuario_nombre: 'Nicole Nubilar',
+                    usuario_email: 'nicole.nubilar@t-sales.cl',
+                    empresa: 'T-Sales',
+                    estado: 'activo',
+                    serial: '935W333',
+                    marca: 'Dell',
+                    modelo: 'Latitude 5400',
+                    cpu: 'i3-8200U',
+                    ram: 'S/A',
+                    disco_duro: 'S/A',
+                    sistema_operativo: 'WINDOWS 10 PRO',
+                    licencia_usuario: 'PROFESSIONAL 2021',
+                    tipo: 'laptop',
+                    created_at: new Date().toISOString()
+                },
+                {
+                    id: 'eq-30',
+                    nombre_codigo: '30',
+                    usuario_nombre: 'Valentina Pérez',
+                    usuario_email: 'valentina.perez@t-sales.cl',
+                    empresa: 'T-Sales',
+                    estado: 'activo',
+                    serial: 'CND112ZKYQ',
+                    marca: 'HP',
+                    modelo: '250 G8',
+                    cpu: 'i3-1005G1',
+                    ram: '8GB',
+                    disco_duro: '240GB M.2 SATA',
+                    sistema_operativo: 'WINDOWS 10 PRO',
+                    licencia_usuario: '2024',
+                    tipo: 'laptop',
+                    created_at: new Date().toISOString()
+                },
+                {
+                    id: 'eq-31',
+                    nombre_codigo: '31',
+                    usuario_nombre: 'Auditoria T-sales',
+                    usuario_email: 'auditoriat@t-sales.cl',
+                    empresa: 'T-Sales',
+                    estado: 'baja',
+                    serial: 'XE328',
+                    marca: 'CHUWI',
+                    modelo: 'HeroBook255G20120077',
+                    cpu: 'Celeron N4020',
+                    ram: '8GB',
+                    disco_duro: '256GB M.2 SATA',
+                    sistema_operativo: 'S/A',
+                    licencia_usuario: 'PROFESSIONAL 2010',
+                    tipo: 'laptop',
+                    created_at: new Date().toISOString()
+                },
+                {
+                    id: 'eq-32',
+                    nombre_codigo: '32',
+                    usuario_nombre: 'Thiare Tirado',
+                    usuario_email: 'thiare.tirado@t-sales.cl',
+                    empresa: 'T-Sales',
+                    estado: 'activo',
+                    serial: '5CG7233QD2',
+                    marca: 'HP',
+                    modelo: 'EliteBook 820 G3',
+                    cpu: 'i7-6500U',
+                    ram: '8GB (1x8GB) 2133MHz',
+                    disco_duro: '256GB M.2 SATA',
+                    sistema_operativo: 'WINDOWS 10 PRO',
+                    licencia_usuario: 'PROFESSIONAL 2016',
+                    tipo: 'laptop',
+                    created_at: new Date().toISOString()
+                },
+                {
+                    id: 'eq-33',
+                    nombre_codigo: '33',
+                    usuario_nombre: 'Javiera Alejandra Muñ',
+                    usuario_email: 'javiera.munoz@t-sales.cl',
+                    empresa: 'T-Sales',
+                    estado: 'activo',
+                    serial: '5CG0354WZ2',
+                    marca: 'HP',
+                    modelo: 'Elitebook 840 G3',
+                    cpu: 'i5-6200U',
+                    ram: '8GB (2x4GB) 2133MHz',
+                    disco_duro: '240GB M.2 SATA',
+                    sistema_operativo: 'WINDOWS 10 PRO',
+                    licencia_usuario: 'PROFESSIONAL 2023',
+                    tipo: 'laptop',
+                    created_at: new Date().toISOString()
+                },
+                {
+                    id: 'eq-34',
+                    nombre_codigo: '34',
+                    usuario_nombre: 'Auditoria T-sales',
+                    usuario_email: 'auditoriat@t-sales.cl',
+                    empresa: 'T-Sales',
+                    estado: 'activo',
+                    serial: '5CG112CT07',
+                    marca: 'HP',
+                    modelo: '14-CK2091LA',
+                    cpu: 'i3-10110U',
+                    ram: '4GB',
+                    disco_duro: '128GB M.2 SATA',
+                    sistema_operativo: 'WINDOWS 10 PRO',
+                    licencia_usuario: '2021',
+                    tipo: 'laptop',
+                    created_at: new Date().toISOString()
+                },
+                {
+                    id: 'eq-35',
+                    nombre_codigo: '35',
+                    usuario_nombre: 'Jocelyn Adriana Bece',
+                    usuario_email: 'jocelyn.becerra@t-sales.cl',
+                    empresa: 'T-Sales',
+                    estado: 'activo',
+                    serial: 'F13GT33',
+                    marca: 'Dell',
+                    modelo: 'Latitude 5500',
+                    cpu: 'i5-8265U',
+                    ram: '8GB (1x8GB) 2400MHz',
+                    disco_duro: '250GB NVMe',
+                    sistema_operativo: 'WINDOWS 10 PRO',
+                    licencia_usuario: 'PROFESSIONAL 2010',
+                    tipo: 'laptop',
+                    created_at: new Date().toISOString()
+                },
+                {
+                    id: 'eq-36',
+                    nombre_codigo: '36',
+                    usuario_nombre: 'Rita Rojas',
+                    usuario_email: 'rita.rojas@t-sales.cl',
+                    empresa: 'T-Sales',
+                    estado: 'activo',
+                    serial: 'RFXR1N2',
+                    marca: 'Dell',
+                    modelo: 'Latitude 5280',
+                    cpu: 'i5-7300U',
+                    ram: '16GB (1x16GB) 2134M',
+                    disco_duro: '250GB NVMe',
+                    sistema_operativo: 'WINDOWS 10 PRO',
+                    licencia_usuario: 'PROFESSIONAL 2016',
+                    tipo: 'laptop',
+                    created_at: new Date().toISOString()
+                },
+                {
+                    id: 'eq-37',
+                    nombre_codigo: '37',
+                    usuario_nombre: 'Javiera Paz Navarro Se',
+                    usuario_email: 'javiera.navarro@t-sales.cl',
+                    empresa: 'T-Sales',
+                    estado: 'activo',
+                    serial: '450NPL2',
+                    marca: 'Dell',
+                    modelo: 'Latitude 5280',
+                    cpu: 'i5-7300U',
+                    ram: '8GB',
+                    disco_duro: '240GB NVMe',
+                    sistema_operativo: 'WINDOWS 10 PRO',
+                    licencia_usuario: 'PROFESSIONAL 2016',
+                    tipo: 'laptop',
+                    created_at: new Date().toISOString()
+                },
+                {
+                    id: 'eq-38',
+                    nombre_codigo: '38',
+                    usuario_nombre: 'Jose Poblete Rubilar',
+                    usuario_email: 'jose.poblete@t-sales.cl',
+                    empresa: 'T-Sales',
+                    estado: 'baja',
+                    serial: 'HEROBook255G20120054',
+                    marca: 'Chuwi',
+                    modelo: 'Herobook',
+                    cpu: 'Celeron N4020',
+                    ram: '8GB',
+                    disco_duro: '256GB M.2 SATA',
+                    sistema_operativo: 'WINDOWS 10 PRO',
+                    licencia_usuario: 'PROFESSIONAL 2016',
+                    tipo: 'laptop',
+                    created_at: new Date().toISOString()
+                },
+                {
+                    id: 'eq-39',
+                    nombre_codigo: '39',
+                    usuario_nombre: 'Auditoria T-sales',
+                    usuario_email: 'auditoriat@t-sales.cl',
+                    empresa: 'T-Sales',
+                    estado: 'activo',
+                    serial: '93NXR2',
+                    marca: 'Dell',
+                    modelo: 'Latitude 5490',
+                    cpu: 'i5-7300U',
+                    ram: '8GB (1x8GB) 2133MHz',
+                    disco_duro: '256GB M.2 SATA',
+                    sistema_operativo: 'WINDOWS 10 PRO',
+                    licencia_usuario: 'PROFESSIONAL 2021',
+                    tipo: 'laptop',
                     created_at: new Date().toISOString()
                 }
             ];
@@ -1840,9 +2673,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         <div class="equip-thumbnail">
                             <i class="fas ${iconClass}"></i>
                         </div>
-                        <div class="equip-meta-info">
+                        <div class="equip-meta-info" style="display: flex; flex-direction: column;">
                             <span class="equip-code">${escapeHtml(eq.nombre_codigo)}</span>
                             <span class="equip-type-label">${escapeHtml(eq.tipo)}</span>
+                            <span class="equip-company-badge" style="background: rgba(97, 62, 234, 0.15); padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; color: var(--accent-blue); width: fit-content; margin-top: 4px; font-weight: bold; border: 1px solid rgba(97, 62, 234, 0.2);">${escapeHtml(eq.empresa || 'T-Sales')}</span>
                         </div>
                     </div>
                 </td>
@@ -1853,7 +2687,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         </div>
                         <div class="equip-user-info">
                             <span class="equip-user-name">${escapeHtml(eq.usuario_nombre)}</span>
-                            <span class="equip-user-email">${escapeHtml(eq.usuario_email)}</span>
+                            <span class="equip-user-email">${escapeHtml(eq.usuario_email || 'S/A')}</span>
                         </div>
                     </div>
                 </td>
@@ -1869,8 +2703,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="equip-text-secondary">${escapeHtml(eq.serial)}</div>
                 </td>
                 <td>
+                    <div class="equip-spec-item"><strong>CPU:</strong> ${escapeHtml(eq.cpu || '-')}</div>
                     <div class="equip-spec-item"><strong>RAM:</strong> ${escapeHtml(eq.ram)}</div>
                     <div class="equip-spec-item"><strong>Disco:</strong> ${escapeHtml(eq.disco_duro)}</div>
+                    <div class="equip-spec-item"><strong>Licencia:</strong> ${escapeHtml(eq.licencia_usuario || '-')}</div>
                 </td>
                 <td>
                     <span class="status-badge ${stateClass}">${stateLabel}</span>
@@ -1985,10 +2821,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.getElementById('equip-form-serial').value = eq.serial || '';
                 document.getElementById('equip-form-ram').value = eq.ram || '';
                 document.getElementById('equip-form-disco').value = eq.disco_duro || '';
+                document.getElementById('equip-form-empresa').value = eq.empresa || '';
+                document.getElementById('equip-form-cpu').value = eq.cpu || '';
+                document.getElementById('equip-form-licencia').value = eq.licencia_usuario || '';
             } else {
                 if (modeLabel) modeLabel.textContent = 'NUEVO REGISTRO';
                 if (titleLabel) titleLabel.textContent = 'Agregar Nuevo Equipo';
                 if (idField) idField.value = '';
+                document.getElementById('equip-form-empresa').value = '';
+                document.getElementById('equip-form-cpu').value = '';
+                document.getElementById('equip-form-licencia').value = '';
             }
 
             formModal.style.display = 'flex';
@@ -2002,7 +2844,7 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('modal-equip-codigo').textContent = eq.nombre_codigo;
             
             document.getElementById('modal-equip-user-nombre').textContent = eq.usuario_nombre;
-            document.getElementById('modal-equip-user-email').textContent = eq.usuario_email;
+            document.getElementById('modal-equip-user-email').textContent = eq.usuario_email || 'S/A';
             
             const initials = eq.usuario_nombre ? eq.usuario_nombre.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : 'U';
             const avatarSpan = document.querySelector('#modal-equip-user-avatar span');
@@ -2014,6 +2856,9 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('modal-equip-serial').textContent = eq.serial;
             document.getElementById('modal-equip-ram').textContent = eq.ram;
             document.getElementById('modal-equip-disco').textContent = eq.disco_duro;
+            document.getElementById('modal-equip-empresa').textContent = eq.empresa || '-';
+            document.getElementById('modal-equip-cpu').textContent = eq.cpu || '-';
+            document.getElementById('modal-equip-licencia').textContent = eq.licencia_usuario || '-';
 
             detailModal.style.display = 'flex';
         }
@@ -2070,7 +2915,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 sistema_operativo: document.getElementById('equip-form-so').value.trim(),
                 serial: document.getElementById('equip-form-serial').value.trim(),
                 ram: document.getElementById('equip-form-ram').value.trim(),
-                disco_duro: document.getElementById('equip-form-disco').value.trim()
+                disco_duro: document.getElementById('equip-form-disco').value.trim(),
+                empresa: document.getElementById('equip-form-empresa').value,
+                cpu: document.getElementById('equip-form-cpu').value.trim(),
+                licencia_usuario: document.getElementById('equip-form-licencia').value.trim()
             };
 
             try {
@@ -2142,9 +2990,401 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     const btnImportarEquipos = document.getElementById('btn-importar-equipos');
-    if (btnImportarEquipos) {
+    const equipFileInput = document.getElementById('equip-file-input');
+    const previewModal = document.getElementById('equipo-import-preview-modal');
+    const previewTbody = document.getElementById('import-preview-table-body');
+    const previewCloseBtn = document.getElementById('equipo-import-close-btn');
+    const previewCancelBtn = document.getElementById('btn-import-cancel');
+    const previewConfirmBtn = document.getElementById('btn-import-confirm');
+    
+    let parsedEquipos = [];
+
+    if (btnImportarEquipos && equipFileInput) {
         btnImportarEquipos.addEventListener('click', () => {
-            alert('Funcionalidad de Importación:\nPuedes subir un archivo .CSV o .XLSX estructurado para cargar de forma masiva los activos de la empresa. (Demo simulada)');
+            equipFileInput.value = ''; // Reset file input
+            equipFileInput.click();
+        });
+
+        equipFileInput.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            // Mostrar spinner de carga o mensaje
+            btnImportarEquipos.disabled = true;
+            const originalBtnHtml = btnImportarEquipos.innerHTML;
+            btnImportarEquipos.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Leyendo...';
+
+            try {
+                const extension = file.name.split('.').pop().toLowerCase();
+                if (extension === 'pdf') {
+                    parsedEquipos = await readPDFFile(file);
+                } else if (['xlsx', 'xls', 'csv'].includes(extension)) {
+                    parsedEquipos = await readExcelFile(file);
+                } else {
+                    alert('Formato de archivo no soportado. Sube un archivo .pdf, .xlsx, .xls o .csv');
+                    return;
+                }
+
+                if (parsedEquipos.length === 0) {
+                    alert('No se pudo extraer ningún equipo válido del archivo. Revisa el formato.');
+                } else {
+                    renderImportPreview(parsedEquipos);
+                    if (previewModal) previewModal.style.display = 'flex';
+                }
+            } catch (err) {
+                console.error('Error al parsear el archivo:', err);
+                alert('Ocurrió un error al procesar el archivo: ' + err.message);
+            } finally {
+                btnImportarEquipos.disabled = false;
+                btnImportarEquipos.innerHTML = originalBtnHtml;
+            }
+        });
+    }
+
+    if (previewCloseBtn) previewCloseBtn.addEventListener('click', () => previewModal.style.display = 'none');
+    if (previewCancelBtn) previewCancelBtn.addEventListener('click', () => previewModal.style.display = 'none');
+
+    if (previewConfirmBtn) {
+        previewConfirmBtn.addEventListener('click', async () => {
+            previewConfirmBtn.disabled = true;
+            previewConfirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Importando...';
+
+            try {
+                let successCount = 0;
+                for (const eq of parsedEquipos) {
+                    await saveEquipo(eq);
+                    successCount++;
+                }
+                alert(`¡Se importaron ${successCount} equipos con éxito!`);
+                if (previewModal) previewModal.style.display = 'none';
+                await refreshEquipos();
+            } catch (err) {
+                console.error(err);
+                alert('Ocurrió un error al guardar los equipos importados.');
+            } finally {
+                previewConfirmBtn.disabled = false;
+                previewConfirmBtn.innerHTML = 'Confirmar Importación';
+            }
+        });
+    }
+
+    function renderImportPreview(equipos) {
+        if (!previewTbody) return;
+        previewTbody.innerHTML = '';
+        
+        const badge = document.getElementById('import-stats-badge');
+        if (badge) badge.textContent = `${equipos.length} NUEVOS REGISTROS`;
+
+        equipos.forEach(eq => {
+            const tr = document.createElement('tr');
+            const stateLabel = eq.estado.charAt(0).toUpperCase() + eq.estado.slice(1);
+            const stateClass = `status-${eq.estado}`;
+
+            tr.innerHTML = `
+                <td><strong style="color: var(--accent-blue);">${escapeHtml(eq.nombre_codigo)}</strong></td>
+                <td>
+                    <div style="font-weight: 600; color: var(--text-primary);">${escapeHtml(eq.usuario_nombre)}</div>
+                    <div style="font-size: 0.8rem; color: var(--text-secondary);">${escapeHtml(eq.usuario_email || 'S/A')}</div>
+                </td>
+                <td>
+                    <span style="background: rgba(97, 62, 234, 0.15); padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; color: var(--accent-blue); font-weight: bold; border: 1px solid rgba(97, 62, 234, 0.2);">
+                        ${escapeHtml(eq.empresa)}
+                    </span>
+                </td>
+                <td>
+                    <div style="color: var(--text-primary); font-weight: 500;">${escapeHtml(eq.marca)}</div>
+                    <div style="font-size: 0.8rem; color: var(--text-secondary);">${escapeHtml(eq.modelo)}</div>
+                </td>
+                <td>
+                    <div style="font-size: 0.85rem;"><strong>CPU:</strong> ${escapeHtml(eq.cpu)}</div>
+                    <div style="font-size: 0.85rem;"><strong>RAM:</strong> ${escapeHtml(eq.ram)}</div>
+                    <div style="font-size: 0.85rem;"><strong>Disco:</strong> ${escapeHtml(eq.disco_duro)}</div>
+                </td>
+                <td>
+                    <div style="font-size: 0.85rem;">${escapeHtml(eq.sistema_operativo)}</div>
+                    <div style="font-size: 0.8rem; color: var(--text-muted); font-style: italic;">${escapeHtml(eq.licencia_usuario)}</div>
+                </td>
+                <td>
+                    <span class="status-badge ${stateClass}">${stateLabel}</span>
+                </td>
+            `;
+            previewTbody.appendChild(tr);
+        });
+    }
+
+    // Heurística de parseo para texto extraído del PDF
+    function parsePDFTextToEquipos(text) {
+        const lines = text.split('\n');
+        const importedEquipos = [];
+        
+        lines.forEach((line) => {
+            const cleanLine = line.trim();
+            if (!cleanLine) return;
+            
+            // Si la línea parece ser un encabezado la saltamos
+            if (/usuario|correo|serial|marca|modelo/i.test(cleanLine) && cleanLine.split(/\s{2,}/).length > 5) {
+                return; 
+            }
+            
+            const hasEmail = cleanLine.includes('@');
+            const hasBrand = /dell|hp|lenovo|chuwi|acer|asus/i.test(cleanLine);
+            const hasSerial = /[A-Z0-9]{7,18}/i.test(cleanLine);
+            
+            if (!hasEmail && !hasBrand && !hasSerial) return;
+
+            let parts = cleanLine.split(/\t|\s{2,}/).map(p => p.trim()).filter(Boolean);
+            
+            // Parseo si no viene con delimitadores tab/multi-espacio
+            if (parts.length < 5) {
+                const codeMatch = cleanLine.match(/^(\d+)\s/);
+                const code = codeMatch ? codeMatch[1] : (importedEquipos.length + 1).toString();
+                
+                const emailMatch = cleanLine.match(/([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/);
+                const email = emailMatch ? emailMatch[1] : '';
+                
+                const brandMatch = cleanLine.match(/(dell|hp|lenovo|chuwi|acer|asus)/i);
+                const marca = brandMatch ? brandMatch[1] : 'Dell';
+                
+                const estadoMatch = cleanLine.match(/(activo|dado de baja|baja|mantenimiento)/i);
+                let estado = 'activo';
+                if (estadoMatch) {
+                    const estLower = estadoMatch[1].toLowerCase();
+                    if (estLower.includes('baja')) estado = 'baja';
+                    else if (estLower.includes('mantenimiento')) estado = 'mantenimiento';
+                }
+                
+                const serialMatch = cleanLine.match(/\b([A-Z0-9-]{6,25})\b/i);
+                const serial = serialMatch ? serialMatch[1] : '';
+                
+                const ramMatch = cleanLine.match(/(\d+GB|\d+\s*GB)/i);
+                const ram = ramMatch ? ramMatch[1] : '8 GB';
+                
+                const discoMatch = cleanLine.match(/(\d+GB\s*(SSD|NVMe|SATA)?|\d+\s*(GB|TB)\s*(SSD|HDD|NVMe)?)/i);
+                const disco = discoMatch ? discoMatch[1] : '256 GB SSD';
+                
+                const cpuMatch = cleanLine.match(/(i3|i5|i7|m3|celeron|ryzen|amd|intel)[a-zA-Z0-9-]*\s*([0-9a-zA-Z-]*)/i);
+                const cpu = cpuMatch ? cpuMatch[0] : 'i5';
+                
+                const empresaMatch = cleanLine.match(/(t-sales|vprime|infinet)/i);
+                const empresa = empresaMatch ? (empresaMatch[1].toLowerCase() === 't-sales' ? 'T-Sales' : empresaMatch[1].toLowerCase() === 'vprime' ? 'VPrime' : 'Infinet') : 'T-Sales';
+                
+                const soMatch = cleanLine.match(/(windows\s*11\s*pro|windows\s*10\s*pro|windows\s*\d+|win\s*11|win\s*10|ubuntu)/i);
+                const so = soMatch ? soMatch[1] : 'Windows 10 Pro';
+                
+                const licenciaMatch = cleanLine.match(/(2024\s*pp|2021\s*pp|2024\s*pro\s*plus|2021\s*pro\s*plus|standard|365|s\/a)/i);
+                const licencia = licenciaMatch ? licenciaMatch[1] : 'S/A';
+
+                let usuario = 'Usuario Importado';
+                if (emailMatch && codeMatch) {
+                    const startIdx = codeMatch[0].length;
+                    const endIdx = cleanLine.indexOf(emailMatch[1]);
+                    if (endIdx > startIdx) {
+                        usuario = cleanLine.substring(startIdx, endIdx).trim();
+                    }
+                }
+
+                let modelo = 'Genérico';
+                if (brandMatch) {
+                    const brandIdx = cleanLine.indexOf(brandMatch[0]);
+                    const afterBrand = cleanLine.substring(brandIdx + brandMatch[0].length).trim();
+                    const modelParts = afterBrand.split(/\s+/).slice(0, 2);
+                    if (modelParts.length > 0) {
+                        modelo = modelParts.join(' ');
+                    }
+                }
+
+                importedEquipos.push({
+                    nombre_codigo: code,
+                    usuario_nombre: usuario,
+                    usuario_email: email,
+                    empresa: empresa,
+                    estado: estado,
+                    serial: serial || ('SR-' + Math.random().toString(36).substr(2, 6).toUpperCase()),
+                    marca: marca,
+                    modelo: modelo,
+                    cpu: cpu,
+                    ram: ram,
+                    disco_duro: disco,
+                    sistema_operativo: so,
+                    licencia_usuario: licencia,
+                    tipo: 'laptop'
+                });
+                return;
+            }
+
+            let code = parts[0] || (importedEquipos.length + 1).toString();
+            let usuario = parts[1] || 'Usuario Importado';
+            let email = parts[2] && parts[2].includes('@') ? parts[2] : '';
+            let propiedad = parts[3] || 'T-Sales';
+            let estadoStr = parts[4] || 'activo';
+            let serial = parts[5] || '';
+            let marca = parts[6] || '';
+            let modelo = parts[7] || '';
+            let cpu = parts[8] || 'i5';
+            let ram = parts[9] || '8 GB';
+            let disco = parts[10] || '256 GB SSD';
+            let so = parts[11] || 'Windows 10 Pro';
+            let licencia = parts[12] || 'S/A';
+
+            let empresa = 'T-Sales';
+            if (/vprime/i.test(propiedad)) empresa = 'VPrime';
+            else if (/infinet/i.test(propiedad)) empresa = 'Infinet';
+
+            let estado = 'activo';
+            if (/baja|dado\s+de\s+baja/i.test(estadoStr)) estado = 'baja';
+            else if (/mantenimiento/i.test(estadoStr)) estado = 'mantenimiento';
+
+            importedEquipos.push({
+                nombre_codigo: code,
+                usuario_nombre: usuario,
+                usuario_email: email,
+                empresa: empresa,
+                estado: estado,
+                serial: serial || ('SR-' + Math.random().toString(36).substr(2, 6).toUpperCase()),
+                marca: marca || 'Dell',
+                modelo: modelo || 'Latitude',
+                cpu: cpu,
+                ram: ram,
+                disco_duro: disco,
+                sistema_operativo: so,
+                licencia_usuario: licencia,
+                tipo: 'laptop'
+            });
+        });
+
+        return importedEquipos;
+    }
+
+    // Lector XLSX/XLS/CSV con SheetJS
+    function readExcelFile(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const firstSheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[firstSheetName];
+                    const json = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+                    
+                    if (json.length === 0) {
+                        resolve([]);
+                        return;
+                    }
+                    
+                    const headers = json[0].map(h => String(h || '').trim().toLowerCase());
+                    
+                    const idxCode = headers.findIndex(h => h.includes('código') || h.includes('codigo') || h.includes('code') || h === 'no' || h === 'id');
+                    const idxUser = headers.findIndex(h => h.includes('usuario') || h.includes('user') || h.includes('nombre'));
+                    const idxEmail = headers.findIndex(h => h.includes('correo') || h.includes('email') || h.includes('mail'));
+                    const idxProp = headers.findIndex(h => h.includes('propiedad') || h.includes('empresa') || h.includes('company') || h.includes('propietario'));
+                    const idxState = headers.findIndex(h => h.includes('estado') || h.includes('status') || h.includes('equipo'));
+                    const idxSerial = headers.findIndex(h => h.includes('serial') || h.includes('s/n') || h.includes('serie') || h.includes('servial'));
+                    const idxBrand = headers.findIndex(h => h.includes('marca') || h.includes('brand'));
+                    const idxModel = headers.findIndex(h => h.includes('modelo') || h.includes('model'));
+                    const idxCpu = headers.findIndex(h => h.includes('cpu') || h.includes('procesador') || h.includes('proc'));
+                    const idxRam = headers.findIndex(h => h.includes('ram') || h.includes('memoria'));
+                    const idxDisco = headers.findIndex(h => h.includes('disco') || h.includes('almacenamiento') || h.includes('hdd') || h.includes('ssd'));
+                    const idxSo = headers.findIndex(h => h.includes('so') || h.includes('sistema') || h.includes('os') || h.includes('operativo'));
+                    const idxLicense = headers.findIndex(h => h.includes('licencia') || h.includes('license'));
+                    
+                    const imported = [];
+                    
+                    for (let i = 1; i < json.length; i++) {
+                        const row = json[i];
+                        if (!row || row.length === 0) continue;
+                        
+                        const code = idxCode !== -1 ? String(row[idxCode] || '').trim() : i.toString();
+                        const usuario = idxUser !== -1 ? String(row[idxUser] || '').trim() : 'Usuario Importado';
+                        const email = idxEmail !== -1 ? String(row[idxEmail] || '').trim() : '';
+                        const propiedad = idxProp !== -1 ? String(row[idxProp] || '').trim() : 'T-Sales';
+                        const estadoStr = idxState !== -1 ? String(row[idxState] || '').trim() : 'activo';
+                        const serial = idxSerial !== -1 ? String(row[idxSerial] || '').trim() : '';
+                        const marca = idxBrand !== -1 ? String(row[idxBrand] || '').trim() : 'Dell';
+                        const modelo = idxModel !== -1 ? String(row[idxModel] || '').trim() : 'Latitude';
+                        const cpu = idxCpu !== -1 ? String(row[idxCpu] || '').trim() : 'i5';
+                        const ram = idxRam !== -1 ? String(row[idxRam] || '').trim() : '8 GB';
+                        const disco = idxDisco !== -1 ? String(row[idxDisco] || '').trim() : '256 GB SSD';
+                        const so = idxSo !== -1 ? String(row[idxSo] || '').trim() : 'Windows 10 Pro';
+                        const licencia = idxLicense !== -1 ? String(row[idxLicense] || '').trim() : 'S/A';
+                        
+                        if (!usuario && !serial && !marca) continue;
+                        
+                        let empresa = 'T-Sales';
+                        if (/vprime/i.test(propiedad)) empresa = 'VPrime';
+                        else if (/infinet/i.test(propiedad)) empresa = 'Infinet';
+                        
+                        let estado = 'activo';
+                        if (/baja|dado\s+de\s+baja/i.test(estadoStr)) estado = 'baja';
+                        else if (/mantenimiento/i.test(estadoStr)) estado = 'mantenimiento';
+                        
+                        imported.push({
+                            nombre_codigo: code,
+                            usuario_nombre: usuario || 'S/A',
+                            usuario_email: email,
+                            empresa: empresa,
+                            estado: estado,
+                            serial: serial || ('SR-' + Math.random().toString(36).substr(2, 6).toUpperCase()),
+                            marca: marca || 'Dell',
+                            modelo: modelo || 'Generic',
+                            cpu: cpu || 'i5',
+                            ram: ram || '8 GB',
+                            disco_duro: disco || '256 GB SSD',
+                            sistema_operativo: so || 'Windows 10 Pro',
+                            licencia_usuario: licencia || 'S/A',
+                            tipo: 'laptop'
+                        });
+                    }
+                    resolve(imported);
+                } catch (err) {
+                    reject(err);
+                }
+            };
+            reader.onerror = () => reject(new Error("Error leyendo el archivo de Excel"));
+            reader.readAsArrayBuffer(file);
+        });
+    }
+
+    // Lector PDF con PDF.js
+    function readPDFFile(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                try {
+                    const typedarray = new Uint8Array(e.target.result);
+                    const pdf = await pdfjsLib.getDocument(typedarray).promise;
+                    let fullText = '';
+                    
+                    for (let i = 1; i <= pdf.numPages; i++) {
+                        const page = await pdf.getPage(i);
+                        const textContent = await page.getTextContent();
+                        const pageText = textContent.items.map(item => item.str).join(' ');
+                        fullText += pageText + '\n';
+                    }
+                    
+                    let equipos = parsePDFTextToEquipos(fullText);
+                    if (equipos.length === 0) {
+                        const words = fullText.split(/\s+/);
+                        let lineBuffer = '';
+                        let tempLines = [];
+                        words.forEach(w => {
+                            if (/^\d+$/.test(w) && lineBuffer.length > 50) {
+                                tempLines.push(lineBuffer);
+                                lineBuffer = w + ' ';
+                            } else {
+                                lineBuffer += w + ' ';
+                            }
+                        });
+                        if (lineBuffer) tempLines.push(lineBuffer);
+                        equipos = parsePDFTextToEquipos(tempLines.join('\n'));
+                    }
+                    resolve(equipos);
+                } catch (err) {
+                    reject(err);
+                }
+            };
+            reader.onerror = () => reject(new Error("Error leyendo el archivo PDF"));
+            reader.readAsArrayBuffer(file);
         });
     }
 
@@ -2166,12 +3406,25 @@ document.addEventListener('DOMContentLoaded', () => {
         const headerAvatar = document.querySelector('#header-user-avatar span');
 
         const navBase = document.getElementById('nav-base-conocimientos');
+        const creatorGroup = document.getElementById('ticket-creator-group');
+        const belforPanel = document.getElementById('belfor-metrics-panel');
 
         if (session.role === 'admin') {
-            if (headerName) headerName.textContent = 'Administrador';
+            if (headerName) headerName.textContent = session.nombre || 'Administrador';
             if (headerRole) headerRole.textContent = 'Soporte TI';
-            if (headerAvatar) headerAvatar.textContent = 'A';
+            const initials = session.nombre ? session.nombre.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : 'A';
+            if (headerAvatar) headerAvatar.textContent = initials;
             if (navBase) navBase.style.display = 'block'; // Mostrar inventario al Admin
+            if (creatorGroup) creatorGroup.style.display = 'block';
+            if (belforPanel) belforPanel.style.display = (session.nombre === 'Belfor Aburto') ? 'block' : 'none';
+        } else if (session.role === 'technician') {
+            if (headerName) headerName.textContent = session.nombre;
+            if (headerRole) headerRole.textContent = 'Técnico Soporte';
+            const initials = session.nombre ? session.nombre.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : 'T';
+            if (headerAvatar) headerAvatar.textContent = initials;
+            if (navBase) navBase.style.display = 'block'; // Mostrar inventario a técnicos
+            if (creatorGroup) creatorGroup.style.display = 'none'; // Ocultar selector de creador
+            if (belforPanel) belforPanel.style.display = 'none'; // Ocultar panel de métricas
         } else {
             if (headerName) headerName.textContent = session.nombre;
             if (headerRole) headerRole.textContent = `RUT: ${session.rut}`;
@@ -2180,6 +3433,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (headerAvatar) headerAvatar.textContent = initials;
             
             if (navBase) navBase.style.display = 'none'; // Ocultar inventario al usuario común
+            if (creatorGroup) creatorGroup.style.display = 'none';
+            if (belforPanel) belforPanel.style.display = 'none';
         }
 
         // Forzar recarga de listados de acuerdo al nuevo rol
@@ -2189,7 +3444,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Configurar vista de Chat según rol
         const chatAdminContainer = document.getElementById('chat-admin-container');
         const chatUserContainer = document.getElementById('chat-user-container');
-        if (session.role === 'admin') {
+        if (session.role === 'admin' || session.role === 'technician') {
             if (chatAdminContainer) chatAdminContainer.style.display = 'block';
             if (chatUserContainer) chatUserContainer.style.display = 'none';
             if (typeof initAdminChat === 'function') initAdminChat();
@@ -2197,6 +3452,66 @@ document.addEventListener('DOMContentLoaded', () => {
             if (chatAdminContainer) chatAdminContainer.style.display = 'none';
             if (chatUserContainer) chatUserContainer.style.display = 'block';
             if (typeof initUserChat === 'function') initUserChat();
+        }
+        prefillTicketClientFields();
+    }
+
+    function prefillTicketClientFields() {
+        const clientNameInput = document.getElementById('ticket-client-name');
+        const clientRutInput = document.getElementById('ticket-client-rut');
+        const clientEmailInput = document.getElementById('ticket-client-email');
+
+        if (clientNameInput && clientRutInput && clientEmailInput) {
+            if (currentSession) {
+                // If it's a regular user, prefill their details and lock them.
+                if (currentSession.role === 'user') {
+                    clientNameInput.value = currentSession.nombre || '';
+                    clientRutInput.value = currentSession.rut || '';
+                    clientEmailInput.value = currentSession.email || '';
+                    
+                    clientNameInput.readOnly = true;
+                    clientRutInput.readOnly = true;
+                    clientEmailInput.readOnly = true;
+                    
+                    clientNameInput.style.backgroundColor = 'rgba(255, 255, 255, 0.02)';
+                    clientRutInput.style.backgroundColor = 'rgba(255, 255, 255, 0.02)';
+                    clientEmailInput.style.backgroundColor = 'rgba(255, 255, 255, 0.02)';
+                    clientNameInput.style.cursor = 'not-allowed';
+                    clientRutInput.style.cursor = 'not-allowed';
+                    clientEmailInput.style.cursor = 'not-allowed';
+                } else {
+                    // For admin or technician, prefill but keep it editable.
+                    clientNameInput.value = currentSession.nombre || '';
+                    clientRutInput.value = currentSession.rut || '';
+                    clientEmailInput.value = currentSession.email || '';
+                    
+                    clientNameInput.readOnly = false;
+                    clientRutInput.readOnly = false;
+                    clientEmailInput.readOnly = false;
+                    
+                    clientNameInput.style.backgroundColor = 'var(--bg-sidebar)';
+                    clientRutInput.style.backgroundColor = 'var(--bg-sidebar)';
+                    clientEmailInput.style.backgroundColor = 'var(--bg-sidebar)';
+                    clientNameInput.style.cursor = 'text';
+                    clientRutInput.style.cursor = 'text';
+                    clientEmailInput.style.cursor = 'text';
+                }
+            } else {
+                clientNameInput.value = '';
+                clientRutInput.value = '';
+                clientEmailInput.value = '';
+                
+                clientNameInput.readOnly = false;
+                clientRutInput.readOnly = false;
+                clientEmailInput.readOnly = false;
+                
+                clientNameInput.style.backgroundColor = 'var(--bg-sidebar)';
+                clientRutInput.style.backgroundColor = 'var(--bg-sidebar)';
+                clientEmailInput.style.backgroundColor = 'var(--bg-sidebar)';
+                clientNameInput.style.cursor = 'text';
+                clientRutInput.style.cursor = 'text';
+                clientEmailInput.style.cursor = 'text';
+            }
         }
     }
 
@@ -2246,14 +3561,37 @@ document.addEventListener('DOMContentLoaded', () => {
     if (formAdmin) {
         formAdmin.addEventListener('submit', (e) => {
             e.preventDefault();
-            const pass = document.getElementById('login-admin-pass').value;
+            const pass = document.getElementById('login-admin-pass').value.trim().toLowerCase();
 
-            if (pass.toLowerCase() === 'admin') {
-                const session = { role: 'admin' };
+            let session = null;
+            if (pass === 'admin' || pass === 'belfor') {
+                session = { 
+                    role: 'admin', 
+                    nombre: 'Belfor Aburto', 
+                    email: 'belfor@empresa.com', 
+                    rut: 'belfor' 
+                };
+            } else if (pass === 'felipe') {
+                session = { 
+                    role: 'technician', 
+                    nombre: 'Felipe Olivares', 
+                    email: 'felipe.olivares@empresa.com', 
+                    rut: 'felipe' 
+                };
+            } else if (pass === 'omar') {
+                session = { 
+                    role: 'technician', 
+                    nombre: 'Omar Gálvez', 
+                    email: 'omar.galvez@empresa.com', 
+                    rut: 'omar' 
+                };
+            }
+
+            if (session) {
                 localStorage.setItem('session_soporte', JSON.stringify(session));
                 applySession(session);
             } else {
-                alert('Contraseña incorrecta. (Contraseña de prueba: admin)');
+                alert('Contraseña incorrecta. (Contraseñas de prueba: admin/belfor, felipe, omar)');
             }
         });
     }

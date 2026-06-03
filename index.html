@@ -138,6 +138,43 @@
                     </div>
                 </section>
 
+                <!-- Panel de Control y Feedback (Sólo visible para Administrador Belfor) -->
+                <section id="belfor-metrics-panel" style="display: none; margin-top: 30px; margin-bottom: 30px;">
+                    <div style="margin-bottom: 20px;">
+                        <h2 style="display: flex; align-items: center; gap: 8px; margin: 0; font-size: 1.25rem; font-weight: 700; color: var(--text-primary);">
+                            <i class="fas fa-chart-line" style="color: var(--accent-purple);"></i>
+                            Panel de Feedback de Técnicos
+                        </h2>
+                        <p style="margin: 4px 0 0 0; font-size: 0.85rem; color: var(--text-secondary);">Estadísticas de rendimiento y resolución de casos</p>
+                    </div>
+                    <div class="stats-grid">
+                        <div class="stat-card stat-purple">
+                            <i class="fas fa-plus-circle stat-icon"></i>
+                            <div class="stat-details">
+                                <span class="stat-number" id="metric-felipe-created">0</span>
+                                <span class="stat-label">Creados por Felipe</span>
+                                <span class="stat-sublabel">Total tickets</span>
+                            </div>
+                        </div>
+                        <div class="stat-card stat-blue">
+                            <i class="fas fa-check-double stat-icon"></i>
+                            <div class="stat-details">
+                                <span class="stat-number" id="metric-felipe-resolved">0</span>
+                                <span class="stat-label">Resueltos por Felipe</span>
+                                <span class="stat-sublabel">Total tickets</span>
+                            </div>
+                        </div>
+                        <div class="stat-card stat-green">
+                            <i class="fas fa-check-double stat-icon"></i>
+                            <div class="stat-details">
+                                <span class="stat-number" id="metric-omar-resolved">0</span>
+                                <span class="stat-label">Resueltos por Omar</span>
+                                <span class="stat-sublabel">Total tickets</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
                 <div class="content-grid-two-cols">
                     <section class="common-solutions">
                         <div class="section-header">
@@ -280,13 +317,34 @@
                                 </div>
                             </div>
                             
-                            <div class="form-group">
-                                <label for="ticket-office" style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 6px; display: block;">Sede / Oficina *</label>
-                                <select id="ticket-office" required style="width: 100%; padding: 12px; background-color: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family); font-size: 0.88rem; cursor: pointer;">
-                                    <option value="Santiago - Casa Matriz" selected>Santiago - Casa Matriz</option>
-                                    <option value="Viña del Mar">Viña del Mar</option>
-                                    <option value="Antofagasta">Antofagasta</option>
-                                    <option value="Concepción">Concepción</option>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                                <div class="form-group">
+                                    <label for="ticket-office" style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 6px; display: block;">Sede / Oficina *</label>
+                                    <select id="ticket-office" required style="width: 100%; padding: 12px; background-color: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family); font-size: 0.88rem; cursor: pointer;">
+                                        <option value="Latadia 4602, Las Condes" selected>Latadia 4602, Las Condes</option>
+                                        <option value="Calle doce norte 996, Viña del Mar">Calle doce norte 996, Viña del Mar</option>
+                                        <option value="Fidel Oteiza 1941, oficina 801, Providencia">Fidel Oteiza 1941, oficina 801, Providencia</option>
+                                        <option value="Agustinas 641, 501, Providencia">Agustinas 641, 501, Providencia</option>
+                                        <option value="Elidoro Yáñez 2318, Providencia">Elidoro Yáñez 2318, Providencia</option>
+                                        <option value="Fanor Velasco 85, oficina 201, Santiago">Fanor Velasco 85, oficina 201, Santiago</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="ticket-modalidad" style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 6px; display: block;">Modalidad de Soporte *</label>
+                                    <select id="ticket-modalidad" required style="width: 100%; padding: 12px; background-color: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family); font-size: 0.88rem; cursor: pointer;">
+                                        <option value="Online" selected>Online</option>
+                                        <option value="Presencial">Presencial</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Miembro del equipo (Sólo visible para Administradores) -->
+                            <div class="form-group" id="ticket-creator-group" style="display: none;">
+                                <label for="ticket-creator-select" style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 6px; display: block;">Miembro del equipo (Creador) *</label>
+                                <select id="ticket-creator-select" style="width: 100%; padding: 12px; background-color: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family); font-size: 0.88rem; cursor: pointer;">
+                                    <option value="Felipe Olivares" selected>Felipe Olivares</option>
+                                    <option value="Omar Gálvez">Omar Gálvez</option>
+                                    <option value="Belfor Aburto">Belfor Aburto</option>
                                 </select>
                             </div>
                             
@@ -325,6 +383,22 @@
                             <div style="display: flex; align-items: center; gap: 10px; border-bottom: 1px solid rgba(255,255,255,0.03); padding-bottom: 14px; margin-bottom: 4px;">
                                 <i class="fas fa-info-circle" style="color: var(--accent-blue); font-size: 1.2rem;"></i>
                                 <h3 style="margin: 0; font-size: 1rem; font-weight: 700; color: var(--text-primary);">Información adicional</h3>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="ticket-client-name" style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 6px; display: block;">Nombre de la persona (Afectado) *</label>
+                                <input type="text" id="ticket-client-name" required placeholder="Ej: Juan Pérez" style="width: 100%; padding: 12px; background-color: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family); font-size: 0.88rem;">
+                            </div>
+                            
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                                <div class="form-group">
+                                    <label for="ticket-client-rut" style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 6px; display: block;">RUT de la persona *</label>
+                                    <input type="text" id="ticket-client-rut" required placeholder="Ej: 12.345.678-9" style="width: 100%; padding: 12px; background-color: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family); font-size: 0.88rem;">
+                                </div>
+                                <div class="form-group">
+                                    <label for="ticket-client-email" style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 6px; display: block;">Correo de la persona *</label>
+                                    <input type="email" id="ticket-client-email" required placeholder="Ej: juan.perez@empresa.com" style="width: 100%; padding: 12px; background-color: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family); font-size: 0.88rem;">
+                                </div>
                             </div>
                             
                             <div class="form-group">
@@ -1215,80 +1289,116 @@
                                             <path d="M 60 10 Q 55 40 50 70 T 48 120 T 40 170 T 30 195" fill="none" stroke="var(--accent-blue)" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="2 3"/>
                                         </svg>
                                         <!-- Map Pins -->
-                                        <div class="map-pin pin-antofagasta" style="position: absolute; top: 40px; left: 52px;">
+                                        <div class="map-pin pin-lascondes" style="position: absolute; top: 40px; left: 52px;">
                                             <span class="pin-dot status-green"></span>
                                             <span class="pin-pulse status-green"></span>
                                         </div>
-                                        <div class="map-pin pin-vina" style="position: absolute; top: 90px; left: 49px;">
+                                        <div class="map-pin pin-vina" style="position: absolute; top: 75px; left: 50px;">
+                                            <span class="pin-dot status-green"></span>
+                                            <span class="pin-pulse status-green"></span>
+                                        </div>
+                                        <div class="map-pin pin-fideldoteiza" style="position: absolute; top: 105px; left: 48px;">
                                             <span class="pin-dot status-yellow"></span>
                                             <span class="pin-pulse status-yellow"></span>
                                         </div>
-                                        <div class="map-pin pin-santiago" style="position: absolute; top: 105px; left: 48px;">
+                                        <div class="map-pin pin-agustinas" style="position: absolute; top: 130px; left: 45px;">
                                             <span class="pin-dot status-green"></span>
                                             <span class="pin-pulse status-green"></span>
                                         </div>
-                                        <div class="map-pin pin-concepcion" style="position: absolute; top: 140px; left: 44px;">
+                                        <div class="map-pin pin-elidoroyanez" style="position: absolute; top: 155px; left: 42px;">
+                                            <span class="pin-dot status-green"></span>
+                                            <span class="pin-pulse status-green"></span>
+                                        </div>
+                                        <div class="map-pin pin-fanorvelasco" style="position: absolute; top: 175px; left: 36px;">
                                             <span class="pin-dot status-red"></span>
                                             <span class="pin-pulse status-red"></span>
                                         </div>
                                     </div>
                                     
                                     <!-- Listado de oficinas -->
-                                    <div class="office-list" style="flex: 1; display: flex; flex-direction: column; gap: 12px;">
+                                    <div class="office-list" style="flex: 1; display: flex; flex-direction: column; gap: 12px; max-height: 280px; overflow-y: auto; padding-right: 4px;">
                                         
-                                        <!-- Casa Matriz (Santiago) -->
+                                        <!-- Latadia 4602, Las Condes -->
                                         <div class="office-item" style="border-bottom: 1px solid rgba(255,255,255,0.02); padding-bottom: 8px;">
                                             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
                                                 <div style="display: flex; align-items: center; gap: 6px;">
-                                                    <span style="width: 6px; height: 6px; border-radius: 50%; background-color: var(--accent-green); display: inline-block; box-shadow: 0 0 6px var(--accent-green);" id="office-dot-santiago"></span>
-                                                    <span style="font-size: 0.8rem; font-weight: 600; color: var(--text-primary);">Casa Matriz <span style="font-size: 0.72rem; color: var(--text-muted); font-weight: 500;">(Santiago)</span></span>
+                                                    <span style="width: 6px; height: 6px; border-radius: 50%; background-color: var(--accent-green); display: inline-block; box-shadow: 0 0 6px var(--accent-green);" id="office-dot-lascondes"></span>
+                                                    <span style="font-size: 0.8rem; font-weight: 600; color: var(--text-primary);">Latadia 4602, Las Condes</span>
                                                 </div>
-                                                <span class="status-badge" style="font-size: 0.65rem; padding: 1px 6px; border-radius: 4px; background-color: rgba(29, 200, 109, 0.12); color: var(--accent-green);" id="office-status-santiago">Operativo</span>
+                                                <span class="status-badge" style="font-size: 0.65rem; padding: 1px 6px; border-radius: 4px; background-color: rgba(29, 200, 109, 0.12); color: var(--accent-green);" id="office-status-lascondes">Operativo</span>
                                             </div>
                                             <div style="font-size: 0.72rem; color: var(--text-secondary); display: flex; align-items: center; gap: 4px; padding-left: 12px;">
-                                                Usuarios: <span style="font-weight: 600; color: var(--text-primary);" id="office-users-santiago">214</span> <i class="fas fa-users" style="font-size: 0.68rem; color: var(--text-muted);"></i>
+                                                Usuarios: <span style="font-weight: 600; color: var(--text-primary);" id="office-users-lascondes">120</span> <i class="fas fa-users" style="font-size: 0.68rem; color: var(--text-muted);"></i>
                                             </div>
                                         </div>
 
-                                        <!-- Viña del Mar -->
+                                        <!-- Calle doce norte 996, Viña del Mar -->
                                         <div class="office-item" style="border-bottom: 1px solid rgba(255,255,255,0.02); padding-bottom: 8px;">
                                             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
                                                 <div style="display: flex; align-items: center; gap: 6px;">
-                                                    <span style="width: 6px; height: 6px; border-radius: 50%; background-color: #f59e0b; display: inline-block; box-shadow: 0 0 6px #f59e0b;" id="office-dot-vina"></span>
-                                                    <span style="font-size: 0.8rem; font-weight: 600; color: var(--text-primary);">Viña del Mar</span>
+                                                    <span style="width: 6px; height: 6px; border-radius: 50%; background-color: var(--accent-green); display: inline-block; box-shadow: 0 0 6px var(--accent-green);" id="office-dot-vina"></span>
+                                                    <span style="font-size: 0.8rem; font-weight: 600; color: var(--text-primary);">Calle doce norte 996, Viña del Mar</span>
                                                 </div>
-                                                <span class="status-badge" style="font-size: 0.65rem; padding: 1px 6px; border-radius: 4px; background-color: rgba(245, 158, 11, 0.12); color: #f59e0b;" id="office-status-vina">Advertencia</span>
+                                                <span class="status-badge" style="font-size: 0.65rem; padding: 1px 6px; border-radius: 4px; background-color: rgba(29, 200, 109, 0.12); color: var(--accent-green);" id="office-status-vina">Operativo</span>
                                             </div>
                                             <div style="font-size: 0.72rem; color: var(--text-secondary); display: flex; align-items: center; gap: 4px; padding-left: 12px;">
                                                 Usuarios: <span style="font-weight: 600; color: var(--text-primary);" id="office-users-vina">98</span> <i class="fas fa-users" style="font-size: 0.68rem; color: var(--text-muted);"></i>
                                             </div>
                                         </div>
 
-                                        <!-- Antofagasta -->
+                                        <!-- Fidel Oteiza 1941, oficina 801, Providencia -->
                                         <div class="office-item" style="border-bottom: 1px solid rgba(255,255,255,0.02); padding-bottom: 8px;">
                                             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
                                                 <div style="display: flex; align-items: center; gap: 6px;">
-                                                    <span style="width: 6px; height: 6px; border-radius: 50%; background-color: var(--accent-green); display: inline-block; box-shadow: 0 0 6px var(--accent-green);" id="office-dot-antofagasta"></span>
-                                                    <span style="font-size: 0.8rem; font-weight: 600; color: var(--text-primary);">Antofagasta</span>
+                                                    <span style="width: 6px; height: 6px; border-radius: 50%; background-color: #f59e0b; display: inline-block; box-shadow: 0 0 6px #f59e0b;" id="office-dot-fideldoteiza"></span>
+                                                    <span style="font-size: 0.8rem; font-weight: 600; color: var(--text-primary);">Fidel Oteiza 1941, of. 801, Providencia</span>
                                                 </div>
-                                                <span class="status-badge" style="font-size: 0.65rem; padding: 1px 6px; border-radius: 4px; background-color: rgba(29, 200, 109, 0.12); color: var(--accent-green);" id="office-status-antofagasta">Operativo</span>
+                                                <span class="status-badge" style="font-size: 0.65rem; padding: 1px 6px; border-radius: 4px; background-color: rgba(245, 158, 11, 0.12); color: #f59e0b;" id="office-status-fideldoteiza">Advertencia</span>
                                             </div>
                                             <div style="font-size: 0.72rem; color: var(--text-secondary); display: flex; align-items: center; gap: 4px; padding-left: 12px;">
-                                                Usuarios: <span style="font-weight: 600; color: var(--text-primary);" id="office-users-antofagasta">72</span> <i class="fas fa-users" style="font-size: 0.68rem; color: var(--text-muted);"></i>
+                                                Usuarios: <span style="font-weight: 600; color: var(--text-primary);" id="office-users-fideldoteiza">45</span> <i class="fas fa-users" style="font-size: 0.68rem; color: var(--text-muted);"></i>
                                             </div>
                                         </div>
 
-                                        <!-- Concepción -->
+                                        <!-- Agustinas 641, 501, Providencia -->
+                                        <div class="office-item" style="border-bottom: 1px solid rgba(255,255,255,0.02); padding-bottom: 8px;">
+                                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+                                                <div style="display: flex; align-items: center; gap: 6px;">
+                                                    <span style="width: 6px; height: 6px; border-radius: 50%; background-color: var(--accent-green); display: inline-block; box-shadow: 0 0 6px var(--accent-green);" id="office-dot-agustinas"></span>
+                                                    <span style="font-size: 0.8rem; font-weight: 600; color: var(--text-primary);">Agustinas 641, 501, Providencia</span>
+                                                </div>
+                                                <span class="status-badge" style="font-size: 0.65rem; padding: 1px 6px; border-radius: 4px; background-color: rgba(29, 200, 109, 0.12); color: var(--accent-green);" id="office-status-agustinas">Operativo</span>
+                                            </div>
+                                            <div style="font-size: 0.72rem; color: var(--text-secondary); display: flex; align-items: center; gap: 4px; padding-left: 12px;">
+                                                Usuarios: <span style="font-weight: 600; color: var(--text-primary);" id="office-users-agustinas">64</span> <i class="fas fa-users" style="font-size: 0.68rem; color: var(--text-muted);"></i>
+                                            </div>
+                                        </div>
+
+                                        <!-- Elidoro Yáñez 2318, Providencia -->
+                                        <div class="office-item" style="border-bottom: 1px solid rgba(255,255,255,0.02); padding-bottom: 8px;">
+                                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+                                                <div style="display: flex; align-items: center; gap: 6px;">
+                                                    <span style="width: 6px; height: 6px; border-radius: 50%; background-color: var(--accent-green); display: inline-block; box-shadow: 0 0 6px var(--accent-green);" id="office-dot-elidoroyanez"></span>
+                                                    <span style="font-size: 0.8rem; font-weight: 600; color: var(--text-primary);">Elidoro Yáñez 2318, Providencia</span>
+                                                </div>
+                                                <span class="status-badge" style="font-size: 0.65rem; padding: 1px 6px; border-radius: 4px; background-color: rgba(29, 200, 109, 0.12); color: var(--accent-green);" id="office-status-elidoroyanez">Operativo</span>
+                                            </div>
+                                            <div style="font-size: 0.72rem; color: var(--text-secondary); display: flex; align-items: center; gap: 4px; padding-left: 12px;">
+                                                Usuarios: <span style="font-weight: 600; color: var(--text-primary);" id="office-users-elidoroyanez">35</span> <i class="fas fa-users" style="font-size: 0.68rem; color: var(--text-muted);"></i>
+                                            </div>
+                                        </div>
+
+                                        <!-- Fanor Velasco 85, oficina 201, Santiago -->
                                         <div class="office-item">
                                             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
                                                 <div style="display: flex; align-items: center; gap: 6px;">
-                                                    <span style="width: 6px; height: 6px; border-radius: 50%; background-color: #ef4444; display: inline-block; box-shadow: 0 0 6px #ef4444;" id="office-dot-concepcion"></span>
-                                                    <span style="font-size: 0.8rem; font-weight: 600; color: var(--text-primary);">Concepción</span>
+                                                    <span style="width: 6px; height: 6px; border-radius: 50%; background-color: #ef4444; display: inline-block; box-shadow: 0 0 6px #ef4444;" id="office-dot-fanorvelasco"></span>
+                                                    <span style="font-size: 0.8rem; font-weight: 600; color: var(--text-primary);">Fanor Velasco 85, of. 201, Santiago</span>
                                                 </div>
-                                                <span class="status-badge" style="font-size: 0.65rem; padding: 1px 6px; border-radius: 4px; background-color: rgba(239, 68, 68, 0.12); color: #ef4444;" id="office-status-concepcion">Incidente</span>
+                                                <span class="status-badge" style="font-size: 0.65rem; padding: 1px 6px; border-radius: 4px; background-color: rgba(239, 68, 68, 0.12); color: #ef4444;" id="office-status-fanorvelasco">Incidente</span>
                                             </div>
                                             <div style="font-size: 0.72rem; color: var(--text-secondary); display: flex; align-items: center; gap: 4px; padding-left: 12px;">
-                                                Usuarios: <span style="font-weight: 600; color: var(--text-primary);" id="office-users-concepcion">45</span> <i class="fas fa-users" style="font-size: 0.68rem; color: var(--text-muted);"></i>
+                                                Usuarios: <span style="font-weight: 600; color: var(--text-primary);" id="office-users-fanorvelasco">15</span> <i class="fas fa-users" style="font-size: 0.68rem; color: var(--text-muted);"></i>
                                             </div>
                                         </div>
 
@@ -1640,12 +1750,46 @@
                         <span class="meta-label">Impacto:</span>
                         <span id="modal-ticket-impacto" class="meta-val">-</span>
                     </div>
+                    <div class="meta-item">
+                        <span class="meta-label">Modalidad:</span>
+                        <span id="modal-ticket-modalidad" class="meta-val">-</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">Afectado:</span>
+                        <span id="modal-ticket-cliente-nombre" class="meta-val">-</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">RUT Afectado:</span>
+                        <span id="modal-ticket-cliente-rut" class="meta-val">-</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">Correo Afectado:</span>
+                        <span id="modal-ticket-cliente-email" class="meta-val">-</span>
+                    </div>
+                    <div class="meta-item" style="grid-column: span 2;">
+                        <span class="meta-label">Técnico Asignado:</span>
+                        <span id="modal-ticket-tecnico-badge" class="meta-val" style="font-weight: bold; color: var(--accent-blue);">Sin asignar</span>
+                    </div>
                 </div>
 
                 <!-- Descripción principal -->
                 <div class="modal-description-box">
                     <h3>Descripción</h3>
                     <p id="modal-ticket-descripcion">Detalles de la descripción aquí...</p>
+                </div>
+
+                <!-- Sección de Asignación de Ticket (Sólo visible/controlable para soporte) -->
+                <div id="modal-assignment-box" style="display: none; background-color: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-radius: 12px; padding: 16px; margin-top: 16px; align-items: center; justify-content: space-between; gap: 16px;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <i class="fas fa-user-shield" style="color: var(--accent-purple); font-size: 1.2rem;"></i>
+                        <div>
+                            <h4 style="margin: 0; font-size: 0.85rem; font-weight: 700; color: var(--text-primary);">Asignación del Caso</h4>
+                            <p id="modal-assignment-status" style="margin: 4px 0 0 0; font-size: 0.72rem; color: var(--text-secondary);">Este ticket no está asignado a ningún técnico.</p>
+                        </div>
+                    </div>
+                    <div id="modal-assignment-controls">
+                        <!-- Controles inyectados dinámicamente por JS -->
+                    </div>
                 </div>
 
                 <!-- Respuestas / Conversación -->
@@ -1798,7 +1942,7 @@
 
                     <div class="form-group">
                         <label for="equip-form-usuario-email">Email del Usuario *</label>
-                        <input type="email" id="equip-form-usuario-email" placeholder="Ej: ana@empresa.com" required style="width: 100%; padding: 10px; background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family);">
+                        <input type="email" id="equip-form-usuario-email" placeholder="Ej: ana@empresa.com" style="width: 100%; padding: 10px; background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family);">
                     </div>
 
                     <div class="form-group">
@@ -1829,6 +1973,26 @@
                     <div class="form-group">
                         <label for="equip-form-disco">Disco Duro *</label>
                         <input type="text" id="equip-form-disco" placeholder="Ej: SSD 512 GB" required style="width: 100%; padding: 10px; background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family);">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="equip-form-empresa">Empresa Registrada *</label>
+                        <select id="equip-form-empresa" required style="width: 100%; padding: 10px; background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family); cursor: pointer;">
+                            <option value="" disabled selected>Selecciona una empresa</option>
+                            <option value="T-Sales">T-Sales</option>
+                            <option value="VPrime">VPrime</option>
+                            <option value="Infinet">Infinet</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="equip-form-cpu">CPU (Procesador) *</label>
+                        <input type="text" id="equip-form-cpu" placeholder="Ej: i5-7300U" required style="width: 100%; padding: 10px; background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family);">
+                    </div>
+
+                    <div class="form-group" style="grid-column: span 2;">
+                        <label for="equip-form-licencia">Licencia de Usuario *</label>
+                        <input type="text" id="equip-form-licencia" placeholder="Ej: 2024 PP" required style="width: 100%; padding: 10px; background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family);">
                     </div>
 
                 </div>
@@ -1875,7 +2039,7 @@
                     </div>
 
                     <div style="background-color: rgba(255, 255, 255, 0.01); border: 1px solid var(--border-color); padding: 12px; border-radius: 8px; display: flex; align-items: center; gap: 12px;">
-                        <i class="fas fa-laptop" style="color: var(--accent-blue); font-size: 1.2rem; width: 24px; text-align: center;"></i>
+                        <i class="fas fa-desktop" style="color: var(--accent-blue); font-size: 1.2rem; width: 24px; text-align: center;"></i>
                         <div>
                             <span style="font-size: 0.72rem; color: var(--text-muted); display: block; font-weight: 600; text-transform: uppercase;">Modelo</span>
                             <span id="modal-equip-modelo" style="font-size: 0.9rem; color: var(--text-primary); font-weight: 500;">Latitude 5420</span>
@@ -1901,6 +2065,14 @@
                     <div style="background-color: rgba(255, 255, 255, 0.01); border: 1px solid var(--border-color); padding: 12px; border-radius: 8px; display: flex; align-items: center; gap: 12px;">
                         <i class="fas fa-microchip" style="color: var(--accent-blue); font-size: 1.2rem; width: 24px; text-align: center;"></i>
                         <div>
+                            <span style="font-size: 0.72rem; color: var(--text-muted); display: block; font-weight: 600; text-transform: uppercase;">CPU (Procesador)</span>
+                            <span id="modal-equip-cpu" style="font-size: 0.9rem; color: var(--text-primary); font-weight: 500;">i5-7300U</span>
+                        </div>
+                    </div>
+
+                    <div style="background-color: rgba(255, 255, 255, 0.01); border: 1px solid var(--border-color); padding: 12px; border-radius: 8px; display: flex; align-items: center; gap: 12px;">
+                        <i class="fas fa-memory" style="color: var(--accent-blue); font-size: 1.2rem; width: 24px; text-align: center;"></i>
+                        <div>
                             <span style="font-size: 0.72rem; color: var(--text-muted); display: block; font-weight: 600; text-transform: uppercase;">Memoria RAM</span>
                             <span id="modal-equip-ram" style="font-size: 0.9rem; color: var(--text-primary); font-weight: 500;">16 GB</span>
                         </div>
@@ -1911,6 +2083,22 @@
                         <div>
                             <span style="font-size: 0.72rem; color: var(--text-muted); display: block; font-weight: 600; text-transform: uppercase;">Disco Duro</span>
                             <span id="modal-equip-disco" style="font-size: 0.9rem; color: var(--text-primary); font-weight: 500;">SSD 512 GB</span>
+                        </div>
+                    </div>
+
+                    <div style="background-color: rgba(255, 255, 255, 0.01); border: 1px solid var(--border-color); padding: 12px; border-radius: 8px; display: flex; align-items: center; gap: 12px;">
+                        <i class="fas fa-building" style="color: var(--accent-blue); font-size: 1.2rem; width: 24px; text-align: center;"></i>
+                        <div>
+                            <span style="font-size: 0.72rem; color: var(--text-muted); display: block; font-weight: 600; text-transform: uppercase;">Empresa Registrada</span>
+                            <span id="modal-equip-empresa" style="font-size: 0.9rem; color: var(--text-primary); font-weight: 500;">-</span>
+                        </div>
+                    </div>
+
+                    <div style="background-color: rgba(255, 255, 255, 0.01); border: 1px solid var(--border-color); padding: 12px; border-radius: 8px; display: flex; align-items: center; gap: 12px; grid-column: span 2;">
+                        <i class="fas fa-key" style="color: var(--accent-blue); font-size: 1.2rem; width: 24px; text-align: center;"></i>
+                        <div>
+                            <span style="font-size: 0.72rem; color: var(--text-muted); display: block; font-weight: 600; text-transform: uppercase;">Licencia de Usuario</span>
+                            <span id="modal-equip-licencia" style="font-size: 0.9rem; color: var(--text-primary); font-weight: 500;">-</span>
                         </div>
                     </div>
 
@@ -1930,6 +2118,49 @@
             </div>
         </div>
     </div>
+
+    <!-- ============ MODAL DE PREVISUALIZACIÓN DE IMPORTACIÓN ============ -->
+    <div id="equipo-import-preview-modal" class="modal-backdrop">
+        <div class="modal-card" style="max-width: 950px; width: 90%; display: flex; flex-direction: column;">
+            <div class="modal-header">
+                <div class="modal-title-area">
+                    <span class="modal-ticket-id" id="import-stats-badge">0 NUEVOS REGISTROS</span>
+                    <h2>Vista Previa de Importación</h2>
+                </div>
+                <button class="modal-close-btn" id="equipo-import-close-btn"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body" style="overflow-y: auto; max-height: 55vh; padding: 24px;">
+                <p style="color: var(--text-secondary); margin-bottom: 16px; font-size: 0.9rem;">
+                    Hemos interpretado los siguientes equipos desde tu archivo. Revisa los datos y haz clic en "Confirmar Importación" para agregarlos al inventario.
+                </p>
+                <div class="tickets-table-container" style="border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; max-height: 40vh; overflow-y: auto;">
+                    <table class="tickets-table" style="width: 100%;">
+                        <thead>
+                            <tr>
+                                <th>CÓDIGO</th>
+                                <th>USUARIO / CORREO</th>
+                                <th>EMPRESA</th>
+                                <th>MARCA / MODELO</th>
+                                <th>ESPECIFICACIONES (CPU/RAM/DISCO)</th>
+                                <th>S.O. / LICENCIA</th>
+                                <th>ESTADO</th>
+                            </tr>
+                        </thead>
+                        <tbody id="import-preview-table-body">
+                            <!-- Filas dinámicas -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 12px;">
+                <button type="button" id="btn-import-cancel" style="background-color: transparent; border: 1px solid var(--border-color); color: var(--text-secondary); padding: 10px 18px; border-radius: 8px; cursor: pointer; font-weight: 600; font-family: var(--font-family);">Cancelar</button>
+                <button type="button" id="btn-import-confirm" style="background: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-blue) 100%); color: white; border: none; padding: 10px 24px; border-radius: 8px; cursor: pointer; font-weight: 600; font-family: var(--font-family);">Confirmar Importación</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Input oculto para subir archivos -->
+    <input type="file" id="equip-file-input" accept=".pdf,.xlsx,.xls,.csv" style="display: none;">
 
     <!-- ============ MODAL DE INICIO DE SESIÓN (LOGIN OBLIGATORIO) ============ -->
     <div id="login-modal" class="modal-backdrop" style="display: flex; background-color: rgba(6, 8, 14, 0.95);">
@@ -1979,6 +2210,14 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+    <script>
+        // Configurar worker de pdf.js
+        if (window['pdfjsLib']) {
+            window['pdfjsLib'].GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+        }
+    </script>
     <script src="script.js"></script>
 </body>
 </html>
