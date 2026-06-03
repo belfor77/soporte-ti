@@ -1,0 +1,1984 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Soportes - Centro de Soporte - Mi Empresa</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="dark-mode">
+
+    <div class="dashboard-container">
+
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo-icon"></div>
+                <div class="logo-text">
+                    <span class="company-name">Mi Empresa</span>
+                    <span class="app-name">Soportes</span>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <ul>
+                    <li class="active"><a href="#"><i class="fas fa-home"></i> Inicio</a></li>
+                    <li><a href="#"><i class="fas fa-ticket-alt"></i> Mis Tickets</a></li>
+                    <li><a href="#"><i class="fas fa-plus-square"></i> Crear Ticket</a></li>
+                    <li id="nav-base-conocimientos"><a href="#"><i class="fas fa-book"></i> Base de Conocimientos</a></li>
+                    <li><a href="#"><i class="fas fa-server"></i> Estado del Sistema</a></li>
+                    <li><a href="#"><i class="fas fa-comments"></i> Chat en Vivo</a></li>
+                    <li><a href="#"><i class="fas fa-graduation-cap"></i> Tutoriales</a></li>
+                    <li><a href="#"><i class="fas fa-question-circle"></i> Preguntas Frecuentes</a></li>
+                </ul>
+            </nav>
+
+
+            <div class="sidebar-footer">
+                <div class="mode-switch">
+                    <i class="fas fa-moon"></i>
+                    <span>Modo Oscuro</span>
+                    <label class="switch">
+                        <input type="checkbox" id="mode-toggle" checked>
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+                <p class="copyright">© 2026 Mi Empresa. Todos los derechos reservados.</p>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="main-header">
+                <div class="search-container">
+                    </div>
+                <div class="header-user" id="header-user-menu" style="position: relative; cursor: pointer;">
+                    <div class="notification-icon">
+                        <i class="fas fa-bell"></i>
+                        <span class="notification-badge">3</span>
+                    </div>
+                    <div class="user-avatar" id="header-user-avatar" style="background: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-blue) 100%);">
+                        <span>A</span>
+                    </div>
+                    <div class="user-info">
+                        <span class="user-name" id="header-user-name">Administrador</span>
+                        <span class="user-account" id="header-user-role">Soporte TI</span>
+                    </div>
+                    <i class="fas fa-chevron-down"></i>
+                    
+                    <!-- Dropdown de cuenta -->
+                    <div id="header-user-dropdown" style="display: none; position: absolute; top: calc(100% + 8px); right: 0; background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4); padding: 8px 0; z-index: 1000; width: 150px;">
+                        <button id="btn-logout" style="width: 100%; border: none; background: none; text-align: left; padding: 10px 16px; color: #f87171; font-weight: 600; cursor: pointer; font-family: var(--font-family); transition: background-color 0.2s; display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <!-- ============ PÁGINA INICIO ============ -->
+            <div id="page-inicio" class="page-section active-page">
+                <section class="support-intro">
+                    <div class="intro-visual">
+                        <svg class="headset-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <defs>
+                                <linearGradient id="headsetGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" style="stop-color:#3266eb;stop-opacity:1" />
+                                    <stop offset="100%" style="stop-color:#613eea;stop-opacity:1" />
+                                </linearGradient>
+                            </defs>
+                            <path d="M12 1c-5.52 0-10 4.48-10 10v9c0 1.1.9 2 2 2h4.17c1.1 0 2-.9 2-2v-3.67c0-1.1-.9-2-2-2h-3.17c-.36-1.07-1-3.07-1-4.33 0-4.41 3.59-8 8-8s8 3.59 8 8c0 1.26-.64 3.26-1 4.33h-3.17c-1.1 0-2 .9-2 2v3.67c0 1.1.9 2 2 2h4.17c1.1 0 2-.9 2-2v-9c0-5.52-4.48-10-10-10zM12 21c-.55 0-1-.45-1-1v-4c0-.55.45-1 1-1h2c.55 0 1 .45 1 1v4c0 .55-.45 1-1 1h-2zM4 16h2c.55 0 1 .45 1 1v4c0 .55-.45 1-1 1h-2c-.55 0-1-.45-1-1v-4c0-.55.45-1 1-1zm14 0h2c.55 0 1 .45 1 1v4c0 .55-.45 1-1 1h-2c-.55 0-1-.45-1-1v-4c0-.55.45-1 1-1z" fill="url(#headsetGradient)"/>
+                        </svg>
+                        <div class="chat-bubble chat-bubble-left"><i class="fas fa-ellipsis-h"></i></div>
+                        <div class="chat-bubble chat-bubble-right"><i class="fas fa-ellipsis-h"></i></div>
+                        <div class="deco-shape deco-sphere"></div>
+                    </div>
+                    <div class="intro-text">
+                        <h1>Centro de Soporte</h1>
+                        <p>Estamos aquí para ayudarte <span class="highlight-time">24/7</span></p>
+                    </div>
+                    <div class="search-bar" style="position: relative;">
+                        <i class="fas fa-search search-icon"></i>
+                        <input type="text" id="main-search-input" placeholder="Buscar soluciones, artículos o temas..." autocomplete="off">
+                        <button class="search-button" id="main-search-btn">Buscar</button>
+                        <div id="search-suggestions" class="search-suggestions-dropdown"></div>
+                    </div>
+                </section>
+
+                <section class="stats-grid">
+                    <div class="stat-card stat-blue">
+                        <i class="fas fa-ticket-alt stat-icon"></i>
+                        <div class="stat-details">
+                            <span class="stat-number">12</span>
+                            <span class="stat-label">Tickets Abiertos</span>
+                            <span class="stat-sublabel">Actualmente</span>
+                        </div>
+                    </div>
+                    <div class="stat-card stat-green">
+                        <i class="fas fa-check-circle stat-icon"></i>
+                        <div class="stat-details">
+                            <span class="stat-number">48</span>
+                            <span class="stat-label">Tickets Resueltos</span>
+                            <span class="stat-sublabel">Este mes</span>
+                        </div>
+                    </div>
+                    <div class="stat-card stat-purple">
+                        <i class="fas fa-clock stat-icon"></i>
+                        <div class="stat-details">
+                            <span class="stat-number">5 min</span>
+                            <span class="stat-label">Tiempo de Respuesta</span>
+                            <span class="stat-sublabel">Promedio</span>
+                        </div>
+                    </div>
+                    <div class="stat-card stat-yellow">
+                        <i class="fas fa-star stat-icon"></i>
+                        <div class="stat-details">
+                            <span class="stat-number">98%</span>
+                            <span class="stat-label">Satisfacción</span>
+                            <span class="stat-sublabel">De nuestros clientes</span>
+                        </div>
+                    </div>
+                </section>
+
+                <div class="content-grid-two-cols">
+                    <section class="common-solutions">
+                        <div class="section-header">
+                            <h2>Soluciones Frecuentes</h2>
+                            <p>Explora nuestras categorías más populares</p>
+                        </div>
+                        <div class="solutions-grid">
+                            <div class="solution-card">
+                                <i class="fas fa-cog sol-icon sol-icon-blue"></i>
+                                <h3>Problemas Técnicos</h3>
+                                <p>Soluciones a errores, fallos y problemas técnicos comunes.</p>
+                                <a href="#" class="sol-link">Ver artículos <i class="fas fa-arrow-right"></i></a>
+                            </div>
+                            <div class="solution-card">
+                                <i class="fas fa-wifi sol-icon sol-icon-purple"></i>
+                                <h3>Redes y VPN</h3>
+                                <p>Solución de problemas con redes inalámbricas, VPN y accesos a internet.</p>
+                                <a href="#" class="sol-link">Ver artículos <i class="fas fa-arrow-right"></i></a>
+                            </div>
+                            <div class="solution-card">
+                                <i class="fas fa-user-circle sol-icon sol-icon-blue"></i>
+                                <h3>Cuenta y Acceso</h3>
+                                <p>Recupera tu cuenta, contraseñas y configuración de seguridad.</p>
+                                <a href="#" class="sol-link">Ver artículos <i class="fas fa-arrow-right"></i></a>
+                            </div>
+                            <div class="solution-card">
+                                <i class="fas fa-file-excel sol-icon sol-icon-green"></i>
+                                <h3>Software y Office</h3>
+                                <p>Asistencia en Excel, correo corporativo y aplicaciones de la empresa.</p>
+                                <a href="#" class="sol-link">Ver artículos <i class="fas fa-arrow-right"></i></a>
+                            </div>
+                        </div>
+                        <button class="view-all-button"><i class="fas fa-th-large"></i> Ver todas las categorías</button>
+                    </section>
+
+                    <section class="quick-access-panel" style="background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; padding: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); display: flex; flex-direction: column; gap: 20px;">
+                        <div class="section-header">
+                            <h2>Accesos Rápidos</h2>
+                            <p>Servicios de asistencia en línea</p>
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 16px;">
+                            <a href="#" onclick="document.querySelector('.sidebar-nav li:nth-child(3) a').click(); return false;" style="text-decoration: none; display: flex; align-items: center; gap: 14px; padding: 16px; background-color: rgba(50, 102, 235, 0.05); border: 1px solid rgba(50, 102, 235, 0.15); border-radius: 12px; color: var(--text-primary); transition: all 0.2s;">
+                                <i class="fas fa-plus-square" style="font-size: 1.5rem; color: var(--accent-blue);"></i>
+                                <div>
+                                    <h4 style="margin: 0; font-size: 0.9rem; font-weight: 700; color: var(--text-primary);">Crear Nuevo Ticket</h4>
+                                    <span style="font-size: 0.75rem; color: var(--text-secondary);">Genera una solicitud formal de soporte</span>
+                                </div>
+                            </a>
+                            <a href="#" onclick="document.querySelector('.sidebar-nav li:nth-child(6) a').click(); return false;" style="text-decoration: none; display: flex; align-items: center; gap: 14px; padding: 16px; background-color: rgba(97, 62, 234, 0.05); border: 1px solid rgba(97, 62, 234, 0.15); border-radius: 12px; color: var(--text-primary); transition: all 0.2s;">
+                                <i class="fas fa-comments" style="font-size: 1.5rem; color: var(--accent-purple);"></i>
+                                <div>
+                                    <h4 style="margin: 0; font-size: 0.9rem; font-weight: 700; color: var(--text-primary);">Chat en Vivo</h4>
+                                    <span style="font-size: 0.75rem; color: var(--text-secondary);">Habla en tiempo real con un técnico</span>
+                                </div>
+                            </a>
+                            <a href="#" onclick="document.querySelector('.sidebar-nav li:nth-child(7) a').click(); return false;" style="text-decoration: none; display: flex; align-items: center; gap: 14px; padding: 16px; background-color: rgba(29, 200, 109, 0.05); border: 1px solid rgba(29, 200, 109, 0.15); border-radius: 12px; color: var(--text-primary); transition: all 0.2s;">
+                                <i class="fas fa-graduation-cap" style="font-size: 1.5rem; color: var(--accent-green);"></i>
+                                <div>
+                                    <h4 style="margin: 0; font-size: 0.9rem; font-weight: 700; color: var(--text-primary);">Base de Tutoriales</h4>
+                                    <span style="font-size: 0.75rem; color: var(--text-secondary);">Guías paso a paso auto-administrables</span>
+                                </div>
+                            </a>
+                        </div>
+                    </section>
+                </div>
+            </div>
+
+            <!-- ============ PÁGINA CREAR TICKET ============ -->
+            <div id="page-crear-ticket" class="page-section">
+                <div class="tickets-page-header" style="margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                    <div class="tickets-page-title">
+                        <h1>Crear un nuevo ticket</h1>
+                        <p>Cuéntanos cómo podemos ayudarte</p>
+                    </div>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="page-btn" style="background-color: rgba(255,255,255,0.02); border: 1px solid var(--border-color); color: var(--text-secondary); padding: 8px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 0.82rem; display: flex; align-items: center; gap: 6px;"><i class="fas fa-file-alt"></i> Plantillas</button>
+                        <button class="page-btn" style="width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: 8px; border: 1px solid var(--border-color); color: var(--text-secondary); cursor: pointer;"><i class="fas fa-ellipsis-h"></i></button>
+                    </div>
+                </div>
+
+                <!-- Stepper Progress Bar -->
+                <div class="ticket-stepper" style="display: flex; justify-content: space-between; align-items: center; max-width: 600px; margin: 0 auto 30px auto; position: relative;">
+                    <!-- Connection line -->
+                    <div style="position: absolute; top: 18px; left: 10%; right: 10%; height: 2px; background-color: rgba(255,255,255,0.05); z-index: 1;" id="stepper-line">
+                        <div style="width: 0%; height: 100%; background: linear-gradient(to right, var(--accent-blue), var(--accent-purple)); transition: width 0.3s ease;" id="stepper-line-progress"></div>
+                    </div>
+                    <!-- Step 1 -->
+                    <div class="stepper-step active" data-step="1" style="display: flex; flex-direction: column; align-items: center; gap: 8px; z-index: 2; position: relative; width: 33.33%;">
+                        <div class="step-circle" style="width: 36px; height: 36px; border-radius: 50%; background-color: var(--accent-blue); border: 2px solid var(--accent-blue); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.9rem; box-shadow: 0 0 12px rgba(50, 102, 235, 0.4); transition: all 0.3s ease;">1</div>
+                        <span style="font-size: 0.75rem; font-weight: 600; color: var(--text-primary);" class="step-label">Detalles del ticket</span>
+                    </div>
+                    <!-- Step 2 -->
+                    <div class="stepper-step" data-step="2" style="display: flex; flex-direction: column; align-items: center; gap: 8px; z-index: 2; position: relative; width: 33.33%;">
+                        <div class="step-circle" style="width: 36px; height: 36px; border-radius: 50%; background-color: var(--bg-card); border: 2px solid var(--border-color); color: var(--text-secondary); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.9rem; transition: all 0.3s ease;">2</div>
+                        <span style="font-size: 0.75rem; font-weight: 500; color: var(--text-muted);" class="step-label">Información adicional</span>
+                    </div>
+                    <!-- Step 3 -->
+                    <div class="stepper-step" data-step="3" style="display: flex; flex-direction: column; align-items: center; gap: 8px; z-index: 2; position: relative; width: 33.33%;">
+                        <div class="step-circle" style="width: 36px; height: 36px; border-radius: 50%; background-color: var(--bg-card); border: 2px solid var(--border-color); color: var(--text-secondary); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.9rem; transition: all 0.3s ease;">3</div>
+                        <span style="font-size: 0.75rem; font-weight: 500; color: var(--text-muted);" class="step-label">Revisión y envío</span>
+                    </div>
+                </div>
+
+                <div class="ticket-creation-layout" style="display: grid; grid-template-columns: 1fr 340px; gap: 20px;">
+                    <!-- Columna Izquierda: El Formulario con Stepper -->
+                    <form id="stepper-ticket-form" style="display: flex; flex-direction: column; gap: 20px;">
+                        
+                        <!-- Panel Paso 1: Detalles del ticket -->
+                        <div class="stepper-form-card active-step-panel" id="step-panel-1" style="background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; padding: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); display: flex; flex-direction: column; gap: 16px;">
+                            <div style="display: flex; align-items: center; gap: 10px; border-bottom: 1px solid rgba(255,255,255,0.03); padding-bottom: 14px; margin-bottom: 4px;">
+                                <i class="fas fa-ticket-alt" style="color: var(--accent-blue); font-size: 1.2rem;"></i>
+                                <h3 style="margin: 0; font-size: 1rem; font-weight: 700; color: var(--text-primary);">Detalles del ticket</h3>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="ticket-subject" style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 6px; display: block;">Asunto *</label>
+                                <input type="text" id="ticket-subject" placeholder="Ej: No puedo acceder al sistema ERP" required style="width: 100%; padding: 12px; background-color: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family); font-size: 0.88rem; transition: border-color 0.2s;">
+                            </div>
+                            
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                                <div class="form-group">
+                                    <label for="ticket-category" style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 6px; display: block;">Categoría *</label>
+                                    <select id="ticket-category" required style="width: 100%; padding: 12px; background-color: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family); font-size: 0.88rem; cursor: pointer;">
+                                        <option value="" disabled selected>Selecciona una categoría</option>
+                                        <option value="soporte">Soporte Técnico</option>
+                                        <option value="redes">Redes / VPN</option>
+                                        <option value="cuenta">Cuenta y Acceso</option>
+                                        <option value="software">Software y Office</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="ticket-priority" style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 6px; display: block;">Prioridad *</label>
+                                    <select id="ticket-priority" required style="width: 100%; padding: 12px; background-color: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family); font-size: 0.88rem; cursor: pointer;">
+                                        <option value="baja">Baja</option>
+                                        <option value="media">Media</option>
+                                        <option value="alta" selected>Alta</option>
+                                        <option value="urgente">Urgente</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="ticket-office" style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 6px; display: block;">Sede / Oficina *</label>
+                                <select id="ticket-office" required style="width: 100%; padding: 12px; background-color: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family); font-size: 0.88rem; cursor: pointer;">
+                                    <option value="Santiago - Casa Matriz" selected>Santiago - Casa Matriz</option>
+                                    <option value="Viña del Mar">Viña del Mar</option>
+                                    <option value="Antofagasta">Antofagasta</option>
+                                    <option value="Concepción">Concepción</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="ticket-description" style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 6px; display: block;">Descripción detallada *</label>
+                                
+                                <!-- Simulador de Barra WYSIWYG -->
+                                <div style="background-color: var(--bg-sidebar); border: 1px solid var(--border-color); border-bottom: none; border-top-left-radius: 8px; border-top-right-radius: 8px; padding: 8px 12px; display: flex; gap: 14px; align-items: center; flex-wrap: wrap;" class="wysiwyg-toolbar">
+                                    <span style="font-size: 0.72rem; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; gap: 4px; border-right: 1px solid rgba(255,255,255,0.05); padding-right: 12px;">Normal <i class="fas fa-chevron-down" style="font-size: 0.6rem;"></i></span>
+                                    <i class="fas fa-bold" style="font-size: 0.8rem; color: var(--text-muted); cursor: pointer;" title="Negrita"></i>
+                                    <i class="fas fa-italic" style="font-size: 0.8rem; color: var(--text-muted); cursor: pointer;" title="Cursiva"></i>
+                                    <i class="fas fa-underline" style="font-size: 0.8rem; color: var(--text-muted); cursor: pointer;" title="Subrayado"></i>
+                                    <i class="fas fa-list-ul" style="font-size: 0.8rem; color: var(--text-muted); cursor: pointer;" title="Lista con viñetas" style="border-left: 1px solid rgba(255,255,255,0.05); padding-left: 12px;"></i>
+                                    <i class="fas fa-list-ol" style="font-size: 0.8rem; color: var(--text-muted); cursor: pointer;" title="Lista numerada"></i>
+                                    <i class="fas fa-align-left" style="font-size: 0.8rem; color: var(--text-muted); cursor: pointer;"></i>
+                                    <i class="fas fa-link" style="font-size: 0.8rem; color: var(--text-muted); cursor: pointer;" title="Insertar enlace"></i>
+                                    <i class="fas fa-image" style="font-size: 0.8rem; color: var(--text-muted); cursor: pointer;" title="Insertar imagen"></i>
+                                    <i class="fas fa-expand" style="font-size: 0.8rem; color: var(--text-muted); cursor: pointer; margin-left: auto;" title="Pantalla completa"></i>
+                                </div>
+                                
+                                <textarea id="ticket-description" placeholder="Describe tu problema o solicitud con el mayor detalle posible..." required style="width: 100%; padding: 14px; background-color: var(--bg-sidebar); border: 1px solid var(--border-color); border-bottom-left-radius: 8px; border-bottom-right-radius: 8px; color: var(--text-primary); font-family: var(--font-family); font-size: 0.88rem; min-height: 120px; resize: vertical; outline: none; line-height: 1.5;"></textarea>
+                            </div>
+                            
+                            <div class="form-group">
+                                <span style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 6px; display: block;">Archivos adjuntos</span>
+                                <div class="file-upload-zone" style="border: 2px dashed var(--border-color); border-radius: 12px; padding: 24px; text-align: center; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.borderColor='var(--accent-blue)'; this.style.backgroundColor='rgba(50, 102, 235, 0.02)';" onmouseout="this.style.borderColor='var(--border-color)'; this.style.backgroundColor='transparent';">
+                                    <i class="fas fa-cloud-upload-alt" style="font-size: 2rem; color: var(--text-muted); margin-bottom: 8px;"></i>
+                                    <p style="margin: 0 0 4px 0; font-size: 0.85rem; font-weight: 600; color: var(--text-primary);">Arrastra archivos aquí o haz clic para seleccionar</p>
+                                    <p style="margin: 0; font-size: 0.72rem; color: var(--text-muted);">Formatos permitidos: JPG, PNG, PDF, DOC, XLS (Máx. 10MB)</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Panel Paso 2: Información adicional -->
+                        <div class="stepper-form-card" id="step-panel-2" style="background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; padding: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); display: none; flex-direction: column; gap: 16px;">
+                            <div style="display: flex; align-items: center; gap: 10px; border-bottom: 1px solid rgba(255,255,255,0.03); padding-bottom: 14px; margin-bottom: 4px;">
+                                <i class="fas fa-info-circle" style="color: var(--accent-blue); font-size: 1.2rem;"></i>
+                                <h3 style="margin: 0; font-size: 1rem; font-weight: 700; color: var(--text-primary);">Información adicional</h3>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="ticket-phone" style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 6px; display: block;">Teléfono de contacto (Opcional)</label>
+                                <input type="text" id="ticket-phone" placeholder="Ej: +56 9 1234 5678" style="width: 100%; padding: 12px; background-color: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family); font-size: 0.88rem;">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="ticket-device" style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 6px; display: block;">Dispositivo afectado (Notebook/PC)</label>
+                                <select id="ticket-device" style="width: 100%; padding: 12px; background-color: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family); font-size: 0.88rem; cursor: pointer;">
+                                    <option value="ninguno">Ninguno / Otro</option>
+                                </select>
+                                <span style="font-size: 0.72rem; color: var(--text-muted); display: block; margin-top: 4px;">Selecciona el notebook de tu inventario que presenta el problema técnico para asociarlo.</span>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="ticket-impact" style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 6px; display: block;">Impacto en el trabajo *</label>
+                                <select id="ticket-impact" required style="width: 100%; padding: 12px; background-color: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family); font-size: 0.88rem; cursor: pointer;">
+                                    <option value="bajo">Bloqueo bajo (Puedo trabajar en otras cosas)</option>
+                                    <option value="medio" selected>Bloqueo medio (Afecta parcialmente mi trabajo)</option>
+                                    <option value="alto">Bloqueo total (No puedo trabajar en absoluto)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Panel Paso 3: Revisión y envío -->
+                        <div class="stepper-form-card" id="step-panel-3" style="background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; padding: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); display: none; flex-direction: column; gap: 16px;">
+                            <div style="display: flex; align-items: center; gap: 10px; border-bottom: 1px solid rgba(255,255,255,0.03); padding-bottom: 14px; margin-bottom: 4px;">
+                                <i class="fas fa-clipboard-check" style="color: var(--accent-blue); font-size: 1.2rem;"></i>
+                                <h3 style="margin: 0; font-size: 1rem; font-weight: 700; color: var(--text-primary);">Revisión y envío</h3>
+                            </div>
+                            
+                            <p style="font-size: 0.85rem; color: var(--text-secondary); margin: 0 0 10px 0;">Confirma que los datos ingresados sean correctos antes de enviar el ticket.</p>
+                            
+                            <div style="background-color: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: 8px; padding: 16px; display: flex; flex-direction: column; gap: 12px; font-size: 0.85rem;" id="ticket-review-summary">
+                                <!-- summary filled by JS -->
+                            </div>
+                            
+                            <div style="font-size: 0.72rem; color: var(--text-muted); display: flex; align-items: center; gap: 6px; background-color: rgba(50, 102, 235, 0.05); padding: 8px 12px; border-radius: 6px; border: 1px solid rgba(50, 102, 235, 0.15);">
+                                <i class="fas fa-info-circle" style="color: var(--accent-blue);"></i>
+                                <span>Al enviar, el ticket se registrará en la mesa de ayuda TI y se generará un código de seguimiento.</span>
+                            </div>
+                        </div>
+
+                        <!-- Botones de navegación del Stepper -->
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
+                            <button type="button" id="btn-stepper-prev" style="background-color: transparent; border: 1px solid var(--border-color); color: var(--text-secondary); padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: 600; font-family: var(--font-family); transition: all 0.2s;">Cancelar</button>
+                            <button type="button" id="btn-stepper-next" style="background: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-blue) 100%); color: white; border: none; padding: 12px 30px; border-radius: 8px; cursor: pointer; font-weight: 600; font-family: var(--font-family); display: flex; align-items: center; gap: 8px; transition: all 0.2s; box-shadow: 0 4px 15px rgba(97, 62, 234, 0.25);">Continuar <i class="fas fa-arrow-right"></i></button>
+                        </div>
+
+                    </form>
+
+                    <!-- Columna Derecha: Información y Widgets -->
+                    <div style="display: flex; flex-direction: column; gap: 20px;">
+                        
+                        <!-- Información Rápida -->
+                        <div class="chat-details-col" style="width: 100%; border-radius: 16px; min-height: auto; box-shadow: 0 4px 20px rgba(0,0,0,0.15); display: flex; flex-direction: column; overflow: hidden; background-color: var(--bg-card); border: 1px solid var(--border-color);">
+                            <div class="chat-col-header">
+                                <h3 style="margin: 0; font-size: 0.95rem; font-weight: 700; color: var(--text-primary);"><i class="fas fa-bolt" style="color: var(--accent-blue); margin-right: 6px;"></i> Información rápida</h3>
+                            </div>
+                            <div style="padding: 20px; display: flex; flex-direction: column; gap: 20px;">
+                                <div style="display: flex; gap: 14px; align-items: flex-start;">
+                                    <div style="width: 32px; height: 32px; border-radius: 50%; background-color: rgba(97, 62, 234, 0.08); border: 1px solid rgba(97, 62, 234, 0.15); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                        <i class="far fa-clock" style="font-size: 0.85rem; color: var(--accent-purple);"></i>
+                                    </div>
+                                    <div style="font-size: 0.8rem;">
+                                        <h5 style="margin: 0 0 2px 0; font-weight: 700; color: var(--text-primary);">Tiempos de respuesta</h5>
+                                        <p style="margin: 0; color: var(--text-secondary); line-height: 1.4;">Nuestro tiempo promedio de respuesta es de 5 minutos.</p>
+                                    </div>
+                                </div>
+                                <div style="display: flex; gap: 14px; align-items: flex-start;">
+                                    <div style="width: 32px; height: 32px; border-radius: 50%; background-color: rgba(29, 200, 109, 0.08); border: 1px solid rgba(29, 200, 109, 0.15); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                        <i class="fas fa-headset" style="font-size: 0.85rem; color: var(--accent-green);"></i>
+                                    </div>
+                                    <div style="font-size: 0.8rem;">
+                                        <h5 style="margin: 0 0 2px 0; font-weight: 700; color: var(--text-primary);">Soporte 24/7</h5>
+                                        <p style="margin: 0; color: var(--text-secondary); line-height: 1.4;">Estamos disponibles todos los días del año para ayudarte.</p>
+                                    </div>
+                                </div>
+                                <div style="display: flex; gap: 14px; align-items: flex-start;">
+                                    <div style="width: 32px; height: 32px; border-radius: 50%; background-color: rgba(50, 102, 235, 0.08); border: 1px solid rgba(50, 102, 235, 0.15); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                        <i class="far fa-eye" style="font-size: 0.85rem; color: var(--accent-blue);"></i>
+                                    </div>
+                                    <div style="font-size: 0.8rem;">
+                                        <h5 style="margin: 0 0 2px 0; font-weight: 700; color: var(--text-primary);">Seguimiento</h5>
+                                        <p style="margin: 0; color: var(--text-secondary); line-height: 1.4;">Podrás ver el estado de tu ticket en tiempo real.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Consejos -->
+                        <div class="chat-details-col" style="width: 100%; border-radius: 16px; min-height: auto; box-shadow: 0 4px 20px rgba(0,0,0,0.15); display: flex; flex-direction: column; overflow: hidden; background-color: var(--bg-card); border: 1px solid var(--border-color);">
+                            <div class="chat-col-header">
+                                <h3 style="margin: 0; font-size: 0.95rem; font-weight: 700; color: var(--text-primary);">Consejos para un mejor soporte</h3>
+                            </div>
+                            <div style="padding: 16px 20px; display: flex; flex-direction: column; gap: 10px; font-size: 0.78rem;">
+                                <div style="display: flex; align-items: center; gap: 8px; color: var(--text-secondary);">
+                                    <i class="fas fa-check-circle" style="color: var(--accent-blue); font-size: 0.85rem;"></i>
+                                    <span>Sé específico y claro en tu descripción</span>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 8px; color: var(--text-secondary);">
+                                    <i class="fas fa-check-circle" style="color: var(--accent-blue); font-size: 0.85rem;"></i>
+                                    <span>Incluye capturas de pantalla si es posible</span>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 8px; color: var(--text-secondary);">
+                                    <i class="fas fa-check-circle" style="color: var(--accent-blue); font-size: 0.85rem;"></i>
+                                    <span>Menciona qué estabas haciendo cuando ocurrió</span>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 8px; color: var(--text-secondary);">
+                                    <i class="fas fa-check-circle" style="color: var(--accent-blue); font-size: 0.85rem;"></i>
+                                    <span>Indica el impacto que tiene en tu trabajo</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ¿No encuentras lo que buscas? -->
+                        <div style="background: linear-gradient(135deg, rgba(97, 62, 234, 0.08) 0%, rgba(50, 102, 235, 0.08) 100%); border: 1px solid rgba(50, 102, 235, 0.15); border-radius: 16px; padding: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); display: flex; align-items: center; gap: 16px;">
+                            <i class="fas fa-headset" style="font-size: 2.2rem; color: var(--accent-blue); filter: drop-shadow(0 0 6px var(--accent-blue));"></i>
+                            <div>
+                                <h5 style="margin: 0 0 4px 0; font-size: 0.85rem; font-weight: 700; color: var(--text-primary);">¿No encuentras lo que buscas?</h5>
+                                <p style="margin: 0 0 12px 0; font-size: 0.72rem; color: var(--text-secondary); line-height: 1.3;">Consulta nuestra base de conocimientos o chatea con un agente en vivo.</p>
+                                <button class="page-btn" type="button" style="background-color: var(--accent-blue); border: none; color: white; font-size: 0.75rem; font-weight: 600; padding: 6px 12px; border-radius: 6px; cursor: pointer; transition: all 0.2s;" onclick="document.querySelector('.sidebar-nav li:nth-child(6) a').click();">Explorar recursos</button>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============ PÁGINA MIS TICKETS ============ -->
+            <div id="page-mis-tickets" class="page-section">
+                <div class="tickets-page-header">
+                    <div class="tickets-page-title">
+                        <h1>Mis Tickets</h1>
+                        <p>Consulta el estado de tus solicitudes de soporte</p>
+                    </div>
+                    <button class="btn-crear-ticket" id="btn-crear-nuevo-ticket">
+                        <i class="fas fa-plus"></i> Crear Nuevo Ticket
+                    </button>
+                </div>
+
+                <!-- Filtros por estado -->
+                <div class="tickets-filter-tabs">
+                    <button class="filter-tab active" data-filter="todos">
+                        <i class="fas fa-list"></i> Todos
+                    </button>
+                    <button class="filter-tab" data-filter="abierto">
+                        <span class="filter-dot dot-abierto"></span> Abiertos <span class="filter-count">12</span>
+                    </button>
+                    <button class="filter-tab" data-filter="en progreso">
+                        <span class="filter-dot dot-progreso"></span> En Progreso <span class="filter-count">5</span>
+                    </button>
+                    <button class="filter-tab" data-filter="en espera">
+                        <span class="filter-dot dot-espera"></span> En Espera <span class="filter-count">3</span>
+                    </button>
+                    <button class="filter-tab" data-filter="resuelto">
+                        <span class="filter-dot dot-resuelto"></span> Resueltos <span class="filter-count">28</span>
+                    </button>
+                </div>
+
+                <!-- Barra de búsqueda y ordenar -->
+                <div class="tickets-toolbar">
+                    <div class="tickets-search">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="tickets-search-input" placeholder="Buscar tickets...">
+                    </div>
+                    <div class="tickets-sort">
+                        <select id="tickets-sort-select">
+                            <option value="recientes">Más recientes</option>
+                            <option value="antiguos">Más antiguos</option>
+                            <option value="prioridad">Prioridad</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Tabla de tickets -->
+                <div class="tickets-table-container">
+                    <table class="tickets-table" id="tickets-table">
+                        <thead>
+                            <tr>
+                                <th>Ticket</th>
+                                <th>Asunto</th>
+                                <th>Estado</th>
+                                <th>Prioridad</th>
+                                <th>Última actualización</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tickets-table-body">
+                            <tr>
+                                <td class="ticket-id-cell">
+                                    <span class="ticket-id">#TK-2026-0012</span>
+                                    <span class="ticket-date">26 May 2026</span>
+                                </td>
+                                <td class="ticket-asunto-cell">
+                                    <span class="ticket-asunto">Error al iniciar sesión</span>
+                                    <span class="ticket-desc">No puedo acceder a mi cuenta desde ayer.</span>
+                                </td>
+                                <td><span class="status-badge status-abierto">Abierto</span></td>
+                                <td><span class="priority-badge priority-alta"><i class="fas fa-arrow-up"></i> Alta</span></td>
+                                <td class="ticket-time">Hace 2 horas</td>
+                                <td class="ticket-actions">
+                                    <button class="action-btn action-view" title="Ver ticket"><i class="fas fa-eye"></i></button>
+                                    <button class="action-btn action-more" title="Más opciones"><i class="fas fa-ellipsis-h"></i></button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="ticket-id-cell">
+                                    <span class="ticket-id">#TK-2026-0011</span>
+                                    <span class="ticket-date">25 May 2026</span>
+                                </td>
+                                <td class="ticket-asunto-cell">
+                                    <span class="ticket-asunto">Problema con el pago</span>
+                                    <span class="ticket-desc">El pago no se procesó correctamente.</span>
+                                </td>
+                                <td><span class="status-badge status-progreso">En Progreso</span></td>
+                                <td><span class="priority-badge priority-media"><i class="fas fa-minus"></i> Media</span></td>
+                                <td class="ticket-time">Hace 5 horas</td>
+                                <td class="ticket-actions">
+                                    <button class="action-btn action-view" title="Ver ticket"><i class="fas fa-eye"></i></button>
+                                    <button class="action-btn action-more" title="Más opciones"><i class="fas fa-ellipsis-h"></i></button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="ticket-id-cell">
+                                    <span class="ticket-id">#TK-2026-0010</span>
+                                    <span class="ticket-date">24 May 2026</span>
+                                </td>
+                                <td class="ticket-asunto-cell">
+                                    <span class="ticket-asunto">Solicitud de información</span>
+                                    <span class="ticket-desc">Necesito más información sobre los planes.</span>
+                                </td>
+                                <td><span class="status-badge status-espera">En Espera</span></td>
+                                <td><span class="priority-badge priority-baja"><i class="fas fa-arrow-down"></i> Baja</span></td>
+                                <td class="ticket-time">Hace 1 día</td>
+                                <td class="ticket-actions">
+                                    <button class="action-btn action-view" title="Ver ticket"><i class="fas fa-eye"></i></button>
+                                    <button class="action-btn action-more" title="Más opciones"><i class="fas fa-ellipsis-h"></i></button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="ticket-id-cell">
+                                    <span class="ticket-id">#TK-2026-0009</span>
+                                    <span class="ticket-date">23 May 2026</span>
+                                </td>
+                                <td class="ticket-asunto-cell">
+                                    <span class="ticket-asunto">No recibí mi factura</span>
+                                    <span class="ticket-desc">Aún no he recibido la factura de este mes.</span>
+                                </td>
+                                <td><span class="status-badge status-resuelto">Resuelto</span></td>
+                                <td><span class="priority-badge priority-media"><i class="fas fa-minus"></i> Media</span></td>
+                                <td class="ticket-time">Hace 2 días</td>
+                                <td class="ticket-actions">
+                                    <button class="action-btn action-view" title="Ver ticket"><i class="fas fa-eye"></i></button>
+                                    <button class="action-btn action-more" title="Más opciones"><i class="fas fa-ellipsis-h"></i></button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="ticket-id-cell">
+                                    <span class="ticket-id">#TK-2026-0008</span>
+                                    <span class="ticket-date">22 May 2026</span>
+                                </td>
+                                <td class="ticket-asunto-cell">
+                                    <span class="ticket-asunto">Error en la plataforma</span>
+                                    <span class="ticket-desc">La plataforma muestra un error al guardar.</span>
+                                </td>
+                                <td><span class="status-badge status-resuelto">Resuelto</span></td>
+                                <td><span class="priority-badge priority-alta"><i class="fas fa-arrow-up"></i> Alta</span></td>
+                                <td class="ticket-time">Hace 3 días</td>
+                                <td class="ticket-actions">
+                                    <button class="action-btn action-view" title="Ver ticket"><i class="fas fa-eye"></i></button>
+                                    <button class="action-btn action-more" title="Más opciones"><i class="fas fa-ellipsis-h"></i></button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Paginación -->
+                <div class="tickets-pagination">
+                    <span class="pagination-info">Mostrando 1 a 5 de 48 tickets</span>
+                    <div class="pagination-controls">
+                        <button class="page-btn page-prev" disabled><i class="fas fa-chevron-left"></i></button>
+                        <button class="page-btn page-number active">1</button>
+                        <button class="page-btn page-number">2</button>
+                        <button class="page-btn page-number">3</button>
+                        <span class="page-ellipsis">…</span>
+                        <button class="page-btn page-number">10</button>
+                        <button class="page-btn page-next"><i class="fas fa-chevron-right"></i></button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============ PÁGINA BASE DE CONOCIMIENTOS (INVENTARIO CMDB) ============ -->
+            <div id="page-base-conocimientos" class="page-section">
+                <div class="tickets-page-header">
+                    <div class="tickets-page-title">
+                        <h1>Base de Conocimientos</h1>
+                        <p>Inicio &gt; Base de Conocimientos &gt; Equipos</p>
+                    </div>
+                    <div class="kb-header-buttons" style="display: flex; gap: 12px;">
+                        <button class="btn-importar-equipos" id="btn-importar-equipos" style="background-color: rgba(255, 255, 255, 0.05); border: 1px solid var(--border-color); color: var(--text-primary); padding: 10px 18px; border-radius: 10px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s ease;">
+                            <i class="fas fa-file-import"></i> Importar Equipos
+                        </button>
+                        <button class="btn-crear-ticket" id="btn-agregar-equipo">
+                            <i class="fas fa-plus"></i> Agregar Equipo
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Tabs de Categoría -->
+                <div class="tickets-filter-tabs" id="equip-filter-tabs">
+                    <button class="filter-tab active" data-filter="todos">
+                        Todos los Equipos
+                    </button>
+                    <button class="filter-tab" data-filter="escritorio">
+                        Escritorios
+                    </button>
+                    <button class="filter-tab" data-filter="laptop">
+                        Portátiles
+                    </button>
+                    <button class="filter-tab" data-filter="servidor">
+                        Servidores
+                    </button>
+                    <button class="filter-tab" data-filter="historial">
+                        Historial
+                    </button>
+                </div>
+
+                <!-- Tarjetas estadísticas (Métricas) -->
+                <section class="stats-grid" id="equip-stats-grid" style="margin-bottom: 30px;">
+                    <div class="stat-card stat-blue">
+                        <i class="fas fa-laptop stat-icon"></i>
+                        <div class="stat-details">
+                            <span class="stat-number" id="stat-total-equipos">0</span>
+                            <span class="stat-label">Total Equipos</span>
+                            <span class="stat-sublabel">Registrados</span>
+                        </div>
+                    </div>
+                    <div class="stat-card stat-purple">
+                        <i class="fas fa-desktop stat-icon"></i>
+                        <div class="stat-details">
+                            <span class="stat-number" id="stat-total-escritorios">0</span>
+                            <span class="stat-label">Escritorios</span>
+                            <span class="stat-sublabel">Registrados</span>
+                        </div>
+                    </div>
+                    <div class="stat-card stat-red" style="--accent-red: #ef4444;">
+                        <i class="fas fa-laptop-code stat-icon" style="color: #ef4444;"></i>
+                        <div class="stat-details">
+                            <span class="stat-number" id="stat-total-portatiles" style="color: #f87171;">0</span>
+                            <span class="stat-label">Portátiles</span>
+                            <span class="stat-sublabel">Registrados</span>
+                        </div>
+                    </div>
+                    <div class="stat-card stat-green">
+                        <i class="fas fa-check-circle stat-icon"></i>
+                        <div class="stat-details">
+                            <span class="stat-number" id="stat-total-activos">0</span>
+                            <span class="stat-label">Activos</span>
+                            <span class="stat-sublabel">En uso</span>
+                        </div>
+                    </div>
+                    <div class="stat-card stat-yellow">
+                        <i class="fas fa-wrench stat-icon"></i>
+                        <div class="stat-details">
+                            <span class="stat-number" id="stat-total-mantenimiento">0</span>
+                            <span class="stat-label">Mantenimiento</span>
+                            <span class="stat-sublabel">En reparación</span>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Barra de búsqueda y filtros -->
+                <div class="tickets-toolbar" style="margin-bottom: 20px; display: flex; gap: 12px; align-items: center; width: 100%;">
+                    <div class="tickets-search" style="flex: 1; max-width: none;">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="equip-search-input" placeholder="Buscar por nombre, usuario, serial, modelo...">
+                    </div>
+                    <div class="equip-selects" style="display: flex; gap: 12px;">
+                        <div class="tickets-sort" style="width: 140px;">
+                            <select id="equip-filter-tipo">
+                                <option value="todos">Tipo</option>
+                                <option value="laptop">Portátil</option>
+                                <option value="escritorio">Escritorio</option>
+                                <option value="servidor">Servidor</option>
+                            </select>
+                        </div>
+                        <div class="tickets-sort" style="width: 140px;">
+                            <select id="equip-filter-marca">
+                                <option value="todos">Marca</option>
+                                <option value="Dell">Dell</option>
+                                <option value="HP">HP</option>
+                                <option value="Lenovo">Lenovo</option>
+                                <option value="Asus">Asus</option>
+                                <option value="Apple">Apple</option>
+                            </select>
+                        </div>
+                        <div class="tickets-sort" style="width: 140px;">
+                            <select id="equip-filter-estado">
+                                <option value="todos">Estado</option>
+                                <option value="activo">Activo</option>
+                                <option value="mantenimiento">Mantenimiento</option>
+                                <option value="baja">Baja</option>
+                            </select>
+                        </div>
+                        <button class="filter-tab" id="btn-equip-more-filters" style="padding: 10px 14px; height: 42px; display: flex; align-items: center; justify-content: center; background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-secondary); cursor: pointer; transition: all 0.2s;">
+                            <i class="fas fa-sliders-h"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Tabla de equipos -->
+                <div class="tickets-table-container">
+                    <table class="tickets-table equip-table" id="equip-table">
+                        <thead>
+                            <tr>
+                                <th>EQUIPO</th>
+                                <th>USUARIO</th>
+                                <th>MARCA / MODELO</th>
+                                <th>SO / SERIAL</th>
+                                <th>ESPECIFICACIONES</th>
+                                <th>ESTADO</th>
+                                <th style="text-align: right; padding-right: 24px;">ACCIONES</th>
+                            </tr>
+                        </thead>
+                        <tbody id="equip-table-body">
+                            <!-- Carga dinámica -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Paginación -->
+                <div class="tickets-pagination" style="margin-top: 20px;">
+                    <span class="pagination-info" id="equip-pagination-info">Mostrando 0 a 0 de 0 equipos</span>
+                    <div class="pagination-controls" id="equip-pagination-controls">
+                        <!-- Paginación dinámica -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============ PÁGINA CHAT EN VIVO ============ -->
+            <div id="page-chat" class="page-section">
+                <!-- VISTA ADMINISTRADOR (DASHBOARD COMPLETO) -->
+                <div id="chat-admin-container" style="display: none;">
+                    <div class="tickets-page-header" style="margin-bottom: 20px;">
+                        <div class="tickets-page-title">
+                            <h1 style="display: flex; align-items: center; gap: 10px;">
+                                Chat en Vivo
+                                <span class="chat-status-online" style="display: inline-flex; align-items: center; gap: 6px; font-size: 0.85rem; font-weight: 500; color: var(--accent-green); background-color: rgba(29, 200, 109, 0.08); border: 1px solid rgba(29, 200, 109, 0.15); padding: 4px 10px; border-radius: 20px;">
+                                    <span style="width: 8px; height: 8px; border-radius: 50%; background-color: var(--accent-green); display: inline-block; box-shadow: 0 0 8px var(--accent-green);"></span> En línea
+                                </span>
+                            </h1>
+                        </div>
+                    </div>
+
+                    <!-- Métricas Superiores -->
+                    <section class="stats-grid" style="margin-bottom: 24px;">
+                        <div class="stat-card stat-blue">
+                            <i class="fas fa-comments stat-icon"></i>
+                            <div class="stat-details">
+                                <span class="stat-number" id="chat-stat-active">5</span>
+                                <span class="stat-label">Conversaciones</span>
+                                <span class="stat-sublabel">Activas</span>
+                            </div>
+                        </div>
+                        <div class="stat-card stat-purple">
+                            <i class="fas fa-users stat-icon"></i>
+                            <div class="stat-details">
+                                <span class="stat-number">8</span>
+                                <span class="stat-label">Agentes</span>
+                                <span class="stat-sublabel">En línea</span>
+                            </div>
+                        </div>
+                        <div class="stat-card stat-green">
+                            <i class="fas fa-clock stat-icon"></i>
+                            <div class="stat-details">
+                                <span class="stat-number">1m 32s</span>
+                                <span class="stat-label">Tiempo de Respuesta</span>
+                                <span class="stat-sublabel">Promedio</span>
+                            </div>
+                        </div>
+                        <div class="stat-card stat-yellow">
+                            <i class="fas fa-star stat-icon"></i>
+                            <div class="stat-details">
+                                <span class="stat-number">98%</span>
+                                <span class="stat-label">Satisfacción</span>
+                                <span class="stat-sublabel">De nuestros clientes</span>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Layout de 3 Columnas -->
+                    <div class="chat-dashboard-layout">
+                        <!-- Columna Izquierda: Conversaciones -->
+                        <div class="chat-threads-col">
+                            <div class="chat-col-header">
+                                <h3>Conversaciones</h3>
+                            </div>
+                            <div class="chat-threads-search">
+                                <i class="fas fa-search"></i>
+                                <input type="text" id="chat-thread-search-input" placeholder="Buscar conversación...">
+                            </div>
+                            <div class="chat-threads-list" id="chat-threads-container">
+                                <!-- Hilos dinámicos desde JS -->
+                            </div>
+                            <div style="padding: 12px; text-align: center; border-top: 1px solid var(--border-color);">
+                                <button style="background: none; border: none; color: var(--accent-blue); font-size: 0.85rem; font-weight: 600; cursor: pointer;">Ver todas las conversaciones</button>
+                            </div>
+                        </div>
+
+                        <!-- Columna Central: Ventana de Chat -->
+                        <div class="chat-main-col">
+                            <!-- Header de conversación activa -->
+                            <div class="chat-main-header" id="chat-active-header">
+                                <div class="chat-active-user-info">
+                                    <div class="chat-active-avatar" id="chat-active-avatar">AM</div>
+                                    <div>
+                                        <h4 id="chat-active-name" style="margin: 0; font-size: 0.95rem; font-weight: 700; color: var(--text-primary);">Ana Martínez</h4>
+                                        <span id="chat-active-status" style="font-size: 0.75rem; color: var(--accent-green); display: flex; align-items: center; gap: 4px; margin-top: 2px;">
+                                            <span style="width: 6px; height: 6px; border-radius: 50%; background-color: var(--accent-green); display: inline-block;"></span> En línea
+                                        </span>
+                                    </div>
+                                </div>
+                                <div style="display: flex; gap: 10px; align-items: center;">
+                                    <div class="status-updater" style="margin: 0;">
+                                        <select id="chat-assign-agent-select" style="background-color: var(--accent-blue); border-color: var(--accent-blue); color: white; border-radius: 8px; font-weight: 600; padding: 8px 30px 8px 12px;">
+                                            <option value="diego">Asignar a</option>
+                                            <option value="diego">Diego Castro</option>
+                                            <option value="carlos">Carlos Gómez</option>
+                                            <option value="admin">Administrador</option>
+                                        </select>
+                                    </div>
+                                    <button class="page-btn" style="width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: 8px; border: 1px solid var(--border-color); color: var(--text-secondary); cursor: pointer;"><i class="fas fa-ellipsis-v"></i></button>
+                                </div>
+                            </div>
+
+                            <!-- Contenedor de Mensajes -->
+                            <div class="chat-messages-box" id="chat-messages-container">
+                                <!-- Mensajes dinámicos -->
+                            </div>
+
+                            <!-- Caja de Entrada -->
+                            <form class="chat-input-bar" id="chat-admin-send-form">
+                                <button type="button" class="chat-input-action-btn"><i class="fas fa-paperclip"></i></button>
+                                <button type="button" class="chat-input-action-btn"><i class="far fa-smile"></i></button>
+                                <button type="button" class="chat-input-action-btn"><i class="fas fa-bolt"></i></button>
+                                <input type="text" id="chat-admin-message-input" placeholder="Escribe un mensaje..." required autocomplete="off">
+                                <button type="submit" class="chat-send-submit-btn"><i class="fas fa-paper-plane"></i></button>
+                            </form>
+                        </div>
+
+                        <!-- Columna Derecha: Información del Usuario y Detalles -->
+                        <div class="chat-details-col">
+                            <!-- Info Usuario -->
+                            <div class="chat-details-card">
+                                <h4>Información del usuario</h4>
+                                <div style="display: flex; align-items: center; gap: 12px; margin-top: 12px;">
+                                    <div class="chat-details-user-avatar" id="chat-info-avatar">AM</div>
+                                    <div style="min-width: 0;">
+                                        <h5 id="chat-info-name" style="margin: 0; font-size: 0.9rem; font-weight: 700; color: var(--text-primary); text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">Ana Martínez</h5>
+                                        <span id="chat-info-email" style="font-size: 0.78rem; color: var(--text-secondary); text-overflow: ellipsis; overflow: hidden; display: block; white-space: nowrap; margin-top: 2px;">ana.martinez@empresa.com</span>
+                                    </div>
+                                </div>
+                                <div style="margin-top: 14px; font-size: 0.8rem; color: var(--text-secondary); border-top: 1px solid rgba(255,255,255,0.03); padding-top: 12px;">
+                                    <span>Cliente desde: 15/03/2023</span>
+                                </div>
+                            </div>
+
+                            <!-- Detalles Conversación -->
+                            <div class="chat-details-card" style="margin-top: 16px;">
+                                <h4>Detalles de la conversación</h4>
+                                <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 12px; font-size: 0.82rem;">
+                                    <div style="display: flex; justify-content: space-between;">
+                                        <span style="color: var(--text-muted);">ID de Chat</span>
+                                        <span id="chat-info-id" style="color: var(--text-primary); font-weight: 500;">#CHT-2024-0058</span>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between;">
+                                        <span style="color: var(--text-muted);">Iniciado</span>
+                                        <span id="chat-info-started" style="color: var(--text-primary);">10:24 AM</span>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                                        <span style="color: var(--text-muted);">Canal</span>
+                                        <span style="color: var(--text-primary); display: flex; align-items: center; gap: 4px;"><i class="fas fa-globe" style="color: var(--accent-blue);"></i> Web</span>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                                        <span style="color: var(--text-muted);">Estado</span>
+                                        <span class="status-badge status-activo" style="padding: 2px 8px; font-size: 0.72rem; border-radius: 4px;">En curso</span>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                                        <span style="color: var(--text-muted);">Agente asignado</span>
+                                        <span style="color: var(--text-primary); display: flex; align-items: center; gap: 6px;"><i class="fas fa-user-tie" style="color: var(--accent-purple); font-size: 0.9rem;"></i> Diego Castro</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Acciones Rápidas -->
+                            <div class="chat-details-card" style="margin-top: 16px;">
+                                <h4>Acciones rápidas</h4>
+                                <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 12px;">
+                                    <button class="chat-action-btn" id="btn-chat-action-article"><i class="fas fa-book" style="color: var(--accent-blue);"></i> Enviar artículo</button>
+                                    <button class="chat-action-btn" id="btn-chat-action-tutorial"><i class="fas fa-graduation-cap" style="color: var(--accent-blue);"></i> Enviar tutorial</button>
+                                    <button class="chat-action-btn" id="btn-chat-action-transfer"><i class="fas fa-exchange-alt" style="color: var(--accent-blue);"></i> Transferir chat</button>
+                                    <button class="chat-action-btn" id="btn-chat-action-close" style="color: #f87171; border-color: rgba(239, 68, 68, 0.1);"><i class="far fa-circle" style="color: #ef4444;"></i> Finalizar conversación</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VISTA USUARIO (CHAT DE CLIENTE SIMPLIFICADO) -->
+                <div id="chat-user-container" style="display: none; max-width: 700px; margin: 0 auto;">
+                    <div class="tickets-page-header" style="margin-bottom: 20px;">
+                        <div class="tickets-page-title">
+                            <h1>Chat de Soporte en Vivo</h1>
+                            <p>Habla en tiempo real con uno de nuestros técnicos</p>
+                        </div>
+                    </div>
+
+                    <div class="chat-main-col" style="border-radius: 16px; overflow: hidden; height: calc(100vh - 220px); min-height: 500px; display: flex; flex-direction: column;">
+                        <!-- Header de conversación activa -->
+                        <div class="chat-main-header">
+                            <div class="chat-active-user-info">
+                                <div class="chat-active-avatar" style="background: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-blue) 100%);">TI</div>
+                                <div>
+                                    <h4 style="margin: 0; font-size: 0.95rem; font-weight: 700; color: var(--text-primary);">Soporte Técnico Corporativo</h4>
+                                    <span style="font-size: 0.75rem; color: var(--accent-green); display: flex; align-items: center; gap: 4px; margin-top: 2px;">
+                                        <span style="width: 6px; height: 6px; border-radius: 50%; background-color: var(--accent-green); display: inline-block;"></span> Agentes en línea
+                                    </span>
+                                </div>
+                            </div>
+                            <span style="font-size: 0.8rem; color: var(--text-secondary); background-color: rgba(255,255,255,0.03); border: 1px solid var(--border-color); padding: 6px 12px; border-radius: 20px;">
+                                Canal: Web
+                            </span>
+                        </div>
+
+                        <!-- Contenedor de Mensajes -->
+                        <div class="chat-messages-box" id="user-chat-messages-container" style="flex: 1;">
+                            <!-- Mensajes dinámicos -->
+                        </div>
+
+                        <!-- Caja de Entrada -->
+                        <form class="chat-input-bar" id="chat-user-send-form">
+                            <button type="button" class="chat-input-action-btn"><i class="fas fa-paperclip"></i></button>
+                            <button type="button" class="chat-input-action-btn"><i class="far fa-smile"></i></button>
+                            <input type="text" id="chat-user-message-input" placeholder="Cuéntanos cuál es tu problema técnico..." required autocomplete="off">
+                            <button type="submit" class="chat-send-submit-btn"><i class="fas fa-paper-plane"></i></button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============ PÁGINA ESTADO DEL SISTEMA ============ -->
+            <div id="page-estado" class="page-section">
+                <div class="tickets-page-header" style="margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                    <div class="tickets-page-title">
+                        <h1 style="display: flex; align-items: center; gap: 12px;">
+                            Estado del Sistema 
+                            <i class="fas fa-heartbeat" style="color: var(--accent-blue); animation: heartBeat 2s infinite ease-in-out;"></i>
+                        </h1>
+                        <p>Monitoreo en tiempo real de nuestros servicios</p>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 16px;">
+                        <span id="system-last-update" style="font-size: 0.85rem; color: var(--text-secondary); display: flex; align-items: center; gap: 6px;">
+                            <span style="width: 8px; height: 8px; border-radius: 50%; background-color: var(--accent-green); display: inline-block;"></span>
+                            Última actualización: <span id="last-update-time">Hace 2 min</span>
+                        </span>
+                        <button class="page-btn" id="btn-refresh-system" style="width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: 8px; border: 1px solid var(--border-color); background-color: rgba(255,255,255,0.02); color: var(--text-secondary); cursor: pointer; transition: all 0.2s;"><i class="fas fa-sync-alt" id="refresh-system-icon"></i></button>
+                    </div>
+                </div>
+
+                <div class="status-page-layout">
+                    <!-- Columna Izquierda: Monitoreo Principal -->
+                    <div class="status-main-col" style="display: flex; flex-direction: column; gap: 20px;">
+                        
+                        <!-- Tarjeta Hero: Estado General -->
+                        <div class="kb-hero" style="padding: 24px; display: flex; align-items: center; gap: 24px; min-height: auto; background: linear-gradient(135deg, rgba(29, 200, 109, 0.08) 0%, rgba(50, 102, 235, 0.04) 100%); border-color: rgba(29, 200, 109, 0.2); box-shadow: 0 4px 20px rgba(29, 200, 109, 0.05);">
+                            <div class="status-hero-icon-wrapper" style="width: 72px; height: 72px; border-radius: 18px; background-color: rgba(29, 200, 109, 0.08); display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 0 20px rgba(29, 200, 109, 0.2); border: 1px solid rgba(29, 200, 109, 0.2);">
+                                <i class="fas fa-shield-alt" style="font-size: 2.2rem; color: var(--accent-green); filter: drop-shadow(0 0 6px var(--accent-green));"></i>
+                            </div>
+                            <div style="flex: 1;">
+                                <h2 style="font-size: 1.4rem; font-weight: 700; color: var(--text-primary); margin: 0 0 4px 0;" id="system-status-title">Todos los sistemas operativos</h2>
+                                <p style="font-size: 0.9rem; color: var(--text-secondary); margin: 0 0 16px 0;" id="system-status-desc">Nuestros servicios están funcionando correctamente.</p>
+                                
+                                <div style="display: flex; gap: 24px; flex-wrap: wrap;">
+                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                        <i class="fas fa-tachometer-alt" style="color: var(--accent-green);"></i>
+                                        <div style="font-size: 0.8rem;">
+                                            <span style="color: var(--text-muted); display: block; font-size: 0.72rem;">Uptime</span>
+                                            <span style="font-weight: 600; color: var(--text-primary); font-size: 0.85rem;" id="hero-stat-uptime">99.9%</span>
+                                        </div>
+                                    </div>
+                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                        <i class="fas fa-exclamation-triangle" style="color: #f59e0b;"></i>
+                                        <div style="font-size: 0.8rem;">
+                                            <span style="color: var(--text-muted); display: block; font-size: 0.72rem;">Incidentes</span>
+                                            <span style="font-weight: 600; color: var(--text-primary); font-size: 0.85rem;" id="hero-stat-incidents">0 activos</span>
+                                        </div>
+                                    </div>
+                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                        <i class="fas fa-clock" style="color: var(--accent-blue);"></i>
+                                        <div style="font-size: 0.8rem;">
+                                            <span style="color: var(--text-muted); display: block; font-size: 0.72rem;">Tiempo respuesta</span>
+                                            <span style="font-weight: 600; color: var(--text-primary); font-size: 0.85rem;" id="hero-stat-response">5 min promedio</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Servicios Grid (4 Cajas) -->
+                        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;">
+                            
+                            <!-- Internet Corporativo -->
+                            <div class="status-service-card" style="background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                        <i class="fas fa-globe" style="color: var(--accent-blue); font-size: 1.1rem; filter: drop-shadow(0 0 4px var(--accent-blue));"></i>
+                                        <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-primary);">Internet Corporativo</span>
+                                    </div>
+                                    <span class="status-badge" style="font-size: 0.7rem; padding: 2px 8px; border-radius: 4px; background-color: rgba(29, 200, 109, 0.12); color: var(--accent-green);" id="service-status-internet">Operativo</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; font-size: 0.75rem; border-top: 1px solid rgba(255,255,255,0.03); padding-top: 8px; color: var(--text-secondary);">
+                                    <span>Uptime</span>
+                                    <span style="font-weight: 600; color: var(--text-primary);" id="service-uptime-internet">99.9%</span>
+                                </div>
+                            </div>
+
+                            <!-- Correo Empresarial -->
+                            <div class="status-service-card" style="background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                        <i class="fas fa-envelope" style="color: var(--accent-purple); font-size: 1.1rem; filter: drop-shadow(0 0 4px var(--accent-purple));"></i>
+                                        <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-primary);">Correo Empresarial</span>
+                                    </div>
+                                    <span class="status-badge" style="font-size: 0.7rem; padding: 2px 8px; border-radius: 4px; background-color: rgba(29, 200, 109, 0.12); color: var(--accent-green);" id="service-status-correo">Operativo</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; font-size: 0.75rem; border-top: 1px solid rgba(255,255,255,0.03); padding-top: 8px; color: var(--text-secondary);">
+                                    <span>Uptime</span>
+                                    <span style="font-weight: 600; color: var(--text-primary);" id="service-uptime-correo">99.8%</span>
+                                </div>
+                            </div>
+
+                            <!-- Servidor ERP -->
+                            <div class="status-service-card" style="background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                        <i class="fas fa-database" style="color: #f59e0b; font-size: 1.1rem; filter: drop-shadow(0 0 4px #f59e0b);"></i>
+                                        <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-primary);">Servidor ERP</span>
+                                    </div>
+                                    <span class="status-badge" style="font-size: 0.7rem; padding: 2px 8px; border-radius: 4px; background-color: rgba(245, 158, 11, 0.12); color: #f59e0b;" id="service-status-erp">Advertencia</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; font-size: 0.75rem; border-top: 1px solid rgba(255,255,255,0.03); padding-top: 8px; color: var(--text-secondary);">
+                                    <span>Uptime</span>
+                                    <span style="font-weight: 600; color: var(--text-primary);" id="service-uptime-erp">95.2%</span>
+                                </div>
+                            </div>
+
+                            <!-- VPN Empresas -->
+                            <div class="status-service-card" style="background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                        <i class="fas fa-lock" style="color: #ef4444; font-size: 1.1rem; filter: drop-shadow(0 0 4px #ef4444);"></i>
+                                        <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-primary);">VPN Empresas</span>
+                                    </div>
+                                    <span class="status-badge" style="font-size: 0.7rem; padding: 2px 8px; border-radius: 4px; background-color: rgba(239, 68, 68, 0.12); color: #ef4444;" id="service-status-vpn">Caído</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; font-size: 0.75rem; border-top: 1px solid rgba(255,255,255,0.03); padding-top: 8px; color: var(--text-secondary);">
+                                    <span>Uptime</span>
+                                    <span style="font-weight: 600; color: var(--text-primary);" id="service-uptime-vpn">0.0%</span>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <!-- Fila del medio: Disponibilidad General y Tiempo de Respuesta -->
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
+                            
+                            <!-- Disponibilidad General (Últimos 7 días) -->
+                            <div class="office-status-card" style="background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; padding: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.15);">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                                    <h4 style="margin: 0; font-size: 0.95rem; font-weight: 700; color: var(--text-primary);">Disponibilidad General</h4>
+                                    <span style="font-size: 0.75rem; color: var(--text-secondary);">Últimos 7 días</span>
+                                </div>
+                                <div style="display: flex; gap: 20px; align-items: center;">
+                                    <!-- Donut chart -->
+                                    <div class="donut-chart-container" style="position: relative; width: 100px; height: 100px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                        <svg viewBox="0 0 36 36" style="width: 100%; height: 100%; transform: rotate(-90deg);">
+                                            <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="rgba(255, 255, 255, 0.05)" stroke-width="3.5"/>
+                                            <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="var(--accent-blue)" stroke-width="3.5" stroke-dasharray="99.9, 100" stroke-linecap="round" style="filter: drop-shadow(0 0 3px var(--accent-blue));" id="donut-uptime-path"/>
+                                        </svg>
+                                        <div style="position: absolute; text-align: center;">
+                                            <span style="font-size: 1.15rem; font-weight: 700; color: var(--text-primary); display: block;" id="donut-uptime-text">99.9%</span>
+                                            <span style="font-size: 0.65rem; color: var(--text-muted);">Uptime</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Gráfico de barras -->
+                                    <div class="bar-chart-container" style="display: flex; gap: 8px; align-items: flex-end; height: 80px; flex: 1; justify-content: space-between; padding-left: 10px; border-left: 1px solid rgba(255,255,255,0.03);">
+                                        <div class="bar-col" style="display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 1;">
+                                            <div class="bar-fill" style="width: 8px; height: 75px; background: linear-gradient(to top, var(--accent-purple), var(--accent-blue)); border-radius: 4px; box-shadow: 0 0 8px rgba(97, 62, 234, 0.25);"></div>
+                                            <span style="font-size: 0.65rem; color: var(--text-muted);">Jue</span>
+                                        </div>
+                                        <div class="bar-col" style="display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 1;">
+                                            <div class="bar-fill" style="width: 8px; height: 70px; background: linear-gradient(to top, var(--accent-purple), var(--accent-blue)); border-radius: 4px; box-shadow: 0 0 8px rgba(97, 62, 234, 0.25);"></div>
+                                            <span style="font-size: 0.65rem; color: var(--text-muted);">Vie</span>
+                                        </div>
+                                        <div class="bar-col" style="display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 1;">
+                                            <div class="bar-fill" style="width: 8px; height: 78px; background: linear-gradient(to top, var(--accent-purple), var(--accent-blue)); border-radius: 4px; box-shadow: 0 0 8px rgba(97, 62, 234, 0.25);"></div>
+                                            <span style="font-size: 0.65rem; color: var(--text-muted);">Sáb</span>
+                                        </div>
+                                        <div class="bar-col" style="display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 1;">
+                                            <div class="bar-fill" style="width: 8px; height: 75px; background: linear-gradient(to top, var(--accent-purple), var(--accent-blue)); border-radius: 4px; box-shadow: 0 0 8px rgba(97, 62, 234, 0.25);"></div>
+                                            <span style="font-size: 0.65rem; color: var(--text-muted);">Dom</span>
+                                        </div>
+                                        <div class="bar-col" style="display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 1;">
+                                            <div class="bar-fill" style="width: 8px; height: 72px; background: linear-gradient(to top, var(--accent-purple), var(--accent-blue)); border-radius: 4px; box-shadow: 0 0 8px rgba(97, 62, 234, 0.25);"></div>
+                                            <span style="font-size: 0.65rem; color: var(--text-muted);">Mar</span>
+                                        </div>
+                                        <div class="bar-col" style="display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 1;">
+                                            <div class="bar-fill" style="width: 8px; height: 79px; background: linear-gradient(to top, var(--accent-purple), var(--accent-blue)); border-radius: 4px; box-shadow: 0 0 8px rgba(97, 62, 234, 0.25);" id="bar-fill-today"></div>
+                                            <span style="font-size: 0.65rem; color: var(--text-muted);">Hoy</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Tiempo de Respuesta (24 horas) -->
+                            <div class="office-status-card" style="background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; padding: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); display: flex; flex-direction: column;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                                    <h4 style="margin: 0; font-size: 0.95rem; font-weight: 700; color: var(--text-primary);">Tiempo de Respuesta</h4>
+                                    <span style="font-size: 0.72rem; color: var(--text-secondary);">Promedio general</span>
+                                </div>
+                                <div style="font-size: 1.25rem; font-weight: 700; color: var(--text-primary); display: flex; align-items: baseline; gap: 4px;" id="response-time-avg">
+                                    5 <span style="font-size: 0.8rem; font-weight: 600; color: var(--text-secondary);">min</span>
+                                </div>
+                                
+                                <!-- Line chart -->
+                                <div class="response-time-graph-container" style="flex: 1; height: 70px; position: relative; margin-top: 10px;">
+                                    <svg viewBox="0 0 200 100" style="width: 100%; height: 100%;" preserveAspectRatio="none">
+                                        <defs>
+                                            <linearGradient id="responseTimeGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                                                <stop offset="0%" stop-color="var(--accent-purple)" stop-opacity="0.3"/>
+                                                <stop offset="100%" stop-color="var(--accent-purple)" stop-opacity="0"/>
+                                            </linearGradient>
+                                        </defs>
+                                        <line x1="0" y1="25" x2="200" y2="25" stroke="rgba(255, 255, 255, 0.03)" stroke-width="0.75" stroke-dasharray="2 2"/>
+                                        <line x1="0" y1="50" x2="200" y2="50" stroke="rgba(255, 255, 255, 0.03)" stroke-width="0.75" stroke-dasharray="2 2"/>
+                                        <line x1="0" y1="75" x2="200" y2="75" stroke="rgba(255, 255, 255, 0.03)" stroke-width="0.75" stroke-dasharray="2 2"/>
+                                        
+                                        <!-- Area under line -->
+                                        <path d="M 0 80 Q 25 70 50 75 T 100 40 T 150 45 T 200 30 L 200 100 L 0 100 Z" fill="url(#responseTimeGrad)" id="graph-area-path"/>
+                                        <!-- Line stroke -->
+                                        <path d="M 0 80 Q 25 70 50 75 T 100 40 T 150 45 T 200 30" fill="none" stroke="var(--accent-purple)" stroke-width="2" style="filter: drop-shadow(0 0 4px var(--accent-purple));" id="graph-line-path"/>
+                                        
+                                        <circle cx="50" cy="75" r="3" fill="var(--accent-purple)" stroke="white" stroke-width="1" id="graph-dot-1"/>
+                                        <circle cx="100" cy="40" r="3" fill="var(--accent-purple)" stroke="white" stroke-width="1" id="graph-dot-2"/>
+                                        <circle cx="150" cy="45" r="3" fill="var(--accent-purple)" stroke="white" stroke-width="1" id="graph-dot-3"/>
+                                        <circle cx="200" cy="30" r="3" fill="var(--accent-purple)" stroke="white" stroke-width="1" id="graph-dot-4"/>
+                                    </svg>
+                                </div>
+                                
+                                <!-- Eje X -->
+                                <div style="display: flex; justify-content: space-between; font-size: 0.65rem; color: var(--text-muted); margin-top: 4px;">
+                                    <span>00:00</span>
+                                    <span>06:00</span>
+                                    <span>12:00</span>
+                                    <span>18:00</span>
+                                    <span>24:00</span>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <!-- Fila Inferior: Estado por Oficina y Métricas en tiempo real -->
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-bottom: 10px;">
+                            
+                            <!-- Estado por Oficina -->
+                            <div class="office-status-card" style="background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; padding: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.15);">
+                                <h4 style="margin: 0; font-size: 0.95rem; font-weight: 700; color: var(--text-primary);">Estado por Oficina</h4>
+                                <div style="display: flex; gap: 20px; align-items: center; margin-top: 15px;">
+                                    
+                                    <!-- Mapa interactivo de Chile -->
+                                    <div class="office-map-container" style="position: relative; width: 120px; height: 180px; flex-shrink: 0; background-color: rgba(0,0,0,0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.02);">
+                                        <svg viewBox="0 0 100 200" style="width: 100%; height: 100%; filter: drop-shadow(0 0 8px rgba(50, 102, 235, 0.2));">
+                                            <path d="M 60 10 Q 55 40 50 70 T 48 120 T 40 170 T 30 195" fill="none" stroke="rgba(255, 255, 255, 0.12)" stroke-width="3" stroke-linecap="round"/>
+                                            <path d="M 60 10 Q 55 40 50 70 T 48 120 T 40 170 T 30 195" fill="none" stroke="var(--accent-blue)" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="2 3"/>
+                                        </svg>
+                                        <!-- Map Pins -->
+                                        <div class="map-pin pin-antofagasta" style="position: absolute; top: 40px; left: 52px;">
+                                            <span class="pin-dot status-green"></span>
+                                            <span class="pin-pulse status-green"></span>
+                                        </div>
+                                        <div class="map-pin pin-vina" style="position: absolute; top: 90px; left: 49px;">
+                                            <span class="pin-dot status-yellow"></span>
+                                            <span class="pin-pulse status-yellow"></span>
+                                        </div>
+                                        <div class="map-pin pin-santiago" style="position: absolute; top: 105px; left: 48px;">
+                                            <span class="pin-dot status-green"></span>
+                                            <span class="pin-pulse status-green"></span>
+                                        </div>
+                                        <div class="map-pin pin-concepcion" style="position: absolute; top: 140px; left: 44px;">
+                                            <span class="pin-dot status-red"></span>
+                                            <span class="pin-pulse status-red"></span>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Listado de oficinas -->
+                                    <div class="office-list" style="flex: 1; display: flex; flex-direction: column; gap: 12px;">
+                                        
+                                        <!-- Casa Matriz (Santiago) -->
+                                        <div class="office-item" style="border-bottom: 1px solid rgba(255,255,255,0.02); padding-bottom: 8px;">
+                                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+                                                <div style="display: flex; align-items: center; gap: 6px;">
+                                                    <span style="width: 6px; height: 6px; border-radius: 50%; background-color: var(--accent-green); display: inline-block; box-shadow: 0 0 6px var(--accent-green);" id="office-dot-santiago"></span>
+                                                    <span style="font-size: 0.8rem; font-weight: 600; color: var(--text-primary);">Casa Matriz <span style="font-size: 0.72rem; color: var(--text-muted); font-weight: 500;">(Santiago)</span></span>
+                                                </div>
+                                                <span class="status-badge" style="font-size: 0.65rem; padding: 1px 6px; border-radius: 4px; background-color: rgba(29, 200, 109, 0.12); color: var(--accent-green);" id="office-status-santiago">Operativo</span>
+                                            </div>
+                                            <div style="font-size: 0.72rem; color: var(--text-secondary); display: flex; align-items: center; gap: 4px; padding-left: 12px;">
+                                                Usuarios: <span style="font-weight: 600; color: var(--text-primary);" id="office-users-santiago">214</span> <i class="fas fa-users" style="font-size: 0.68rem; color: var(--text-muted);"></i>
+                                            </div>
+                                        </div>
+
+                                        <!-- Viña del Mar -->
+                                        <div class="office-item" style="border-bottom: 1px solid rgba(255,255,255,0.02); padding-bottom: 8px;">
+                                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+                                                <div style="display: flex; align-items: center; gap: 6px;">
+                                                    <span style="width: 6px; height: 6px; border-radius: 50%; background-color: #f59e0b; display: inline-block; box-shadow: 0 0 6px #f59e0b;" id="office-dot-vina"></span>
+                                                    <span style="font-size: 0.8rem; font-weight: 600; color: var(--text-primary);">Viña del Mar</span>
+                                                </div>
+                                                <span class="status-badge" style="font-size: 0.65rem; padding: 1px 6px; border-radius: 4px; background-color: rgba(245, 158, 11, 0.12); color: #f59e0b;" id="office-status-vina">Advertencia</span>
+                                            </div>
+                                            <div style="font-size: 0.72rem; color: var(--text-secondary); display: flex; align-items: center; gap: 4px; padding-left: 12px;">
+                                                Usuarios: <span style="font-weight: 600; color: var(--text-primary);" id="office-users-vina">98</span> <i class="fas fa-users" style="font-size: 0.68rem; color: var(--text-muted);"></i>
+                                            </div>
+                                        </div>
+
+                                        <!-- Antofagasta -->
+                                        <div class="office-item" style="border-bottom: 1px solid rgba(255,255,255,0.02); padding-bottom: 8px;">
+                                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+                                                <div style="display: flex; align-items: center; gap: 6px;">
+                                                    <span style="width: 6px; height: 6px; border-radius: 50%; background-color: var(--accent-green); display: inline-block; box-shadow: 0 0 6px var(--accent-green);" id="office-dot-antofagasta"></span>
+                                                    <span style="font-size: 0.8rem; font-weight: 600; color: var(--text-primary);">Antofagasta</span>
+                                                </div>
+                                                <span class="status-badge" style="font-size: 0.65rem; padding: 1px 6px; border-radius: 4px; background-color: rgba(29, 200, 109, 0.12); color: var(--accent-green);" id="office-status-antofagasta">Operativo</span>
+                                            </div>
+                                            <div style="font-size: 0.72rem; color: var(--text-secondary); display: flex; align-items: center; gap: 4px; padding-left: 12px;">
+                                                Usuarios: <span style="font-weight: 600; color: var(--text-primary);" id="office-users-antofagasta">72</span> <i class="fas fa-users" style="font-size: 0.68rem; color: var(--text-muted);"></i>
+                                            </div>
+                                        </div>
+
+                                        <!-- Concepción -->
+                                        <div class="office-item">
+                                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+                                                <div style="display: flex; align-items: center; gap: 6px;">
+                                                    <span style="width: 6px; height: 6px; border-radius: 50%; background-color: #ef4444; display: inline-block; box-shadow: 0 0 6px #ef4444;" id="office-dot-concepcion"></span>
+                                                    <span style="font-size: 0.8rem; font-weight: 600; color: var(--text-primary);">Concepción</span>
+                                                </div>
+                                                <span class="status-badge" style="font-size: 0.65rem; padding: 1px 6px; border-radius: 4px; background-color: rgba(239, 68, 68, 0.12); color: #ef4444;" id="office-status-concepcion">Incidente</span>
+                                            </div>
+                                            <div style="font-size: 0.72rem; color: var(--text-secondary); display: flex; align-items: center; gap: 4px; padding-left: 12px;">
+                                                Usuarios: <span style="font-weight: 600; color: var(--text-primary);" id="office-users-concepcion">45</span> <i class="fas fa-users" style="font-size: 0.68rem; color: var(--text-muted);"></i>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Métricas en Tiempo Real (Grid de 2x2) -->
+                            <div class="office-status-card" style="background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; padding: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); display: flex; flex-direction: column;">
+                                <h4 style="margin: 0 0 15px 0; font-size: 0.95rem; font-weight: 700; color: var(--text-primary);">Métricas en tiempo real</h4>
+                                
+                                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; flex: 1;">
+                                    
+                                    <!-- Usuarios conectados -->
+                                    <div style="background-color: rgba(255,255,255,0.01); border: 1px solid rgba(255,255,255,0.02); border-radius: 10px; padding: 12px; display: flex; flex-direction: column; justify-content: center; gap: 4px;">
+                                        <span style="font-size: 0.72rem; color: var(--text-muted);">Usuarios conectados</span>
+                                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                                            <span style="font-size: 1.3rem; font-weight: 700; color: var(--text-primary);" id="metric-connected-users">429</span>
+                                            <span style="font-size: 0.7rem; font-weight: 600; color: var(--accent-green); background-color: rgba(29, 200, 109, 0.08); padding: 2px 6px; border-radius: 4px;"><i class="fas fa-arrow-up"></i> +12%</span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Tickets abiertos -->
+                                    <div style="background-color: rgba(255,255,255,0.01); border: 1px solid rgba(255,255,255,0.02); border-radius: 10px; padding: 12px; display: flex; flex-direction: column; justify-content: center; gap: 4px;">
+                                        <span style="font-size: 0.72rem; color: var(--text-muted);">Tickets abiertos</span>
+                                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                                            <span style="font-size: 1.3rem; font-weight: 700; color: var(--text-primary);" id="metric-open-tickets">2</span>
+                                            <i class="fas fa-ticket-alt" style="color: var(--accent-blue); font-size: 1.1rem; opacity: 0.6;"></i>
+                                        </div>
+                                    </div>
+
+                                    <!-- Incidentes activos -->
+                                    <div style="background-color: rgba(255,255,255,0.01); border: 1px solid rgba(255,255,255,0.02); border-radius: 10px; padding: 12px; display: flex; flex-direction: column; justify-content: center; gap: 4px;">
+                                        <span style="font-size: 0.72rem; color: var(--text-muted);">Incidentes activos</span>
+                                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                                            <span style="font-size: 1.3rem; font-weight: 700; color: var(--text-primary);" id="metric-active-incidents">0</span>
+                                            <span style="font-size: 0.7rem; font-weight: 600; color: var(--accent-green); background-color: rgba(29, 200, 109, 0.08); padding: 2px 6px; border-radius: 4px;" id="badge-incident-rate"><i class="fas fa-check"></i> 100%</span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Satisfacción -->
+                                    <div style="background-color: rgba(255,255,255,0.01); border: 1px solid rgba(255,255,255,0.02); border-radius: 10px; padding: 12px; display: flex; flex-direction: column; justify-content: center; gap: 4px;">
+                                        <span style="font-size: 0.72rem; color: var(--text-muted);">Satisfacción</span>
+                                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                                            <span style="font-size: 1.3rem; font-weight: 700; color: var(--text-primary);" id="metric-satisfaction">98%</span>
+                                            <i class="fas fa-star" style="color: #f59e0b; font-size: 1.1rem; filter: drop-shadow(0 0 3px rgba(245, 158, 11, 0.4));"></i>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <!-- Columna Derecha: Incidentes y Novedades + Mantenimiento -->
+                    <div class="status-sidebar-col" style="display: flex; flex-direction: column; gap: 20px;">
+                        
+                        <!-- Incidentes y Novedades -->
+                        <div class="chat-details-col" style="width: 100%; border-radius: 16px; min-height: auto; box-shadow: 0 4px 20px rgba(0,0,0,0.15); display: flex; flex-direction: column; overflow: hidden; background-color: var(--bg-card); border: 1px solid var(--border-color);">
+                            <div class="chat-col-header" style="display: flex; justify-content: space-between; align-items: center;">
+                                <h3 style="margin: 0; font-size: 0.95rem; font-weight: 700; color: var(--text-primary);">Incidentes y Novedades</h3>
+                                <a href="#" style="font-size: 0.78rem; font-weight: 600; color: var(--accent-blue); text-decoration: none;">Ver todo</a>
+                            </div>
+                            
+                            <div style="padding: 20px; display: flex; flex-direction: column; gap: 16px;" id="system-incidents-timeline">
+                                
+                                <!-- Evento 1: VPN Restaurada -->
+                                <div class="timeline-event" style="display: flex; gap: 12px; position: relative;">
+                                    <div class="timeline-line" style="position: absolute; left: 16px; top: 32px; bottom: -24px; width: 2px; background-color: rgba(255,255,255,0.03);"></div>
+                                    <div style="width: 32px; height: 32px; border-radius: 50%; background-color: rgba(29, 200, 109, 0.08); border: 1px solid rgba(29, 200, 109, 0.15); display: flex; align-items: center; justify-content: center; flex-shrink: 0; z-index: 2;">
+                                        <i class="fas fa-check" style="font-size: 0.78rem; color: var(--accent-green);"></i>
+                                    </div>
+                                    <div style="flex: 1; min-width: 0; font-size: 0.8rem;">
+                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
+                                            <span style="font-weight: 700; color: var(--text-primary);">VPN Restaurada</span>
+                                            <span class="status-badge" style="font-size: 0.65rem; padding: 1px 6px; border-radius: 4px; background-color: rgba(29, 200, 109, 0.12); color: var(--accent-green);">Resuelto</span>
+                                        </div>
+                                        <div style="font-size: 0.72rem; color: var(--text-muted); margin-bottom: 6px;" class="event-time-1">10:20 AM</div>
+                                        <p style="margin: 0; color: var(--text-secondary); line-height: 1.4; font-size: 0.78rem;">El servicio de VPN vuelve a operar con normalidad en todas las sucursales.</p>
+                                    </div>
+                                </div>
+
+                                <!-- Evento 2: Lentitud en ERP -->
+                                <div class="timeline-event" style="display: flex; gap: 12px; position: relative;">
+                                    <div class="timeline-line" style="position: absolute; left: 16px; top: 32px; bottom: -24px; width: 2px; background-color: rgba(255,255,255,0.03);"></div>
+                                    <div style="width: 32px; height: 32px; border-radius: 50%; background-color: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.15); display: flex; align-items: center; justify-content: center; flex-shrink: 0; z-index: 2;">
+                                        <i class="fas fa-exclamation" style="font-size: 0.78rem; color: #f59e0b;"></i>
+                                    </div>
+                                    <div style="flex: 1; min-width: 0; font-size: 0.8rem;">
+                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
+                                            <span style="font-weight: 700; color: var(--text-primary);">Lentitud en ERP</span>
+                                            <span class="status-badge" style="font-size: 0.65rem; padding: 1px 6px; border-radius: 4px; background-color: rgba(245, 158, 11, 0.12); color: #f59e0b;">En curso</span>
+                                        </div>
+                                        <div style="font-size: 0.72rem; color: var(--text-muted); margin-bottom: 6px;" class="event-time-2">09:40 AM</div>
+                                        <p style="margin: 0; color: var(--text-secondary); line-height: 1.4; font-size: 0.78rem;">Estamos experimentando tiempos de respuesta elevados. El equipo técnico trabaja para optimizar el servidor.</p>
+                                    </div>
+                                </div>
+
+                                <!-- Evento 3: Caída Internet Oficina Norte -->
+                                <div class="timeline-event" style="display: flex; gap: 12px; position: relative;">
+                                    <div class="timeline-line" style="position: absolute; left: 16px; top: 32px; bottom: -24px; width: 2px; background-color: rgba(255,255,255,0.03);"></div>
+                                    <div style="width: 32px; height: 32px; border-radius: 50%; background-color: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.15); display: flex; align-items: center; justify-content: center; flex-shrink: 0; z-index: 2;">
+                                        <i class="fas fa-times" style="font-size: 0.78rem; color: #ef4444;"></i>
+                                    </div>
+                                    <div style="flex: 1; min-width: 0; font-size: 0.8rem;">
+                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
+                                            <span style="font-weight: 700; color: var(--text-primary); text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">Caída Internet Norte</span>
+                                            <span class="status-badge" style="font-size: 0.65rem; padding: 1px 6px; border-radius: 4px; background-color: rgba(239, 68, 68, 0.12); color: #ef4444;">Incidente</span>
+                                        </div>
+                                        <div style="font-size: 0.72rem; color: var(--text-muted); margin-bottom: 6px;" class="event-time-3">09:15 AM</div>
+                                        <p style="margin: 0; color: var(--text-secondary); line-height: 1.4; font-size: 0.78rem;">Interrupción total de servicio en Oficina Norte (Viña del Mar). Reportado al proveedor de enlaces.</p>
+                                    </div>
+                                </div>
+
+                                <!-- Evento 4: Mantenimiento Programado -->
+                                <div class="timeline-event" style="display: flex; gap: 12px; position: relative;">
+                                    <div style="width: 32px; height: 32px; border-radius: 50%; background-color: rgba(50, 102, 235, 0.08); border: 1px solid rgba(50, 102, 235, 0.15); display: flex; align-items: center; justify-content: center; flex-shrink: 0; z-index: 2;">
+                                        <i class="fas fa-info" style="font-size: 0.78rem; color: var(--accent-blue);"></i>
+                                    </div>
+                                    <div style="flex: 1; min-width: 0; font-size: 0.8rem;">
+                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
+                                            <span style="font-weight: 700; color: var(--text-primary);">Mantenimiento</span>
+                                            <span class="status-badge" style="font-size: 0.65rem; padding: 1px 6px; border-radius: 4px; background-color: rgba(50, 102, 235, 0.12); color: var(--accent-blue);">Informativo</span>
+                                        </div>
+                                        <div style="font-size: 0.72rem; color: var(--text-muted); margin-bottom: 6px;" class="event-time-4">08:55 AM</div>
+                                        <p style="margin: 0; color: var(--text-secondary); line-height: 1.4; font-size: 0.78rem;">Mantenimiento preventivo completado en la central telefónica. Todos los canales VoIP operativos.</p>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
+                        <!-- Mantenimiento Programado -->
+                        <div class="chat-details-col" style="width: 100%; border-radius: 16px; min-height: auto; box-shadow: 0 4px 20px rgba(0,0,0,0.15); display: flex; flex-direction: column; overflow: hidden; background-color: var(--bg-card); border: 1px solid var(--border-color);">
+                            <div class="chat-col-header">
+                                <h3 style="margin: 0; font-size: 0.95rem; font-weight: 700; color: var(--text-primary);"><i class="far fa-calendar-alt" style="color: var(--accent-blue); margin-right: 6px;"></i> Mantenimientos</h3>
+                            </div>
+                            
+                            <div style="padding: 16px 20px; display: flex; flex-direction: column; gap: 12px;">
+                                
+                                <!-- Item 1: Servidor BD -->
+                                <div style="display: flex; justify-content: space-between; align-items: center; background-color: rgba(255,255,255,0.01); border: 1px solid rgba(255,255,255,0.02); border-radius: 10px; padding: 10px 14px;">
+                                    <div>
+                                        <h5 style="margin: 0 0 2px 0; font-size: 0.82rem; font-weight: 600; color: var(--text-primary);">Servidor de Base de Datos</h5>
+                                        <span style="font-size: 0.72rem; color: var(--text-secondary);"><i class="far fa-clock"></i> 31 May - 22:00</span>
+                                    </div>
+                                    <span style="font-size: 0.7rem; font-weight: 600; color: var(--accent-blue); background-color: rgba(50, 102, 235, 0.08); padding: 4px 8px; border-radius: 4px; border: 1px solid rgba(50, 102, 235, 0.15);">Programado</span>
+                                </div>
+
+                                <!-- Item 2: Actualización de ERP -->
+                                <div style="display: flex; justify-content: space-between; align-items: center; background-color: rgba(255,255,255,0.01); border: 1px solid rgba(255,255,255,0.02); border-radius: 10px; padding: 10px 14px;">
+                                    <div>
+                                        <h5 style="margin: 0 0 2px 0; font-size: 0.82rem; font-weight: 600; color: var(--text-primary);">Actualización de ERP</h5>
+                                        <span style="font-size: 0.72rem; color: var(--text-secondary);"><i class="far fa-clock"></i> 02 Jun - 03:00</span>
+                                    </div>
+                                    <span style="font-size: 0.7rem; font-weight: 600; color: var(--accent-blue); background-color: rgba(50, 102, 235, 0.08); padding: 4px 8px; border-radius: 4px; border: 1px solid rgba(50, 102, 235, 0.15);">Programado</span>
+                                </div>
+
+                                <!-- Item 3: Respaldo Completo -->
+                                <div style="display: flex; justify-content: space-between; align-items: center; background-color: rgba(255,255,255,0.01); border: 1px solid rgba(255,255,255,0.02); border-radius: 10px; padding: 10px 14px;">
+                                    <div>
+                                        <h5 style="margin: 0 0 2px 0; font-size: 0.82rem; font-weight: 600; color: var(--text-primary);">Respaldo Completo</h5>
+                                        <span style="font-size: 0.72rem; color: var(--text-secondary);"><i class="far fa-clock"></i> 03 Jun - 23:00</span>
+                                    </div>
+                                    <span style="font-size: 0.7rem; font-weight: 600; color: var(--accent-blue); background-color: rgba(50, 102, 235, 0.08); padding: 4px 8px; border-radius: 4px; border: 1px solid rgba(50, 102, 235, 0.15);">Programado</span>
+                                </div>
+
+                            </div>
+                        </div>
+
+                        <!-- Suscribirse a alertas (Widget de switch) -->
+                        <div style="background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; padding: 16px 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <i class="fas fa-bell" style="color: var(--accent-blue); font-size: 1.1rem; filter: drop-shadow(0 0 3px rgba(50, 102, 235, 0.4));"></i>
+                                <div>
+                                    <h5 style="margin: 0; font-size: 0.82rem; font-weight: 700; color: var(--text-primary);">Suscríbete a alertas</h5>
+                                    <span style="font-size: 0.7rem; color: var(--text-secondary);">Recibe notificaciones por correo</span>
+                                </div>
+                            </div>
+                            <label class="switch" style="position: relative; display: inline-block; width: 44px; height: 22px;">
+                                <input type="checkbox" id="system-alert-toggle">
+                                <span class="slider round" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(255,255,255,0.05); border: 1px solid var(--border-color); transition: .4s; border-radius: 22px;"></span>
+                            </label>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============ PÁGINA TUTORIALES (BASE DE CONOCIMIENTOS MODERNIZED) ============ -->
+            <div id="page-tutoriales" class="page-section">
+                <!-- Hero Header Minimalista -->
+                <div class="kb-hero">
+                    <div class="kb-hero-content">
+                        <div class="kb-hero-text">
+                            <span class="kb-badge-glow">Base de Conocimientos</span>
+                            <h1>¿Cómo podemos ayudarte hoy?</h1>
+                            <p>Encuentra soluciones técnicas paso a paso, guías de configuración y respuestas de soporte instantáneas.</p>
+                        </div>
+                        <div class="kb-hero-visual">
+                            <svg class="kb-svg-art" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                                <defs>
+                                    <linearGradient id="kbGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                        <stop offset="0%" style="stop-color:#613eea;stop-opacity:0.8" />
+                                        <stop offset="100%" style="stop-color:#3266eb;stop-opacity:0.8" />
+                                    </linearGradient>
+                                    <filter id="kbGlow" x="-20%" y="-20%" width="140%" height="140%">
+                                        <feGaussianBlur stdDeviation="8" result="blur" />
+                                        <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                                    </filter>
+                                </defs>
+                                <circle cx="100" cy="100" r="50" fill="url(#kbGrad)" filter="url(#kbGlow)" />
+                                <rect x="60" y="60" width="80" height="80" rx="15" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="2" transform="rotate(15 100 100)" />
+                                <rect x="75" y="75" width="50" height="50" rx="8" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="1.5" transform="rotate(-10 100 100)" />
+                                <circle cx="100" cy="100" r="3" fill="#ffffff" />
+                                <line x1="100" y1="100" x2="135" y2="65" stroke="rgba(255,255,255,0.6)" stroke-width="1.5" stroke-dasharray="3,3" />
+                                <circle cx="135" cy="65" r="5" fill="#1dc86d" />
+                            </svg>
+                        </div>
+                    </div>
+                    
+                    <!-- Gran buscador interactivo -->
+                    <div class="kb-search-container">
+                        <i class="fas fa-search kb-search-icon"></i>
+                        <input type="text" id="kb-search-input" placeholder="Buscar tutoriales, códigos de error o palabras clave...">
+                        <span class="kb-search-keyhint"><kbd>Ctrl</kbd> <kbd>K</kbd></span>
+                    </div>
+                </div>
+
+                <!-- Filtros por Categoría en forma de Grid -->
+                <div class="kb-categories-section">
+                    <h2 class="kb-section-title">Explorar por Categorías</h2>
+                    <div class="kb-categories-grid">
+                        <button class="kb-cat-card active" data-cat="todos">
+                            <div class="kb-cat-icon-wrapper"><i class="fas fa-th-large"></i></div>
+                            <span class="kb-cat-title">Todos</span>
+                            <span class="kb-cat-desc">Ver todas las guías</span>
+                        </button>
+                        <button class="kb-cat-card" data-cat="excel">
+                            <div class="kb-cat-icon-wrapper"><i class="far fa-file-excel"></i></div>
+                            <span class="kb-cat-title">Excel</span>
+                            <span class="kb-cat-desc">Hojas de cálculo</span>
+                        </button>
+                        <button class="kb-cat-card" data-cat="windows">
+                            <div class="kb-cat-icon-wrapper"><i class="fab fa-windows"></i></div>
+                            <span class="kb-cat-title">Windows</span>
+                            <span class="kb-cat-desc">Sistema Operativo</span>
+                        </button>
+                        <button class="kb-cat-card" data-cat="outlook">
+                            <div class="kb-cat-icon-wrapper"><i class="far fa-envelope"></i></div>
+                            <span class="kb-cat-title">Outlook</span>
+                            <span class="kb-cat-desc">Correo y Calendario</span>
+                        </button>
+                        <button class="kb-cat-card" data-cat="redes">
+                            <div class="kb-cat-icon-wrapper"><i class="fas fa-wifi"></i></div>
+                            <span class="kb-cat-title">Redes</span>
+                            <span class="kb-cat-desc">Conexión e Internet</span>
+                        </button>
+                        <button class="kb-cat-card" data-cat="seguridad">
+                            <div class="kb-cat-icon-wrapper"><i class="fas fa-shield-alt"></i></div>
+                            <span class="kb-cat-title">Seguridad</span>
+                            <span class="kb-cat-desc">Antivirus y Accesos</span>
+                        </button>
+                        <button class="kb-cat-card" data-cat="erp">
+                            <div class="kb-cat-icon-wrapper"><i class="fas fa-cubes"></i></div>
+                            <span class="kb-cat-title">Odoo / ERP</span>
+                            <span class="kb-cat-desc">Gestión Empresarial</span>
+                        </button>
+                        <button class="kb-cat-card" data-cat="hardware">
+                            <div class="kb-cat-icon-wrapper"><i class="fas fa-microchip"></i></div>
+                            <span class="kb-cat-title">Hardware</span>
+                            <span class="kb-cat-desc">Equipos y Periféricos</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Listado Dinámico de Tutoriales -->
+                <div class="kb-tutorials-section">
+                    <div class="kb-section-header">
+                        <h2 class="kb-section-title">Tutoriales Populares</h2>
+                        <span id="kb-results-count" class="kb-results-count">Mostrando 6 tutoriales</span>
+                    </div>
+                    <div class="kb-grid" id="kb-tutorials-grid">
+                        <!-- Renderizado dinámico desde script.js -->
+                    </div>
+                </div>
+
+                <!-- CTA para Soporte Directo -->
+                <div class="kb-bottom-cta">
+                    <div class="kb-cta-glow"></div>
+                    <div class="kb-cta-content">
+                        <h3>¿No encontraste la solución?</h3>
+                        <p>Nuestro equipo de soporte técnico está disponible para atender tu caso particular.</p>
+                    </div>
+                    <button class="kb-cta-btn" id="kb-contactar-soporte-btn">
+                        <i class="fas fa-headset"></i> Crear Ticket de Soporte
+                    </button>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- ============ MODAL DE DETALLES DEL TICKET ============ -->
+    <div id="ticket-detail-modal" class="modal-backdrop">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div class="modal-title-area">
+                    <span id="modal-ticket-id" class="modal-ticket-id">#TK-2026-0000</span>
+                    <h2 id="modal-ticket-asunto">Asunto del Ticket</h2>
+                </div>
+                <button class="modal-close-btn" id="modal-close-btn"><i class="fas fa-times"></i></button>
+            </div>
+            
+            <div class="modal-body">
+                <!-- Metadatos del ticket -->
+                <div class="modal-meta-grid">
+                    <div class="meta-item">
+                        <span class="meta-label">Categoría:</span>
+                        <span id="modal-ticket-categoria" class="meta-val">Cuenta y Acceso</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">Prioridad:</span>
+                        <span id="modal-ticket-prioridad" class="priority-badge priority-media">Media</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">Estado:</span>
+                        <span id="modal-ticket-estado" class="status-badge status-abierto">Abierto</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">Creado:</span>
+                        <span id="modal-ticket-fecha" class="meta-val">26 May 2026</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">Sede:</span>
+                        <span id="modal-ticket-sede" class="meta-val">-</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">Teléfono:</span>
+                        <span id="modal-ticket-telefono" class="meta-val">-</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">Dispositivo:</span>
+                        <span id="modal-ticket-dispositivo" class="meta-val">-</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">Impacto:</span>
+                        <span id="modal-ticket-impacto" class="meta-val">-</span>
+                    </div>
+                </div>
+
+                <!-- Descripción principal -->
+                <div class="modal-description-box">
+                    <h3>Descripción</h3>
+                    <p id="modal-ticket-descripcion">Detalles de la descripción aquí...</p>
+                </div>
+
+                <!-- Respuestas / Conversación -->
+                <div class="modal-replies-section">
+                    <h3>Conversación</h3>
+                    <div id="modal-replies-list" class="replies-list">
+                        <!-- Las respuestas se cargarán aquí dinámicamente -->
+                        <div class="reply-bubble system-message">
+                            No hay respuestas en este ticket todavía.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <form id="modal-reply-form" class="modal-reply-form">
+                    <div class="reply-form-top" style="justify-content: flex-end;">
+                        
+                        <!-- Cambiar estado de ticket rápidamente -->
+                        <div class="status-updater">
+                            <label for="modal-status-select">Cambiar estado:</label>
+                            <select id="modal-status-select">
+                                <option value="abierto">Abierto</option>
+                                <option value="en progreso">En Progreso</option>
+                                <option value="en espera">En Espera</option>
+                                <option value="resuelto">Resuelto</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="reply-input-group">
+                        <textarea id="modal-reply-input" placeholder="Escribe un mensaje de respuesta..." required></textarea>
+                        <button type="submit" class="reply-submit-btn"><i class="fas fa-paper-plane"></i> Enviar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ MODAL DE DETALLE DEL TUTORIAL ============ -->
+    <div id="tutorial-detail-modal" class="modal-backdrop">
+        <div class="modal-card modal-large">
+            <div class="modal-header">
+                <div class="modal-title-area">
+                    <span id="modal-tut-category" class="modal-ticket-id">EXCEL / CONFIGURACIÓN</span>
+                    <h2 id="modal-tut-title">Título del Tutorial</h2>
+                </div>
+                <button class="modal-close-btn" id="modal-tut-close-btn"><i class="fas fa-times"></i></button>
+            </div>
+            
+            <div class="modal-body">
+                <!-- Fila de metadatos rápidos -->
+                <div class="tut-meta-row">
+                    <span class="tut-meta-pill"><i class="far fa-clock"></i> <span id="modal-tut-time">5 mins</span></span>
+                    <span class="tut-meta-pill"><i class="fas fa-signal"></i> Dificultad: <span id="modal-tut-difficulty">Fácil</span></span>
+                    <span id="modal-tut-state" class="status-badge status-resuelto">Resuelto</span>
+                </div>
+
+                <!-- Descripción -->
+                <div class="tut-description-section">
+                    <p id="modal-tut-description">Descripción corta del tutorial...</p>
+                </div>
+
+                <!-- Causas Comunes -->
+                <div class="tut-section-block">
+                    <h3 class="tut-section-subtitle"><i class="fas fa-exclamation-triangle"></i> Posibles Causas</h3>
+                    <ul id="modal-tut-causes" class="tut-causes-list">
+                        <!-- Lista de causas comunes -->
+                    </ul>
+                </div>
+
+                <!-- Soluciones Paso a Paso -->
+                <div class="tut-section-block">
+                    <h3 class="tut-section-subtitle"><i class="fas fa-tools"></i> Solución Paso a Paso</h3>
+                    <div id="modal-tut-steps" class="tut-steps-container">
+                        <!-- Pasos dinámicos en HTML -->
+                    </div>
+                </div>
+
+                <!-- Elemento Extra: Simulación de Video Embed -->
+                <div class="tut-section-block" id="modal-tut-video-block">
+                    <h3 class="tut-section-subtitle"><i class="fas fa-video"></i> Video Tutorial Guía</h3>
+                    <div class="tut-video-wrapper">
+                        <div class="tut-video-placeholder">
+                            <i class="fas fa-play-circle"></i>
+                            <span>Reproducir Video Tutorial</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Feedback Footer -->
+            <div class="modal-footer tut-feedback-footer">
+                <div class="tut-feedback-prompt">
+                    <span>¿Te fue útil este tutorial?</span>
+                    <div class="tut-feedback-buttons">
+                        <button class="feedback-btn btn-yes" id="tut-feedback-yes">
+                            <i class="far fa-thumbs-up"></i> Sí, me sirvió
+                        </button>
+                        <button class="feedback-btn btn-no" id="tut-feedback-no">
+                            <i class="far fa-thumbs-down"></i> No resolvió mi problema
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ MODAL DE AGREGAR/EDITAR EQUIPO (CRUD) ============ -->
+    <div id="equipo-form-modal" class="modal-backdrop">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div class="modal-title-area">
+                    <span id="equipo-form-mode" class="modal-ticket-id">NUEVO REGISTRO</span>
+                    <h2 id="equipo-form-title">Agregar Nuevo Equipo</h2>
+                </div>
+                <button class="modal-close-btn" id="equipo-form-close-btn"><i class="fas fa-times"></i></button>
+            </div>
+            
+            <form id="equipo-crud-form" style="display: flex; flex-direction: column; flex: 1; overflow: hidden;">
+                <input type="hidden" id="equipo-id-field">
+                <div class="modal-body" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; overflow-y: auto; flex: 1; padding: 24px;">
+                    
+                    <div class="form-group" style="grid-column: span 2;">
+                        <label for="equip-form-codigo">Código del Equipo *</label>
+                        <input type="text" id="equip-form-codigo" placeholder="Ej: PC-001" required style="width: 100%; padding: 10px; background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family);">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="equip-form-tipo">Tipo de Equipo *</label>
+                        <select id="equip-form-tipo" required style="width: 100%; padding: 10px; background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family);">
+                            <option value="laptop">Portátil (Laptop)</option>
+                            <option value="escritorio">Escritorio (PC)</option>
+                            <option value="servidor">Servidor</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="equip-form-estado">Estado del Equipo *</label>
+                        <select id="equip-form-estado" required style="width: 100%; padding: 10px; background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family);">
+                            <option value="activo">Activo</option>
+                            <option value="mantenimiento">Mantenimiento</option>
+                            <option value="baja">Baja</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="equip-form-usuario-nombre">Asignado a (Nombre) *</label>
+                        <input type="text" id="equip-form-usuario-nombre" placeholder="Ej: Ana Martínez" required style="width: 100%; padding: 10px; background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family);">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="equip-form-usuario-email">Email del Usuario *</label>
+                        <input type="email" id="equip-form-usuario-email" placeholder="Ej: ana@empresa.com" required style="width: 100%; padding: 10px; background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family);">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="equip-form-marca">Marca *</label>
+                        <input type="text" id="equip-form-marca" placeholder="Ej: Dell" required style="width: 100%; padding: 10px; background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family);">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="equip-form-modelo">Modelo *</label>
+                        <input type="text" id="equip-form-modelo" placeholder="Ej: Latitude 5420" required style="width: 100%; padding: 10px; background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family);">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="equip-form-so">Sistema Operativo *</label>
+                        <input type="text" id="equip-form-so" placeholder="Ej: Windows 11 Pro" required style="width: 100%; padding: 10px; background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family);">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="equip-form-serial">Número de Serial *</label>
+                        <input type="text" id="equip-form-serial" placeholder="Ej: ABC12-DEF34-GHI56" required style="width: 100%; padding: 10px; background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family);">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="equip-form-ram">Memoria RAM *</label>
+                        <input type="text" id="equip-form-ram" placeholder="Ej: 16 GB" required style="width: 100%; padding: 10px; background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family);">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="equip-form-disco">Disco Duro *</label>
+                        <input type="text" id="equip-form-disco" placeholder="Ej: SSD 512 GB" required style="width: 100%; padding: 10px; background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family);">
+                    </div>
+
+                </div>
+                <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 12px;">
+                    <button type="button" id="equip-form-cancel-btn" style="background-color: transparent; border: 1px solid var(--border-color); color: var(--text-secondary); padding: 10px 18px; border-radius: 8px; cursor: pointer; font-weight: 600; font-family: var(--font-family);">Cancelar</button>
+                    <button type="submit" id="equip-form-submit-btn" style="background: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-blue) 100%); color: white; border: none; padding: 10px 24px; border-radius: 8px; cursor: pointer; font-weight: 600; font-family: var(--font-family);">Guardar Equipo</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ============ MODAL DE DETALLE DEL EQUIPO (FICHA TÉCNICA) ============ -->
+    <div id="equipo-detail-modal" class="modal-backdrop">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div class="modal-title-area">
+                    <span id="modal-equip-type" class="modal-ticket-id">PORTÁTIL / ACTIVO</span>
+                    <h2 id="modal-equip-codigo">PC-001</h2>
+                </div>
+                <button class="modal-close-btn" id="equipo-detail-close-btn"><i class="fas fa-times"></i></button>
+            </div>
+            
+            <div class="modal-body">
+                <!-- Ficha del usuario asignado -->
+                <div style="background-color: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-color); border-radius: 12px; padding: 16px; display: flex; align-items: center; gap: 16px;">
+                    <div id="modal-equip-user-avatar" class="user-avatar" style="width: 50px; height: 50px; font-size: 1.2rem; margin: 0; background: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-blue) 100%);">
+                        <span>AM</span>
+                    </div>
+                    <div>
+                        <h4 id="modal-equip-user-nombre" style="font-size: 1.05rem; font-weight: 700; color: var(--text-primary); margin: 0 0 4px 0;">Ana Martínez</h4>
+                        <p id="modal-equip-user-email" style="font-size: 0.85rem; color: var(--text-secondary); margin: 0;">ana@empresa.com</p>
+                    </div>
+                </div>
+
+                <!-- Cuadrícula de Especificaciones Técnicas -->
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-top: 10px;">
+                    
+                    <div style="background-color: rgba(255, 255, 255, 0.01); border: 1px solid var(--border-color); padding: 12px; border-radius: 8px; display: flex; align-items: center; gap: 12px;">
+                        <i class="fas fa-tag" style="color: var(--accent-blue); font-size: 1.2rem; width: 24px; text-align: center;"></i>
+                        <div>
+                            <span style="font-size: 0.72rem; color: var(--text-muted); display: block; font-weight: 600; text-transform: uppercase;">Marca</span>
+                            <span id="modal-equip-marca" style="font-size: 0.9rem; color: var(--text-primary); font-weight: 500;">Dell</span>
+                        </div>
+                    </div>
+
+                    <div style="background-color: rgba(255, 255, 255, 0.01); border: 1px solid var(--border-color); padding: 12px; border-radius: 8px; display: flex; align-items: center; gap: 12px;">
+                        <i class="fas fa-laptop" style="color: var(--accent-blue); font-size: 1.2rem; width: 24px; text-align: center;"></i>
+                        <div>
+                            <span style="font-size: 0.72rem; color: var(--text-muted); display: block; font-weight: 600; text-transform: uppercase;">Modelo</span>
+                            <span id="modal-equip-modelo" style="font-size: 0.9rem; color: var(--text-primary); font-weight: 500;">Latitude 5420</span>
+                        </div>
+                    </div>
+
+                    <div style="background-color: rgba(255, 255, 255, 0.01); border: 1px solid var(--border-color); padding: 12px; border-radius: 8px; display: flex; align-items: center; gap: 12px;">
+                        <i class="fab fa-windows" style="color: var(--accent-blue); font-size: 1.2rem; width: 24px; text-align: center;"></i>
+                        <div>
+                            <span style="font-size: 0.72rem; color: var(--text-muted); display: block; font-weight: 600; text-transform: uppercase;">Sistema Operativo</span>
+                            <span id="modal-equip-so" style="font-size: 0.9rem; color: var(--text-primary); font-weight: 500;">Windows 11 Pro</span>
+                        </div>
+                    </div>
+
+                    <div style="background-color: rgba(255, 255, 255, 0.01); border: 1px solid var(--border-color); padding: 12px; border-radius: 8px; display: flex; align-items: center; gap: 12px;">
+                        <i class="fas fa-barcode" style="color: var(--accent-blue); font-size: 1.2rem; width: 24px; text-align: center;"></i>
+                        <div>
+                            <span style="font-size: 0.72rem; color: var(--text-muted); display: block; font-weight: 600; text-transform: uppercase;">Número de Serial</span>
+                            <span id="modal-equip-serial" style="font-size: 0.9rem; color: var(--text-primary); font-weight: 500;">ABC12-DEF34-GHI56</span>
+                        </div>
+                    </div>
+
+                    <div style="background-color: rgba(255, 255, 255, 0.01); border: 1px solid var(--border-color); padding: 12px; border-radius: 8px; display: flex; align-items: center; gap: 12px;">
+                        <i class="fas fa-microchip" style="color: var(--accent-blue); font-size: 1.2rem; width: 24px; text-align: center;"></i>
+                        <div>
+                            <span style="font-size: 0.72rem; color: var(--text-muted); display: block; font-weight: 600; text-transform: uppercase;">Memoria RAM</span>
+                            <span id="modal-equip-ram" style="font-size: 0.9rem; color: var(--text-primary); font-weight: 500;">16 GB</span>
+                        </div>
+                    </div>
+
+                    <div style="background-color: rgba(255, 255, 255, 0.01); border: 1px solid var(--border-color); padding: 12px; border-radius: 8px; display: flex; align-items: center; gap: 12px;">
+                        <i class="fas fa-hdd" style="color: var(--accent-blue); font-size: 1.2rem; width: 24px; text-align: center;"></i>
+                        <div>
+                            <span style="font-size: 0.72rem; color: var(--text-muted); display: block; font-weight: 600; text-transform: uppercase;">Disco Duro</span>
+                            <span id="modal-equip-disco" style="font-size: 0.9rem; color: var(--text-primary); font-weight: 500;">SSD 512 GB</span>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+            
+            <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center;">
+                <button type="button" id="btn-eliminar-equipo" style="background-color: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); color: #f87171; padding: 10px 18px; border-radius: 8px; cursor: pointer; font-weight: 600; font-family: var(--font-family); transition: all 0.2s;">
+                    <i class="fas fa-trash-alt"></i> Eliminar Registro
+                </button>
+                <div style="display: flex; gap: 12px;">
+                    <button type="button" id="btn-cerrar-detalle-equipo" style="background-color: transparent; border: 1px solid var(--border-color); color: var(--text-secondary); padding: 10px 18px; border-radius: 8px; cursor: pointer; font-weight: 600; font-family: var(--font-family);">Cerrar</button>
+                    <button type="button" id="btn-editar-equipo" style="background: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-blue) 100%); color: white; border: none; padding: 10px 24px; border-radius: 8px; cursor: pointer; font-weight: 600; font-family: var(--font-family);">
+                        <i class="fas fa-pencil-alt"></i> Editar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ MODAL DE INICIO DE SESIÓN (LOGIN OBLIGATORIO) ============ -->
+    <div id="login-modal" class="modal-backdrop" style="display: flex; background-color: rgba(6, 8, 14, 0.95);">
+        <div class="modal-card" style="max-width: 420px; border-color: rgba(97, 62, 234, 0.3); box-shadow: 0 0 40px rgba(97, 62, 234, 0.15);">
+            <div class="modal-header" style="justify-content: center; text-align: center; border-bottom: none; padding-bottom: 0;">
+                <div class="modal-title-area" style="align-items: center;">
+                    <div class="logo-icon" style="width: 48px; height: 48px; border-radius: 12px; background: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-blue) 100%); display: flex; align-items: center; justify-content: center; margin-bottom: 12px; box-shadow: 0 0 20px rgba(97, 62, 234, 0.4);">
+                        <i class="fas fa-headset" style="color: white; font-size: 1.5rem;"></i>
+                    </div>
+                    <h2>Centro de Soporte</h2>
+                    <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 4px;">Ingresa tus datos para continuar</p>
+                </div>
+            </div>
+
+            <!-- Tabs de Login (Usuario / Administrador) -->
+            <div style="display: flex; background-color: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-color); border-radius: 8px; margin: 20px 24px 10px; padding: 4px;">
+                <button id="tab-login-user" type="button" style="flex: 1; padding: 8px; border: none; background-color: var(--accent-blue); color: white; font-weight: 600; border-radius: 6px; cursor: pointer; transition: all 0.2s; font-family: var(--font-family);">Usuario</button>
+                <button id="tab-login-admin" type="button" style="flex: 1; padding: 8px; border: none; background-color: transparent; color: var(--text-secondary); font-weight: 600; border-radius: 6px; cursor: pointer; transition: all 0.2s; font-family: var(--font-family);">Administrador</button>
+            </div>
+
+            <!-- Formulario Usuario -->
+            <form id="form-login-user" style="padding: 10px 24px 24px;">
+                <div class="form-group" style="margin-bottom: 16px;">
+                    <label for="login-user-nombre" style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 6px; display: block; text-align: left;">Nombre Completo</label>
+                    <input type="text" id="login-user-nombre" placeholder="Ej: Juan Pérez" required style="width: 100%; padding: 10px; background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family);">
+                </div>
+                <div class="form-group" style="margin-bottom: 16px;">
+                    <label for="login-user-rut" style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 6px; display: block; text-align: left;">RUT</label>
+                    <input type="text" id="login-user-rut" placeholder="Ej: 12.345.678-9" required style="width: 100%; padding: 10px; background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family);">
+                </div>
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label for="login-user-email" style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 6px; display: block; text-align: left;">Correo Electrónico</label>
+                    <input type="email" id="login-user-email" placeholder="Ej: juan@empresa.com" required style="width: 100%; padding: 10px; background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family);">
+                </div>
+                <button type="submit" style="width: 100%; background: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-blue) 100%); color: white; border: none; padding: 12px; border-radius: 8px; font-weight: 600; cursor: pointer; font-family: var(--font-family); box-shadow: 0 4px 15px rgba(97, 62, 234, 0.3);">Ingresar como Usuario</button>
+            </form>
+
+            <!-- Formulario Administrador -->
+            <form id="form-login-admin" style="padding: 10px 24px 24px; display: none;">
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label for="login-admin-pass" style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 6px; display: block; text-align: left;">Contraseña de Administrador</label>
+                    <input type="password" id="login-admin-pass" placeholder="Contraseña (ej: admin)" required style="width: 100%; padding: 10px; background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family);">
+                </div>
+                <button type="submit" style="width: 100%; background: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-blue) 100%); color: white; border: none; padding: 12px; border-radius: 8px; font-weight: 600; cursor: pointer; font-family: var(--font-family); box-shadow: 0 4px 15px rgba(97, 62, 234, 0.3);">Ingresar como Administrador</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="script.js"></script>
+</body>
+</html>
