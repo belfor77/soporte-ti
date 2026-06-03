@@ -396,6 +396,11 @@ document.addEventListener('DOMContentLoaded', () => {
             fields.resuelto_por = null;
         }
 
+        // Save to local updates first so it is preserved even if Supabase update fails!
+        const localUpdates = JSON.parse(localStorage.getItem('ticket_updates')) || {};
+        localUpdates[ticketId] = { ...(localUpdates[ticketId] || {}), ...fields };
+        localStorage.setItem('ticket_updates', JSON.stringify(localUpdates));
+
         if (!useLocalFallback && supabase) {
             try {
                 const { error } = await supabase
