@@ -408,6 +408,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     .update(fields)
                     .eq('id', ticketId);
                 if (error) throw error;
+
+                // Clear local update if database write succeeds
+                const freshUpdates = JSON.parse(localStorage.getItem('ticket_updates')) || {};
+                delete freshUpdates[ticketId];
+                localStorage.setItem('ticket_updates', JSON.stringify(freshUpdates));
             } catch (err) {
                 console.warn('Error updating ticket status in Supabase, using LocalStorage fallback:', err);
             }
@@ -437,6 +442,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     .update(fieldsToUpdate)
                     .eq('id', ticketId);
                 if (error) throw error;
+
+                // Clear local update if database write succeeds
+                const freshUpdates = JSON.parse(localStorage.getItem('ticket_updates')) || {};
+                delete freshUpdates[ticketId];
+                localStorage.setItem('ticket_updates', JSON.stringify(freshUpdates));
             } catch (err) {
                 console.warn('Error updating ticket fields in Supabase, using LocalStorage fallback:', err);
             }
@@ -523,6 +533,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let allTicketsCached = [];
     let currentFilter = 'todos';
     let currentSearch = '';
+    let currentTicketPage = 1;
+    const ticketsPerPage = 10;
 
     async function refreshTickets() {
         allTicketsCached = await fetchTickets();
@@ -594,8 +606,31 @@ document.addEventListener('DOMContentLoaded', () => {
             );
         }
 
+        const totalItems = filtered.length;
+        const totalPages = Math.ceil(totalItems / ticketsPerPage) || 1;
+
+        if (currentTicketPage > totalPages) {
+            currentTicketPage = totalPages;
+        }
+
+        const startIndex = (currentTicketPage - 1) * ticketsPerPage;
+        const endIndex = Math.min(startIndex + ticketsPerPage, totalItems);
+
+        const paginated = filtered.slice(startIndex, endIndex);
+
+        const infoEl = document.getElementById('ticket-pagination-info');
+        if (infoEl) {
+            if (totalItems === 0) {
+                infoEl.textContent = 'Mostrando 0 a 0 de 0 tickets';
+            } else {
+                infoEl.textContent = `Mostrando ${startIndex + 1} a ${endIndex} de ${totalItems} tickets`;
+            }
+        }
+
+        renderTicketPaginationControls(totalPages);
+
         tbody.innerHTML = '';
-        if (filtered.length === 0) {
+        if (paginated.length === 0) {
             tbody.innerHTML = `
                 <tr>
                     <td colspan="6" style="text-align: center; padding: 30px; color: var(--text-muted);">
@@ -606,7 +641,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        filtered.forEach(ticket => {
+        paginated.forEach(ticket => {
             const tr = document.createElement('tr');
             
             const meta = extractMetadata(ticket);
@@ -679,6 +714,94 @@ document.addEventListener('DOMContentLoaded', () => {
 
             tbody.appendChild(tr);
         });
+    }
+
+    function renderTicketPaginationControls(totalPages) {
+        const container = document.getElementById('ticket-pagination-controls');
+        if (!container) return;
+
+        container.innerHTML = '';
+
+        // Botón Anterior
+        const prevBtn = document.createElement('button');
+        prevBtn.className = 'page-btn page-prev';
+        prevBtn.innerHTML = '<i class="fas fa-chevron-left"></i>';
+        prevBtn.disabled = currentTicketPage === 1;
+        prevBtn.addEventListener('click', () => {
+            if (currentTicketPage > 1) {
+                currentTicketPage--;
+                applyTicketsFilterAndSearch();
+            }
+        });
+        container.appendChild(prevBtn);
+
+        // Algoritmo de elipsis para paginación premium
+        const maxVisible = 5;
+        if (totalPages <= maxVisible) {
+            for (let i = 1; i <= totalPages; i++) {
+                container.appendChild(createTicketPageButton(i));
+            }
+        } else {
+            const range = 1;
+            const showEllipsisStart = currentTicketPage - range > 2;
+            const showEllipsisEnd = currentTicketPage + range < totalPages - 1;
+
+            container.appendChild(createTicketPageButton(1));
+
+            if (showEllipsisStart) {
+                const ellipsis = document.createElement('span');
+                ellipsis.className = 'page-ellipsis';
+                ellipsis.textContent = '…';
+                container.appendChild(ellipsis);
+            } else if (currentTicketPage - range > 1) {
+                for (let i = 2; i < currentTicketPage - range; i++) {
+                    container.appendChild(createTicketPageButton(i));
+                }
+            }
+
+            const start = Math.max(2, currentTicketPage - range);
+            const end = Math.min(totalPages - 1, currentTicketPage + range);
+            for (let i = start; i <= end; i++) {
+                container.appendChild(createTicketPageButton(i));
+            }
+
+            if (showEllipsisEnd) {
+                const ellipsis = document.createElement('span');
+                ellipsis.className = 'page-ellipsis';
+                ellipsis.textContent = '…';
+                container.appendChild(ellipsis);
+            } else if (currentTicketPage + range < totalPages - 1) {
+                for (let i = currentTicketPage + range + 1; i < totalPages; i++) {
+                    container.appendChild(createTicketPageButton(i));
+                }
+            }
+
+            container.appendChild(createTicketPageButton(totalPages));
+        }
+
+        // Botón Siguiente
+        const nextBtn = document.createElement('button');
+        nextBtn.className = 'page-btn page-next';
+        nextBtn.innerHTML = '<i class="fas fa-chevron-right"></i>';
+        nextBtn.disabled = currentTicketPage === totalPages;
+        nextBtn.addEventListener('click', () => {
+            if (currentTicketPage < totalPages) {
+                currentTicketPage++;
+                applyTicketsFilterAndSearch();
+            }
+        });
+        container.appendChild(nextBtn);
+    }
+
+    function createTicketPageButton(page) {
+        const btn = document.createElement('button');
+        btn.className = `page-btn page-number ${page === currentTicketPage ? 'active' : ''}`;
+        btn.textContent = page;
+        btn.addEventListener('click', () => {
+            currentTicketPage = page;
+            applyTicketsFilterAndSearch();
+        });
+        return btn;
     }
 
     // ============================================
@@ -975,6 +1098,7 @@ document.addEventListener('DOMContentLoaded', () => {
             filterTabs.forEach(t => t.classList.remove('active'));
             tab.classList.add('active');
             currentFilter = tab.getAttribute('data-filter');
+            currentTicketPage = 1;
             applyTicketsFilterAndSearch();
         });
     });
@@ -986,6 +1110,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (searchInput) {
         searchInput.addEventListener('input', () => {
             currentSearch = searchInput.value.toLowerCase().trim();
+            currentTicketPage = 1;
             applyTicketsFilterAndSearch();
         });
     }
@@ -1287,15 +1412,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
-
-    // Paginación visual simple
-    const pageButtons = document.querySelectorAll('.page-btn.page-number');
-    pageButtons.forEach(btn => {
-        btn.addEventListener('click', () => {
-            pageButtons.forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-        });
-    });
 
     // Inicializar carga de tickets
     refreshTickets();
