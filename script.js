@@ -28,6 +28,28 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ============================================
+    // SISTEMA DINÁMICO DE USUARIOS
+    // ============================================
+    const DEFAULT_USERS = [
+        { nombre: 'Belfor Aburto', email: 'belfor.aburto@t-sales.cl', password: '143belfor@', role: 'admin', rut: 'belfor' },
+        { nombre: 'Felipe Olivares', email: 'felipe.olivares@t-sales.cl', password: 'felipe2026@@', role: 'technician', rut: 'felipe' },
+        { nombre: 'Omar Gálvez', email: 'omar.galvez@t-sales.cl', password: 'omar2026@##', role: 'technician', rut: 'omar' }
+    ];
+
+    function getPlatformUsers() {
+        let users = localStorage.getItem('platform_users');
+        if (!users) {
+            localStorage.setItem('platform_users', JSON.stringify(DEFAULT_USERS));
+            return DEFAULT_USERS;
+        }
+        return JSON.parse(users);
+    }
+
+    function savePlatformUsers(users) {
+        localStorage.setItem('platform_users', JSON.stringify(users));
+    }
+
+    // ============================================
     // HELPERS DE FORMATO Y UTILIDADES
     // ============================================
     function formatDate(isoString) {
@@ -474,6 +496,7 @@ document.addEventListener('DOMContentLoaded', () => {
         'crear ticket': 'page-crear-ticket',
         'tutoriales': 'page-tutoriales',
         'base de conocimientos': 'page-base-conocimientos',
+        'usuarios': 'page-usuarios',
         'chat en vivo': 'page-chat',
         'estado del sistema': 'page-estado'
     };
@@ -507,6 +530,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (targetPageId === 'page-crear-ticket') {
                 prefillTicketClientFields();
+            } else if (targetPageId === 'page-usuarios') {
+                renderUsuariosPage();
             }
         });
     });
@@ -802,6 +827,128 @@ document.addEventListener('DOMContentLoaded', () => {
             applyTicketsFilterAndSearch();
         });
         return btn;
+    }
+
+    function renderUsuariosPage() {
+        const tbody = document.getElementById('users-table-body');
+        if (!tbody) return;
+
+        const users = getPlatformUsers();
+        
+        // Count global stats
+        const totalUsers = users.length;
+        const totalAdmins = users.filter(u => u.role === 'admin').length;
+        const totalTechs = users.filter(u => u.role === 'technician').length;
+
+        const statTotal = document.getElementById('user-stat-total');
+        const statAdmins = document.getElementById('user-stat-admins');
+        const statTechs = document.getElementById('user-stat-techs');
+
+        if (statTotal) statTotal.textContent = totalUsers;
+        if (statAdmins) statAdmins.textContent = totalAdmins;
+        if (statTechs) statTechs.textContent = totalTechs;
+
+        tbody.innerHTML = '';
+
+        users.forEach(user => {
+            const tr = document.createElement('tr');
+            tr.style.borderBottom = '1px solid var(--border-color)';
+            
+            // Calculate user metrics
+            const nameLower = user.nombre.toLowerCase().trim();
+            const emailLower = user.email.toLowerCase().trim();
+
+            const ticketsCreados = allTicketsCached.filter(t => {
+                const meta = extractMetadata(t);
+                const uName = (t.usuario_nombre || '').toLowerCase().trim();
+                const cName = (meta.cliente_nombre || '').toLowerCase().trim();
+                const uEmail = (t.usuario_email || '').toLowerCase().trim();
+                const cEmail = (meta.cliente_email || '').toLowerCase().trim();
+                return uName === nameLower || cName === nameLower || uEmail === emailLower || cEmail === emailLower;
+            }).length;
+
+            const ticketsAsignados = allTicketsCached.filter(t => 
+                (t.tecnico_asignado || '').toLowerCase().trim() === nameLower
+            ).length;
+
+            const ticketsResueltos = allTicketsCached.filter(t => 
+                (t.resuelto_por || '').toLowerCase().trim() === nameLower || 
+                (t.estado === 'resuelto' && (t.tecnico_asignado || '').toLowerCase().trim() === nameLower)
+            ).length;
+
+            const initials = user.nombre.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+            const roleBadge = user.role === 'admin' 
+                ? `<span class="status-badge status-resuelto" style="background: linear-gradient(135deg, rgba(97, 62, 234, 0.2) 0%, rgba(50, 102, 235, 0.2) 100%); border: 1px solid rgba(97, 62, 234, 0.3); color: var(--text-primary); font-weight: 600; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem;"><i class="fas fa-user-shield" style="margin-right: 4px; color: var(--accent-purple);"></i> Administrador</span>`
+                : `<span class="status-badge status-progreso" style="background: rgba(29, 200, 109, 0.12); border: 1px solid rgba(29, 200, 109, 0.2); color: #1dc86d; font-weight: 600; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem;"><i class="fas fa-user-cog" style="margin-right: 4px;"></i> Técnico</span>`;
+            
+            const isSelf = currentSession && currentSession.email.toLowerCase() === user.email.toLowerCase();
+            const checkedAttr = user.role === 'admin' ? 'checked' : '';
+            const disabledAttr = isSelf ? 'disabled title="No puedes cambiar tu propio rol"' : '';
+            
+            const switchHtml = `
+                <label class="switch" style="vertical-align: middle; ${isSelf ? 'opacity: 0.5; cursor: not-allowed;' : ''}">
+                    <input type="checkbox" class="user-role-toggle" data-email="${user.email}" ${checkedAttr} ${disabledAttr}>
+                    <span class="slider round"></span>
+                </label>
+            `;
+
+            tr.innerHTML = `
+                <td style="padding: 16px;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <div class="user-avatar" style="width: 38px; height: 38px; background: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-blue) 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; color: white; font-size: 0.9rem; flex-shrink: 0;">
+                            <span>${initials}</span>
+                        </div>
+                        <div style="display: flex; flex-direction: column;">
+                            <span style="font-weight: 600; color: var(--text-primary); font-size: 0.95rem;">${escapeHtml(user.nombre)}</span>
+                            <span style="color: var(--text-secondary); font-size: 0.8rem;">${escapeHtml(user.email)}</span>
+                        </div>
+                    </div>
+                </td>
+                <td style="padding: 16px; color: var(--text-secondary); font-size: 0.9rem;">${escapeHtml(user.rut)}</td>
+                <td style="padding: 16px;">${roleBadge}</td>
+                <td style="padding: 16px; text-align: center; font-weight: 600; font-size: 0.95rem; color: var(--text-primary);">${ticketsCreados}</td>
+                <td style="padding: 16px; text-align: center; font-weight: 600; font-size: 0.95rem; color: var(--text-primary);">${ticketsAsignados}</td>
+                <td style="padding: 16px; text-align: center; font-weight: 600; font-size: 0.95rem; color: var(--text-primary);">${ticketsResueltos}</td>
+                <td style="padding: 16px; text-align: right;">
+                    <div style="display: inline-flex; align-items: center; gap: 10px;">
+                        <span style="font-size: 0.78rem; color: var(--text-secondary); font-weight: 500;">Permisos de Admin</span>
+                        ${switchHtml}
+                    </div>
+                </td>
+            `;
+
+            tbody.appendChild(tr);
+        });
+
+        // Add event listeners to toggles
+        document.querySelectorAll('.user-role-toggle').forEach(toggle => {
+            toggle.addEventListener('change', (e) => {
+                const email = toggle.getAttribute('data-email');
+                const makeAdmin = toggle.checked;
+                
+                const users = getPlatformUsers();
+                const userIndex = users.findIndex(u => u.email.toLowerCase() === email.toLowerCase());
+                if (userIndex !== -1) {
+                    const targetUser = users[userIndex];
+                    targetUser.role = makeAdmin ? 'admin' : 'technician';
+                    savePlatformUsers(users);
+
+                    // If the modified user is currently logged in, sync their role
+                    if (currentSession && currentSession.email.toLowerCase() === email.toLowerCase()) {
+                        currentSession.role = targetUser.role;
+                        localStorage.setItem('session_soporte', JSON.stringify(currentSession));
+                    }
+
+                    alert(`Rol de ${targetUser.nombre} actualizado a ${makeAdmin ? 'Administrador' : 'Técnico'}.`);
+                    
+                    // Re-render
+                    renderUsuariosPage();
+                    
+                    // Update main layout access
+                    applySession(currentSession);
+                }
+            });
+        });
     }
 
     // ============================================
@@ -3651,6 +3798,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const headerAvatar = document.querySelector('#header-user-avatar span');
 
         const navBase = document.getElementById('nav-base-conocimientos');
+        const navUsuarios = document.getElementById('nav-usuarios');
         const creatorGroup = document.getElementById('ticket-creator-group');
         const belforPanel = document.getElementById('belfor-metrics-panel');
 
@@ -3660,6 +3808,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const initials = session.nombre ? session.nombre.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : 'A';
             if (headerAvatar) headerAvatar.textContent = initials;
             if (navBase) navBase.style.display = 'block'; // Mostrar inventario al Admin
+            if (navUsuarios) navUsuarios.style.display = 'block'; // Mostrar usuarios al Admin
             if (creatorGroup) creatorGroup.style.display = 'none';
             if (belforPanel) belforPanel.style.display = (session.nombre === 'Belfor Aburto') ? 'block' : 'none';
         } else if (session.role === 'technician') {
@@ -3668,6 +3817,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const initials = session.nombre ? session.nombre.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : 'T';
             if (headerAvatar) headerAvatar.textContent = initials;
             if (navBase) navBase.style.display = 'block'; // Mostrar inventario a técnicos
+            if (navUsuarios) navUsuarios.style.display = 'none';
             if (creatorGroup) creatorGroup.style.display = 'none'; // Ocultar selector de creador
             if (belforPanel) belforPanel.style.display = 'none'; // Ocultar panel de métricas
         } else {
@@ -3678,6 +3828,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (headerAvatar) headerAvatar.textContent = initials;
             
             if (navBase) navBase.style.display = 'none'; // Ocultar inventario al usuario común
+            if (navUsuarios) navUsuarios.style.display = 'none';
             if (creatorGroup) creatorGroup.style.display = 'none';
             if (belforPanel) belforPanel.style.display = 'none';
         }
@@ -3685,6 +3836,11 @@ document.addEventListener('DOMContentLoaded', () => {
         // Forzar recarga de listados de acuerdo al nuevo rol
         refreshTickets();
         refreshEquipos();
+
+        // Si es admin, refrescar la vista de usuarios
+        if (session.role === 'admin') {
+            renderUsuariosPage();
+        }
 
         // Configurar vista de Chat según rol
         const chatAdminContainer = document.getElementById('chat-admin-container');
@@ -3796,19 +3952,15 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!email || !pass) return;
 
             let session = null;
-            if (email === 'felipe.olivares@t-sales.cl' && pass === 'felipe2026@@') {
+            const users = getPlatformUsers();
+            const found = users.find(u => u.email.toLowerCase() === email && u.password === pass);
+            
+            if (found) {
                 session = { 
-                    role: 'technician', 
-                    nombre: 'Felipe Olivares', 
-                    email: 'felipe.olivares@t-sales.cl', 
-                    rut: 'felipe' 
-                };
-            } else if (email === 'omar.galvez@t-sales.cl' && pass === 'omar2026@##') {
-                session = { 
-                    role: 'technician', 
-                    nombre: 'Omar Gálvez', 
-                    email: 'omar.galvez@t-sales.cl', 
-                    rut: 'omar' 
+                    role: found.role, 
+                    nombre: found.nombre, 
+                    email: found.email, 
+                    rut: found.rut 
                 };
             }
 
@@ -3831,13 +3983,21 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!email || !pass) return;
 
             let session = null;
-            if (email === 'belfor.aburto@t-sales.cl' && pass === '143belfor@') {
-                session = { 
-                    role: 'admin', 
-                    nombre: 'Belfor Aburto', 
-                    email: 'belfor.aburto@t-sales.cl', 
-                    rut: 'belfor' 
-                };
+            const users = getPlatformUsers();
+            const found = users.find(u => u.email.toLowerCase() === email && u.password === pass);
+
+            if (found) {
+                if (found.role === 'admin') {
+                    session = { 
+                        role: 'admin', 
+                        nombre: found.nombre, 
+                        email: found.email, 
+                        rut: found.rut 
+                    };
+                } else {
+                    alert('Este usuario no tiene permisos de Administrador.');
+                    return;
+                }
             }
 
             if (session) {
@@ -4721,7 +4881,14 @@ document.addEventListener('DOMContentLoaded', () => {
     // Cargar sesión guardada o forzar login modal
     const savedSession = localStorage.getItem('session_soporte');
     if (savedSession) {
-        applySession(JSON.parse(savedSession));
+        let session = JSON.parse(savedSession);
+        const users = getPlatformUsers();
+        const found = users.find(u => u.email.toLowerCase() === session.email.toLowerCase());
+        if (found) {
+            session.role = found.role;
+            localStorage.setItem('session_soporte', JSON.stringify(session));
+        }
+        applySession(session);
     } else {
         const loginModal = document.getElementById('login-modal');
         if (loginModal) loginModal.style.display = 'flex';

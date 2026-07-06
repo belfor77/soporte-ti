@@ -26,6 +26,7 @@
                     <li><a href="#"><i class="fas fa-ticket-alt"></i> Mis Tickets</a></li>
                     <li><a href="#"><i class="fas fa-plus-square"></i> Crear Ticket</a></li>
                     <li id="nav-base-conocimientos"><a href="#"><i class="fas fa-book"></i> Base de Conocimientos</a></li>
+                    <li id="nav-usuarios" style="display: none;"><a href="#"><i class="fas fa-users"></i> Usuarios</a></li>
                     <li><a href="#"><i class="fas fa-server"></i> Estado del Sistema</a></li>
                     <li><a href="#"><i class="fas fa-comments"></i> Chat en Vivo</a></li>
                     <li><a href="#"><i class="fas fa-graduation-cap"></i> Tutoriales</a></li>
@@ -837,6 +838,63 @@
                     <span class="pagination-info" id="equip-pagination-info">Mostrando 0 a 0 de 0 equipos</span>
                     <div class="pagination-controls" id="equip-pagination-controls">
                         <!-- Paginación dinámica -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============ PÁGINA GESTIÓN DE USUARIOS ============ -->
+            <div id="page-usuarios" class="page-section">
+                <div class="tickets-page-header">
+                    <div class="tickets-page-title">
+                        <h1>Gestión de Usuarios</h1>
+                        <p>Administra los accesos de los técnicos y visualiza sus métricas de tickets.</p>
+                    </div>
+                </div>
+
+                <!-- Tarjetas de métricas rápidas de usuarios -->
+                <div class="stats-grid" style="grid-template-columns: repeat(3, 1fr); margin-bottom: 30px;">
+                    <div class="stat-card stat-purple">
+                        <div class="stat-icon"><i class="fas fa-users"></i></div>
+                        <div class="stat-info">
+                            <span class="stat-number" id="user-stat-total">0</span>
+                            <span class="stat-label">Total Usuarios</span>
+                        </div>
+                    </div>
+                    <div class="stat-card stat-blue">
+                        <div class="stat-icon"><i class="fas fa-user-shield"></i></div>
+                        <div class="stat-info">
+                            <span class="stat-number" id="user-stat-admins">0</span>
+                            <span class="stat-label">Administradores</span>
+                        </div>
+                    </div>
+                    <div class="stat-card stat-green">
+                        <div class="stat-icon"><i class="fas fa-user-tie"></i></div>
+                        <div class="stat-info">
+                            <span class="stat-number" id="user-stat-techs">0</span>
+                            <span class="stat-label">Técnicos</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tabla de usuarios -->
+                <div class="tickets-list-card" style="background-color: var(--bg-card); border-radius: 12px; padding: 24px; border: 1px solid rgba(255,255,255,0.03); box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);">
+                    <div style="overflow-x: auto;">
+                        <table class="tickets-table" style="width: 100%; border-collapse: collapse;">
+                            <thead>
+                                <tr style="border-bottom: 1px solid var(--border-color); text-align: left;">
+                                    <th style="padding: 12px 16px; color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; font-weight: 600;">Usuario</th>
+                                    <th style="padding: 12px 16px; color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; font-weight: 600;">RUT</th>
+                                    <th style="padding: 12px 16px; color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; font-weight: 600;">Rol</th>
+                                    <th style="padding: 12px 16px; color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; font-weight: 600; text-align: center;">Tickets Creados</th>
+                                    <th style="padding: 12px 16px; color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; font-weight: 600; text-align: center;">Casos Asignados</th>
+                                    <th style="padding: 12px 16px; color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; font-weight: 600; text-align: center;">Casos Resueltos</th>
+                                    <th style="padding: 12px 16px; color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; font-weight: 600; text-align: right;">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="users-table-body">
+                                <!-- Poblado dinámicamente -->
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
