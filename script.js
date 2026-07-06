@@ -2143,6 +2143,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // ============================================
 
     async function fetchEquipos() {
+        let localEquipos = JSON.parse(localStorage.getItem('local_equipos')) || [];
+
         if (!useLocalFallback && supabase) {
             try {
                 const { data, error } = await supabase
@@ -2150,13 +2152,23 @@ document.addEventListener('DOMContentLoaded', () => {
                     .select('*')
                     .order('nombre_codigo', { ascending: true });
                 if (error) throw error;
-                return data;
+                
+                const supabaseIds = new Set(data.map(e => e.id));
+                const localOnly = localEquipos.filter(e => !supabaseIds.has(e.id));
+                
+                const merged = [...data, ...localOnly];
+                merged.sort((a, b) => {
+                    const codeA = String(a.nombre_codigo || '');
+                    const codeB = String(b.nombre_codigo || '');
+                    return codeA.localeCompare(codeB, undefined, { numeric: true });
+                });
+                return merged;
             } catch (err) {
                 console.error('Error fetching equipos from Supabase, using LocalStorage:', err);
             }
         }
         
-        let equipos = JSON.parse(localStorage.getItem('local_equipos'));
+        let equipos = localEquipos;
         if (!equipos || equipos.length === 0) {
             equipos = [
                 {
@@ -2868,6 +2880,18 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function saveEquipo(equipo) {
+        if (!equipo.id) {
+            equipo.id = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substr(2, 9);
+        }
+        if (!equipo.created_at) {
+            equipo.created_at = new Date().toISOString();
+        }
+
+        // Guardar localmente siempre
+        const equipos = JSON.parse(localStorage.getItem('local_equipos')) || [];
+        equipos.push(equipo);
+        localStorage.setItem('local_equipos', JSON.stringify(equipos));
+
         if (!useLocalFallback && supabase) {
             try {
                 const { data, error } = await supabase
@@ -2880,16 +2904,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.error('Error saving equipo in Supabase, using LocalStorage:', err);
             }
         }
-
-        const equipos = JSON.parse(localStorage.getItem('local_equipos')) || [];
-        equipo.id = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substr(2, 9);
-        equipo.created_at = new Date().toISOString();
-        equipos.push(equipo);
-        localStorage.setItem('local_equipos', JSON.stringify(equipos));
         return equipo;
     }
 
     async function updateEquipo(id, updatedFields) {
+        // Actualizar localmente siempre
+        const equipos = JSON.parse(localStorage.getItem('local_equipos')) || [];
+        const index = equipos.findIndex(e => e.id === id);
+        let updatedLocal = null;
+        if (index !== -1) {
+            equipos[index] = { ...equipos[index], ...updatedFields };
+            localStorage.setItem('local_equipos', JSON.stringify(equipos));
+            updatedLocal = equipos[index];
+        }
+
         if (!useLocalFallback && supabase) {
             try {
                 const { data, error } = await supabase
@@ -2898,23 +2926,22 @@ document.addEventListener('DOMContentLoaded', () => {
                     .eq('id', id)
                     .select();
                 if (error) throw error;
-                return data[0];
+                if (data && data.length > 0) {
+                    return data[0];
+                }
             } catch (err) {
                 console.error('Error updating equipo in Supabase, using LocalStorage:', err);
             }
         }
-
-        const equipos = JSON.parse(localStorage.getItem('local_equipos')) || [];
-        const index = equipos.findIndex(e => e.id === id);
-        if (index !== -1) {
-            equipos[index] = { ...equipos[index], ...updatedFields };
-            localStorage.setItem('local_equipos', JSON.stringify(equipos));
-            return equipos[index];
-        }
-        return null;
+        return updatedLocal;
     }
 
     async function deleteEquipo(id) {
+        // Eliminar localmente siempre
+        const equipos = JSON.parse(localStorage.getItem('local_equipos')) || [];
+        const filtered = equipos.filter(e => e.id !== id);
+        localStorage.setItem('local_equipos', JSON.stringify(filtered));
+
         if (!useLocalFallback && supabase) {
             try {
                 const { error } = await supabase
@@ -2922,15 +2949,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     .delete()
                     .eq('id', id);
                 if (error) throw error;
-                return true;
             } catch (err) {
                 console.error('Error deleting equipo from Supabase, using LocalStorage:', err);
             }
         }
-
-        const equipos = JSON.parse(localStorage.getItem('local_equipos')) || [];
-        const filtered = equipos.filter(e => e.id !== id);
-        localStorage.setItem('local_equipos', JSON.stringify(filtered));
         return true;
     }
 
