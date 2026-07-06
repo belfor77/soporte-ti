@@ -2144,6 +2144,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function fetchEquipos() {
         let localEquipos = JSON.parse(localStorage.getItem('local_equipos')) || [];
+        if (localEquipos.length === 0) {
+            localEquipos = seedDefaultEquipos();
+        }
 
         if (!useLocalFallback && supabase) {
             try {
@@ -2168,9 +2171,11 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
         
-        let equipos = localEquipos;
-        if (!equipos || equipos.length === 0) {
-            equipos = [
+        return localEquipos;
+    }
+
+    function seedDefaultEquipos() {
+        const equipos = [
                 {
                     id: 'eq-1',
                     nombre_codigo: '1',
@@ -2875,9 +2880,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             ];
             localStorage.setItem('local_equipos', JSON.stringify(equipos));
+            return equipos;
         }
-        return equipos;
-    }
 
     async function saveEquipo(equipo) {
         if (!equipo.id) {
