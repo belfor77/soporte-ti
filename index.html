@@ -247,12 +247,39 @@
             <div id="page-crear-ticket" class="page-section">
                 <div class="tickets-page-header" style="margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; width: 100%;">
                     <div class="tickets-page-title">
-                        <h1>Crear un nuevo ticket</h1>
-                        <p>Cuéntanos cómo podemos ayudarte</p>
+                        <h1>Crear Ticket</h1>
+                        <p>Selecciona la empresa para la cual necesitas crear el ticket</p>
                     </div>
                     <div style="display: flex; gap: 10px;">
-                        <button class="page-btn" style="background-color: rgba(255,255,255,0.02); border: 1px solid var(--border-color); color: var(--text-secondary); padding: 8px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 0.82rem; display: flex; align-items: center; gap: 6px;"><i class="fas fa-file-alt"></i> Plantillas</button>
-                        <button class="page-btn" style="width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: 8px; border: 1px solid var(--border-color); color: var(--text-secondary); cursor: pointer;"><i class="fas fa-ellipsis-h"></i></button>
+                        <button type="button" class="page-btn" style="background-color: rgba(255,255,255,0.02); border: 1px solid var(--border-color); color: var(--text-secondary); padding: 8px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 0.82rem; display: flex; align-items: center; gap: 6px;"><i class="fas fa-file-alt"></i> Plantillas</button>
+                        <button type="button" class="page-btn" style="width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: 8px; border: 1px solid var(--border-color); color: var(--text-secondary); cursor: pointer;"><i class="fas fa-ellipsis-h"></i></button>
+                    </div>
+                </div>
+
+                <!-- Selector de Empresa (Premium Visual Cards) -->
+                <div class="company-selector-container" style="background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; padding: 24px; margin-bottom: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.15);">
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
+                        <i class="fas fa-building" style="color: var(--accent-blue); font-size: 1.2rem;"></i>
+                        <h3 style="margin: 0; font-size: 1rem; font-weight: 700; color: var(--text-primary);">🏢 1. Selecciona la empresa</h3>
+                    </div>
+                    <p style="font-size: 0.85rem; color: var(--text-secondary); margin: 0 0 20px 0;">Elige la empresa a la cual pertenece tu solicitud</p>
+                    
+                    <div class="company-cards-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
+                        <!-- Card INFINET -->
+                        <div class="company-card active" data-company="Infinet" style="position: relative; border: 2px solid var(--accent-blue); border-radius: 12px; padding: 20px; display: flex; align-items: center; justify-content: center; background-color: rgba(255,255,255,0.01); cursor: pointer; transition: all 0.25s ease; min-height: 120px; box-sizing: border-box;">
+                            <div class="company-check-badge" style="position: absolute; top: 12px; right: 12px; width: 20px; height: 20px; border-radius: 50%; background-color: var(--accent-blue); color: white; display: flex; align-items: center; justify-content: center; font-size: 0.75rem;"><i class="fas fa-check"></i></div>
+                            <img src="img/logo_infinet.png" alt="INFINET" style="max-height: 70px; max-width: 90%; object-fit: contain; filter: drop-shadow(0 2px 8px rgba(0,0,0,0.3));">
+                        </div>
+                        <!-- Card T-Sales -->
+                        <div class="company-card" data-company="T-Sales" style="position: relative; border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; display: flex; align-items: center; justify-content: center; background-color: rgba(255,255,255,0.01); cursor: pointer; transition: all 0.25s ease; min-height: 120px; box-sizing: border-box;">
+                            <div class="company-check-badge" style="position: absolute; top: 12px; right: 12px; width: 20px; height: 20px; border-radius: 50%; background-color: var(--accent-blue); color: white; display: none; align-items: center; justify-content: center; font-size: 0.75rem;"><i class="fas fa-check"></i></div>
+                            <img src="img/logo_tsales.png" alt="T-Sales" style="max-height: 70px; max-width: 90%; object-fit: contain; filter: drop-shadow(0 2px 8px rgba(0,0,0,0.3));">
+                        </div>
+                        <!-- Card VPRIME -->
+                        <div class="company-card" data-company="VPrime" style="position: relative; border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; display: flex; align-items: center; justify-content: center; background-color: rgba(255,255,255,0.01); cursor: pointer; transition: all 0.25s ease; min-height: 120px; box-sizing: border-box;">
+                            <div class="company-check-badge" style="position: absolute; top: 12px; right: 12px; width: 20px; height: 20px; border-radius: 50%; background-color: var(--accent-blue); color: white; display: none; align-items: center; justify-content: center; font-size: 0.75rem;"><i class="fas fa-check"></i></div>
+                            <img src="img/logo_vprime.png" alt="VPRIME" style="max-height: 70px; max-width: 90%; object-fit: contain; filter: drop-shadow(0 2px 8px rgba(0,0,0,0.3));">
+                        </div>
                     </div>
                 </div>
 
@@ -308,35 +335,24 @@
                                 </div>
                                 
                                 <div class="form-group">
-                                    <label for="ticket-priority" style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 6px; display: block;">Prioridad *</label>
-                                    <select id="ticket-priority" required style="width: 100%; padding: 12px; background-color: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family); font-size: 0.88rem; cursor: pointer;">
-                                        <option value="baja">Baja</option>
-                                        <option value="media">Media</option>
-                                        <option value="alta" selected>Alta</option>
-                                        <option value="urgente">Urgente</option>
-                                    </select>
-                                </div>
-                            </div>
-                            
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
-                                <div class="form-group">
-                                    <label for="ticket-office" style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 6px; display: block;">Sede / Oficina *</label>
-                                    <select id="ticket-office" required style="width: 100%; padding: 12px; background-color: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family); font-size: 0.88rem; cursor: pointer;">
-                                        <option value="Latadia 4602, Las Condes" selected>Latadia 4602, Las Condes</option>
-                                        <option value="Calle doce norte 996, Viña del Mar">Calle doce norte 996, Viña del Mar</option>
-                                        <option value="Fidel Oteiza 1941, oficina 801, Providencia">Fidel Oteiza 1941, oficina 801, Providencia</option>
-                                        <option value="Agustinas 641, 501, Providencia">Agustinas 641, 501, Providencia</option>
-                                        <option value="Elidoro Yáñez 2318, Providencia">Elidoro Yáñez 2318, Providencia</option>
-                                        <option value="Fanor Velasco 85, oficina 201, Santiago">Fanor Velasco 85, oficina 201, Santiago</option>
-                                    </select>
-                                </div>
-                                <div class="form-group">
                                     <label for="ticket-modalidad" style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 6px; display: block;">Modalidad de Soporte *</label>
                                     <select id="ticket-modalidad" required style="width: 100%; padding: 12px; background-color: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family); font-size: 0.88rem; cursor: pointer;">
                                         <option value="Online" selected>Online</option>
                                         <option value="Presencial">Presencial</option>
                                     </select>
                                 </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="ticket-office" style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 6px; display: block;">Sede / Oficina *</label>
+                                <select id="ticket-office" required style="width: 100%; padding: 12px; background-color: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family); font-size: 0.88rem; cursor: pointer;">
+                                    <option value="Latadia 4602, Las Condes" selected>Latadia 4602, Las Condes</option>
+                                    <option value="Calle doce norte 996, Viña del Mar">Calle doce norte 996, Viña del Mar</option>
+                                    <option value="Fidel Oteiza 1941, oficina 801, Providencia">Fidel Oteiza 1941, oficina 801, Providencia</option>
+                                    <option value="Agustinas 641, 501, Providencia">Agustinas 641, 501, Providencia</option>
+                                    <option value="Elidoro Yáñez 2318, Providencia">Elidoro Yáñez 2318, Providencia</option>
+                                    <option value="Fanor Velasco 85, oficina 201, Santiago">Fanor Velasco 85, oficina 201, Santiago</option>
+                                </select>
                             </div>
 
                             <!-- Miembro del equipo (Sólo visible para Administradores) -->
@@ -571,7 +587,6 @@
                         <select id="tickets-sort-select">
                             <option value="recientes">Más recientes</option>
                             <option value="antiguos">Más antiguos</option>
-                            <option value="prioridad">Prioridad</option>
                         </select>
                     </div>
                 </div>
@@ -584,7 +599,6 @@
                                 <th>Ticket</th>
                                 <th>Asunto</th>
                                 <th>Estado</th>
-                                <th>Prioridad</th>
                                 <th>Última actualización</th>
                                 <th>Acciones</th>
                             </tr>
@@ -704,6 +718,9 @@
                     <div class="kb-header-buttons" style="display: flex; gap: 12px;">
                         <button class="btn-importar-equipos" id="btn-importar-equipos" style="background-color: rgba(255, 255, 255, 0.05); border: 1px solid var(--border-color); color: var(--text-primary); padding: 10px 18px; border-radius: 10px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s ease;">
                             <i class="fas fa-file-import"></i> Importar Equipos
+                        </button>
+                        <button class="btn-importar-equipos" id="btn-importar-txt" style="background-color: rgba(97, 62, 234, 0.08); border: 1px solid rgba(97, 62, 234, 0.25); color: #a78bfa; padding: 10px 18px; border-radius: 10px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s ease;" onmouseover="this.style.backgroundColor='rgba(97, 62, 234, 0.15)'" onmouseout="this.style.backgroundColor='rgba(97, 62, 234, 0.08)'">
+                            <i class="fas fa-file-alt"></i> Agregar con TXT
                         </button>
                         <button class="btn-crear-ticket" id="btn-agregar-equipo">
                             <i class="fas fa-plus"></i> Agregar Equipo
@@ -848,6 +865,14 @@
                     <div class="tickets-page-title">
                         <h1>Gestión de Usuarios</h1>
                         <p>Administra los accesos de los técnicos y visualiza sus métricas de tickets.</p>
+                    </div>
+                </div>
+
+                <!-- Banner de advertencia de Supabase si la tabla no existe -->
+                <div id="user-supabase-warning" style="display: none; background-color: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); color: #f59e0b; padding: 15px; border-radius: 10px; margin-bottom: 20px; font-family: var(--font-family); font-size: 0.88rem; align-items: center; gap: 10px;">
+                    <i class="fas fa-exclamation-triangle" style="font-size: 1.2rem; flex-shrink: 0; color: #f59e0b;"></i>
+                    <div>
+                        <strong>⚠️ Tabla 'user_roles' ausente en Supabase:</strong> Los cambios que realices aquí solo se aplicarán temporalmente en tu navegador actual. Para sincronizar los roles con los demás ejecutivos en sus computadores, ejecuta la consulta SQL en tu consola de Supabase (Editor de SQL).
                     </div>
                 </div>
 
@@ -1781,8 +1806,8 @@
                         <span id="modal-ticket-categoria" class="meta-val">Cuenta y Acceso</span>
                     </div>
                     <div class="meta-item">
-                        <span class="meta-label">Prioridad:</span>
-                        <span id="modal-ticket-prioridad" class="priority-badge priority-media">Media</span>
+                        <span class="meta-label">Empresa:</span>
+                        <span id="modal-ticket-empresa" class="meta-val">-</span>
                     </div>
                     <div class="meta-item">
                         <span class="meta-label">Estado:</span>
@@ -2219,6 +2244,7 @@
 
     <!-- Input oculto para subir archivos -->
     <input type="file" id="equip-file-input" accept=".pdf,.xlsx,.xls,.csv" style="display: none;">
+    <input type="file" id="equip-txt-file-input" accept=".txt" style="display: none;">
 
     <!-- ============ MODAL DE INICIO DE SESIÓN (LOGIN OBLIGATORIO) ============ -->
     <div id="login-modal" class="modal-backdrop" style="display: flex; background-color: rgba(6, 8, 14, 0.95);">

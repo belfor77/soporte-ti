@@ -36,13 +36,73 @@ document.addEventListener('DOMContentLoaded', () => {
         { nombre: 'Omar Gálvez', email: 'omar.galvez@t-sales.cl', password: 'omar2026@##', role: 'technician', rut: 'omar' }
     ];
 
-    function getPlatformUsers() {
-        let users = localStorage.getItem('platform_users');
-        if (!users) {
-            localStorage.setItem('platform_users', JSON.stringify(DEFAULT_USERS));
-            return DEFAULT_USERS;
+    let supabaseRolesTableOk = true;
+
+    async function fetchUserRolesFromSupabase() {
+        if (!useLocalFallback && supabase) {
+            try {
+                const { data, error } = await supabase
+                    .from('user_roles')
+                    .select('*');
+                if (error) {
+                    if (error.code === '42P01' || (error.message && error.message.includes('does not exist'))) {
+                        supabaseRolesTableOk = false;
+                    }
+                    throw error;
+                }
+                supabaseRolesTableOk = true;
+                return data || [];
+            } catch (err) {
+                console.warn('Error fetching roles from Supabase, using local fallback:', err);
+                if (err.code === '42P01' || (err.message && err.message.includes('does not exist'))) {
+                    supabaseRolesTableOk = false;
+                }
+            }
         }
-        return JSON.parse(users);
+        return [];
+    }
+
+    async function updateUserRoleInSupabase(email, role) {
+        if (!useLocalFallback && supabase) {
+            try {
+                const { error } = await supabase
+                    .from('user_roles')
+                    .upsert({ email: email.toLowerCase().trim(), role: role }, { onConflict: 'email' });
+                if (error) throw error;
+                supabaseRolesTableOk = true;
+                return { success: true };
+            } catch (err) {
+                console.error('Error updating role in Supabase:', err);
+                if (err.code === '42P01' || (err.message && err.message.includes('does not exist'))) {
+                    supabaseRolesTableOk = false;
+                }
+                return { success: false, error: err };
+            }
+        }
+        return { success: true };
+    }
+
+    async function loadPlatformUsers() {
+        let localUsers = localStorage.getItem('platform_users');
+        if (!localUsers) {
+            localUsers = DEFAULT_USERS;
+            localStorage.setItem('platform_users', JSON.stringify(localUsers));
+        } else {
+            localUsers = JSON.parse(localUsers);
+        }
+
+        const dbRoles = await fetchUserRolesFromSupabase();
+        if (dbRoles && dbRoles.length > 0) {
+            localUsers = localUsers.map(u => {
+                const dbUser = dbRoles.find(r => r.email.toLowerCase() === u.email.toLowerCase());
+                if (dbUser) {
+                    return { ...u, role: dbUser.role };
+                }
+                return u;
+            });
+            localStorage.setItem('platform_users', JSON.stringify(localUsers));
+        }
+        return localUsers;
     }
 
     function savePlatformUsers(users) {
@@ -84,14 +144,18 @@ document.addEventListener('DOMContentLoaded', () => {
             modalidad: ticket.modalidad || '',
             cliente_nombre: ticket.cliente_nombre || '',
             cliente_rut: ticket.cliente_rut || '',
-            cliente_email: ticket.cliente_email || ''
+            cliente_email: ticket.cliente_email || '',
+            empresa: ticket.empresa || ''
         };
 
-        if (ticket.descripcion && (!meta.cliente_nombre || !meta.cliente_email || !meta.sede)) {
+        if (ticket.descripcion && (!meta.cliente_nombre || !meta.cliente_email || !meta.sede || !meta.empresa)) {
             const getVal = (pattern) => {
                 const match = ticket.descripcion.match(pattern);
                 return match ? match[1].trim() : null;
             };
+
+            const empresaVal = getVal(/Empresa:\s*([^|\]\n]+)/i);
+            if (empresaVal && !meta.empresa) meta.empresa = empresaVal;
 
             const sedeVal = getVal(/Sede:\s*([^|\]]+)/i);
             if (sedeVal && !meta.sede) meta.sede = sedeVal;
@@ -251,7 +315,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return tickets;
     }
 
-    async function saveTicket(asunto, categoria, descripcion, prioridad, sede = '', telefono = '', dispositivo = '', impacto = '', modalidad = 'Online', cliente_nombre = '', cliente_rut = '', cliente_email = '') {
+    async function saveTicket(asunto, categoria, descripcion, prioridad, sede = '', telefono = '', dispositivo = '', impacto = '', modalidad = 'Online', cliente_nombre = '', cliente_rut = '', cliente_email = '', empresa = 'Infinet') {
         let u_nombre = currentSession ? currentSession.nombre : 'Usuario Externo';
         let u_email = currentSession ? currentSession.email : 'correo@empresa.com';
         let u_rut = currentSession ? currentSession.rut : '';
@@ -283,6 +347,7 @@ document.addEventListener('DOMContentLoaded', () => {
             cliente_nombre,
             cliente_rut,
             cliente_email,
+            empresa,
             estado: 'abierto',
             usuario_rut: u_rut,
             usuario_nombre: u_nombre,
@@ -301,7 +366,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     const standardData = {
                         asunto,
                         categoria,
-                        descripcion: `${descripcion}\n\n[Sede: ${sede} | Teléfono: ${telefono} | Dispositivo: ${dispositivo} | Impacto: ${impacto} | Modalidad: ${modalidad} | Cliente: ${cliente_nombre} (${cliente_rut}) - ${cliente_email}]`,
+                        descripcion: `[Empresa: ${empresa}]\n\n${descripcion}\n\n[Sede: ${sede} | Teléfono: ${telefono} | Dispositivo: ${dispositivo} | Impacto: ${impacto} | Modalidad: ${modalidad} | Cliente: ${cliente_nombre} (${cliente_rut}) - ${cliente_email}]`,
                         prioridad,
                         estado: 'abierto',
                         usuario_rut: ticketData.usuario_rut,
@@ -688,6 +753,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 ? `<span style="background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.2); padding: 1px 6px; border-radius: 4px; font-size: 0.68rem; color: #10b981; font-weight: 600;"><i class="fas fa-user-cog" style="font-size: 0.65rem;"></i> Técnico: ${escapeHtml(ticket.tecnico_asignado)}</span>`
                 : `<span style="background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.2); padding: 1px 6px; border-radius: 4px; font-size: 0.68rem; color: #ef4444; font-weight: 600;"><i class="fas fa-exclamation-circle" style="font-size: 0.65rem;"></i> Sin Asignar</span>`;
 
+            const companyBadge = meta.empresa 
+                ? `<span style="background: rgba(50, 102, 235, 0.12); border: 1px solid rgba(50, 102, 235, 0.2); padding: 1px 6px; border-radius: 4px; font-size: 0.68rem; color: var(--accent-blue); font-weight: 600; text-transform: uppercase;"><i class="fas fa-building" style="font-size: 0.65rem;"></i> ${escapeHtml(meta.empresa)}</span>`
+                : '';
+
             tr.innerHTML = `
                 <td class="ticket-id-cell">
                     <span class="ticket-id">${ticket.codigo || '#TK-2026-xxxx'}</span>
@@ -700,11 +769,11 @@ document.addEventListener('DOMContentLoaded', () => {
                         <span style="display: inline-flex; align-items: center; gap: 4px;"><i class="fas fa-user" style="color: var(--accent-blue); font-size: 0.7rem;"></i> ${escapeHtml(meta.cliente_nombre)} (${escapeHtml(meta.cliente_rut)})</span>
                         <span style="display: inline-flex; align-items: center; gap: 4px;"><i class="fas fa-envelope" style="color: var(--accent-blue); font-size: 0.7rem;"></i> ${escapeHtml(meta.cliente_email)}</span>
                         <span style="background: rgba(97, 62, 234, 0.12); border: 1px solid rgba(97, 62, 234, 0.2); padding: 1px 6px; border-radius: 4px; font-size: 0.68rem; color: var(--accent-purple); font-weight: 600;">${escapeHtml(meta.modalidad)}</span>
+                        ${companyBadge}
                         ${techStatusHtml}
                     </div>
                 </td>
                 <td><span class="status-badge ${stateClass}">${stateLabel}</span></td>
-                <td>${priorityBadge}</td>
                 <td class="ticket-time">${formatRelativeTime(ticket.created_at)}</td>
                 <td class="ticket-actions">
                     ${takeBtnHtml}
@@ -829,11 +898,16 @@ document.addEventListener('DOMContentLoaded', () => {
         return btn;
     }
 
-    function renderUsuariosPage() {
+    async function renderUsuariosPage() {
         const tbody = document.getElementById('users-table-body');
         if (!tbody) return;
 
-        const users = getPlatformUsers();
+        const warningBanner = document.getElementById('user-supabase-warning');
+        if (warningBanner) {
+            warningBanner.style.display = (!useLocalFallback && !supabaseRolesTableOk) ? 'flex' : 'none';
+        }
+
+        const users = await loadPlatformUsers();
         
         // Count global stats
         const totalUsers = users.length;
@@ -922,16 +996,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Add event listeners to toggles
         document.querySelectorAll('.user-role-toggle').forEach(toggle => {
-            toggle.addEventListener('change', (e) => {
+            toggle.addEventListener('change', async (e) => {
                 const email = toggle.getAttribute('data-email');
                 const makeAdmin = toggle.checked;
                 
-                const users = getPlatformUsers();
+                const users = await loadPlatformUsers();
                 const userIndex = users.findIndex(u => u.email.toLowerCase() === email.toLowerCase());
                 if (userIndex !== -1) {
                     const targetUser = users[userIndex];
                     targetUser.role = makeAdmin ? 'admin' : 'technician';
                     savePlatformUsers(users);
+
+                    // Sincronizar en Supabase
+                    // Sincronizar en Supabase
+                    const dbResult = await updateUserRoleInSupabase(targetUser.email, targetUser.role);
 
                     // If the modified user is currently logged in, sync their role
                     if (currentSession && currentSession.email.toLowerCase() === email.toLowerCase()) {
@@ -939,10 +1017,15 @@ document.addEventListener('DOMContentLoaded', () => {
                         localStorage.setItem('session_soporte', JSON.stringify(currentSession));
                     }
 
-                    alert(`Rol de ${targetUser.nombre} actualizado a ${makeAdmin ? 'Administrador' : 'Técnico'}.`);
+                    if (!dbResult.success && !useLocalFallback) {
+                        const errMsg = dbResult.error ? (dbResult.error.message || JSON.stringify(dbResult.error)) : 'Error desconocido';
+                        alert(`⚠️ Advertencia: No se pudo guardar el rol en Supabase.\n\nDetalle del error: ${errMsg}\n\nEl rol de ${targetUser.nombre} se guardó solo localmente en este navegador.`);
+                    } else {
+                        alert(`Rol de ${targetUser.nombre} actualizado a ${makeAdmin ? 'Administrador' : 'Técnico'}.`);
+                    }
                     
                     // Re-render
-                    renderUsuariosPage();
+                    await renderUsuariosPage();
                     
                     // Update main layout access
                     applySession(currentSession);
@@ -1039,7 +1122,6 @@ document.addEventListener('DOMContentLoaded', () => {
     function validateStep1() {
         const subject = document.getElementById('ticket-subject');
         const category = document.getElementById('ticket-category');
-        const priority = document.getElementById('ticket-priority');
         const office = document.getElementById('ticket-office');
         const description = document.getElementById('ticket-description');
 
@@ -1049,10 +1131,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         if (!category || !category.value) {
             if (category) category.reportValidity();
-            return false;
-        }
-        if (!priority || !priority.value) {
-            if (priority) priority.reportValidity();
             return false;
         }
         if (!office || !office.value) {
@@ -1073,7 +1151,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const subject = document.getElementById('ticket-subject')?.value.trim() || '';
         const category = document.getElementById('ticket-category');
         const categoryText = category ? category.options[category.selectedIndex]?.text : '';
-        const priority = document.getElementById('ticket-priority')?.value || '';
         const office = document.getElementById('ticket-office')?.value || '';
         const modality = document.getElementById('ticket-modalidad')?.value || 'Online';
         const clientName = document.getElementById('ticket-client-name')?.value.trim() || '';
@@ -1085,11 +1162,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const impact = document.getElementById('ticket-impact');
         const impactText = impact ? impact.options[impact.selectedIndex]?.text : '';
 
+        const activeCompanyCard = document.querySelector('.company-card.active');
+        const empresa = activeCompanyCard ? activeCompanyCard.getAttribute('data-company') : 'Infinet';
+
         summaryContainer.innerHTML = `
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; border-bottom: 1px solid rgba(255,255,255,0.03); padding-bottom: 12px; margin-bottom: 12px;">
                 <div><span style="color: var(--text-muted);">Asunto:</span> <strong style="color: var(--text-primary);">${escapeHtml(subject)}</strong></div>
                 <div><span style="color: var(--text-muted);">Categoría:</span> <span class="meta-val">${escapeHtml(categoryText)}</span></div>
-                <div><span style="color: var(--text-muted);">Prioridad:</span> <span class="priority-badge priority-${priority}">${priority.toUpperCase()}</span></div>
+                <div><span style="color: var(--text-muted);">Empresa:</span> <span class="meta-val" style="font-weight: bold; color: var(--accent-blue); text-transform: uppercase;">${escapeHtml(empresa)}</span></div>
                 <div><span style="color: var(--text-muted);">Sede:</span> <span class="meta-val">${escapeHtml(office)}</span></div>
                 <div><span style="color: var(--text-muted);">Modalidad:</span> <span class="meta-val" style="font-weight: 600; color: var(--accent-purple);">${escapeHtml(modality)}</span></div>
                 <div><span style="color: var(--text-muted);">Teléfono:</span> <span class="meta-val">${escapeHtml(phone)}</span></div>
@@ -1112,6 +1192,22 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
         `;
     }
+
+    // Manejo de Selección de Empresa (Visual Cards)
+    document.querySelectorAll('.company-card').forEach(card => {
+        card.addEventListener('click', () => {
+            document.querySelectorAll('.company-card').forEach(c => {
+                c.classList.remove('active');
+                c.style.borderColor = 'var(--border-color)';
+                const badge = c.querySelector('.company-check-badge');
+                if (badge) badge.style.display = 'none';
+            });
+            card.classList.add('active');
+            card.style.borderColor = 'var(--accent-blue)';
+            const badge = card.querySelector('.company-check-badge');
+            if (badge) badge.style.display = 'flex';
+        });
+    });
 
     const btnStepperPrev = document.getElementById('btn-stepper-prev');
     const btnStepperNext = document.getElementById('btn-stepper-next');
@@ -1143,7 +1239,7 @@ document.addEventListener('DOMContentLoaded', () => {
             } else if (currentTicketStep === 3) {
                 const subject = document.getElementById('ticket-subject').value.trim();
                 const category = document.getElementById('ticket-category').value;
-                const priority = document.getElementById('ticket-priority').value;
+                const priority = 'media';
                 const office = document.getElementById('ticket-office').value;
                 const modality = document.getElementById('ticket-modalidad').value;
                 const clientName = document.getElementById('ticket-client-name').value.trim();
@@ -1154,12 +1250,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 const device = document.getElementById('ticket-device').value;
                 const impact = document.getElementById('ticket-impact').value;
 
+                const activeCompanyCard = document.querySelector('.company-card.active');
+                const empresa = activeCompanyCard ? activeCompanyCard.getAttribute('data-company') : 'Infinet';
+
                 btnStepperNext.disabled = true;
                 const originalHtml = btnStepperNext.innerHTML;
                 btnStepperNext.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
 
                 try {
-                    await saveTicket(subject, category, description, priority, office, phone, device, impact, modality, clientName, clientRut, clientEmail);
+                    await saveTicket(subject, category, description, priority, office, phone, device, impact, modality, clientName, clientRut, clientEmail, empresa);
                     alert('¡Ticket creado con éxito!');
                     
                     const form = document.getElementById('stepper-ticket-form');
@@ -1314,13 +1413,9 @@ document.addEventListener('DOMContentLoaded', () => {
             statusBadge.textContent = ticket.estado.charAt(0).toUpperCase() + ticket.estado.slice(1);
         }
 
-        const priorityBadge = document.getElementById('modal-ticket-prioridad');
-        if (priorityBadge) {
-            const p = ticket.prioridad.toLowerCase();
-            priorityBadge.className = `priority-badge priority-${p}`;
-            priorityBadge.innerHTML = p === 'alta' ? '<i class="fas fa-arrow-up"></i> Alta' : 
-                                      p === 'baja' ? '<i class="fas fa-arrow-down"></i> Baja' : 
-                                      '<i class="fas fa-minus"></i> Media';
+        const modalEmpresa = document.getElementById('modal-ticket-empresa');
+        if (modalEmpresa) {
+            modalEmpresa.textContent = meta.empresa || 'T-Sales';
         }
 
         const replyInput = document.getElementById('modal-reply-input');
@@ -3486,6 +3581,122 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // ============================================
+    // IMPORTADOR DE NOTEBOOKS DESDE ARCHIVO TXT
+    // ============================================
+    const btnImportarTxt = document.getElementById('btn-importar-txt');
+    const equipTxtFileInput = document.getElementById('equip-txt-file-input');
+
+    if (btnImportarTxt && equipTxtFileInput) {
+        btnImportarTxt.addEventListener('click', () => {
+            equipTxtFileInput.value = ''; // Reset
+            equipTxtFileInput.click();
+        });
+
+        equipTxtFileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                try {
+                    const text = event.target.result;
+                    const parsed = parseTXTInventory(text);
+
+                    // Abrir modal de nuevo registro
+                    openEquipFormModal();
+
+                    // Rellenar formulario modal con los datos leídos
+                    if (document.getElementById('equip-form-codigo')) document.getElementById('equip-form-codigo').value = parsed.codigo || '';
+                    if (document.getElementById('equip-form-marca')) document.getElementById('equip-form-marca').value = parsed.marca || '';
+                    if (document.getElementById('equip-form-modelo')) document.getElementById('equip-form-modelo').value = parsed.modelo || '';
+                    if (document.getElementById('equip-form-so')) document.getElementById('equip-form-so').value = parsed.so || '';
+                    if (document.getElementById('equip-form-ram')) document.getElementById('equip-form-ram').value = parsed.ram || '';
+                    if (document.getElementById('equip-form-serial')) document.getElementById('equip-form-serial').value = parsed.serial || '';
+                    if (document.getElementById('equip-form-disco')) document.getElementById('equip-form-disco').value = parsed.disco || '';
+                    if (document.getElementById('equip-form-cpu')) document.getElementById('equip-form-cpu').value = parsed.cpu || '';
+
+                    // Tipo e inicio por defecto para laptops
+                    if (document.getElementById('equip-form-tipo')) document.getElementById('equip-form-tipo').value = 'laptop';
+                    if (document.getElementById('equip-form-estado')) document.getElementById('equip-form-estado').value = 'activo';
+
+                    // Empresa
+                    const empresaSelect = document.getElementById('equip-form-empresa');
+                    if (empresaSelect && parsed.usuario_nombre) {
+                        const normEmp = parsed.usuario_nombre.trim().toLowerCase();
+                        if (normEmp.includes('vprime') || normEmp.includes('v-prime')) {
+                            empresaSelect.value = 'VPrime';
+                        } else if (normEmp.includes('infinet')) {
+                            empresaSelect.value = 'Infinet';
+                        } else {
+                            empresaSelect.value = 'T-Sales';
+                        }
+                    } else if (empresaSelect) {
+                        empresaSelect.value = 'T-Sales';
+                    }
+
+                    // Dejar vacíos el nombre y correo del usuario asignado para llenado manual
+                    const nameInput = document.getElementById('equip-form-usuario-nombre');
+                    const emailInput = document.getElementById('equip-form-usuario-email');
+                    if (nameInput) {
+                        nameInput.value = '';
+                        nameInput.focus();
+                    }
+                    if (emailInput) {
+                        emailInput.value = '';
+                    }
+
+                    alert('Datos de hardware cargados con éxito del TXT. Por favor, ingresa el nombre de la persona asignada.');
+                } catch (err) {
+                    console.error('Error al procesar el inventario TXT:', err);
+                    alert('No se pudo procesar el formato del archivo TXT.');
+                }
+            };
+            reader.readAsText(file);
+        });
+    }
+
+    function parseTXTInventory(text) {
+        const lines = text.split('\n');
+        
+        const getValue = (key) => {
+            const line = lines.find(l => {
+                const cleanLine = l.replace(/^\s*[-=*]+\s*$/, '').trim();
+                return cleanLine.toLowerCase().startsWith(key.toLowerCase());
+            });
+            if (line) {
+                const parts = line.split(':');
+                if (parts.length > 1) {
+                    return parts.slice(1).join(':').trim();
+                }
+            }
+            return '';
+        };
+
+        const data = {};
+        data.codigo = getValue('Nombre Equipo') || getValue('Nombre') || getValue('Codigo') || '';
+        data.usuario_nombre = getValue('Usuario') || '';
+        data.usuario_email = getValue('Correo') || getValue('Email') || '';
+        data.marca = getValue('Marca') || '';
+        data.modelo = getValue('Modelo') || '';
+        
+        const so = getValue('Sistema Operativo') || getValue('S.O.') || getValue('SO') || '';
+        const version = getValue('Version') || '';
+        const arch = getValue('Arquitectura') || '';
+        data.so = [so, version, arch].filter(Boolean).join(' ');
+
+        data.ram = getValue('RAM Total') || getValue('RAM') || '';
+        data.serial = getValue('Serial') || getValue('S/N') || getValue('Numero de Serie') || '';
+
+        const discoModelo = getValue('Modelo Disco') || getValue('Disco') || '';
+        const discoCapacidad = getValue('Capacidad') || getValue('Tamano Disco') || '';
+        data.disco = [discoModelo, discoCapacidad].filter(Boolean).join(' - ');
+
+        data.cpu = getValue('CPU') || getValue('Procesador') || '';
+
+        return data;
+    }
+
     function renderImportPreview(equipos) {
         if (!previewTbody) return;
         previewTbody.innerHTML = '';
@@ -3970,7 +4181,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Submit de Login Técnico
     if (formUser) {
-        formUser.addEventListener('submit', (e) => {
+        formUser.addEventListener('submit', async (e) => {
             e.preventDefault();
             const email = document.getElementById('login-tech-email').value.trim().toLowerCase();
             const pass = document.getElementById('login-tech-pass').value.trim();
@@ -3978,7 +4189,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!email || !pass) return;
 
             let session = null;
-            const users = getPlatformUsers();
+            const users = await loadPlatformUsers();
             const found = users.find(u => u.email.toLowerCase() === email && u.password === pass);
             
             if (found) {
@@ -4001,7 +4212,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Submit de Login Administrador
     if (formAdmin) {
-        formAdmin.addEventListener('submit', (e) => {
+        formAdmin.addEventListener('submit', async (e) => {
             e.preventDefault();
             const email = document.getElementById('login-admin-email').value.trim().toLowerCase();
             const pass = document.getElementById('login-admin-pass').value.trim();
@@ -4009,7 +4220,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!email || !pass) return;
 
             let session = null;
-            const users = getPlatformUsers();
+            const users = await loadPlatformUsers();
             const found = users.find(u => u.email.toLowerCase() === email && u.password === pass);
 
             if (found) {
@@ -4907,14 +5118,16 @@ document.addEventListener('DOMContentLoaded', () => {
     // Cargar sesión guardada o forzar login modal
     const savedSession = localStorage.getItem('session_soporte');
     if (savedSession) {
-        let session = JSON.parse(savedSession);
-        const users = getPlatformUsers();
-        const found = users.find(u => u.email.toLowerCase() === session.email.toLowerCase());
-        if (found) {
-            session.role = found.role;
-            localStorage.setItem('session_soporte', JSON.stringify(session));
-        }
-        applySession(session);
+        (async () => {
+            let session = JSON.parse(savedSession);
+            const users = await loadPlatformUsers();
+            const found = users.find(u => u.email.toLowerCase() === session.email.toLowerCase());
+            if (found) {
+                session.role = found.role;
+                localStorage.setItem('session_soporte', JSON.stringify(session));
+            }
+            applySession(session);
+        })();
     } else {
         const loginModal = document.getElementById('login-modal');
         if (loginModal) loginModal.style.display = 'flex';

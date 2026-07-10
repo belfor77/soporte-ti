@@ -3979,6 +3979,24 @@ input:checked + .slider:before {
     display: flex !important;
 }
 
+/* Tarjetas de Selección de Empresa */
+.company-card {
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.company-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(97, 62, 234, 0.5) !important;
+    background-color: rgba(255, 255, 255, 0.03) !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+}
+
+.company-card.active {
+    border-color: var(--accent-blue) !important;
+    background-color: rgba(50, 102, 235, 0.03) !important;
+    box-shadow: 0 0 15px rgba(50, 102, 235, 0.15);
+}
+
 
 
 
