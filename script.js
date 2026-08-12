@@ -5132,5 +5132,281 @@ document.addEventListener('DOMContentLoaded', () => {
         const loginModal = document.getElementById('login-modal');
         if (loginModal) loginModal.style.display = 'flex';
     }
+    // ============================================
+    // MÓDULO DE VISITAS Y MOBILE MENU
+    // ============================================
+    const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+    const sidebar = document.querySelector('.sidebar');
+
+    if (mobileMenuBtn && sidebar) {
+        mobileMenuBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('mobile-open');
+        });
+
+        // Cerrar sidebar al hacer click en un link (en móvil)
+        document.querySelectorAll('.sidebar-nav a').forEach(link => {
+            link.addEventListener('click', () => {
+                if (window.innerWidth <= 768) {
+                    sidebar.classList.remove('mobile-open');
+                }
+            });
+        });
+    }
+
+    // Navegación de sección "Visitas"
+    const navVisitas = document.getElementById('nav-visitas');
+    const pageVisitas = document.getElementById('page-visitas');
+
+    if (navVisitas) {
+        navVisitas.addEventListener('click', (e) => {
+            e.preventDefault();
+            // Desactivar otros nav links y secciones
+            document.querySelectorAll('.sidebar-nav li').forEach(li => li.classList.remove('active'));
+            document.querySelectorAll('.page-section').forEach(sec => sec.classList.remove('active-page'));
+            
+            navVisitas.classList.add('active');
+            if (pageVisitas) pageVisitas.classList.add('active-page');
+            
+            initVisitasModule();
+        });
+    }
+
+    // Logic for Visitas
+    const locations = {
+        'T-SALES': [
+            'Latadia 4602, Las Condes',
+            'Calle doce norte 996, Viña del Mar',
+            'Fidel Oteiza 1941, oficina 801, Providencia',
+            'Agustinas 641, 501, Providencia'
+        ],
+        'VPRIME': [
+            'Elidoro Yáñez 2318, Providencia',
+            'Agustinas 641, 501, Providencia'
+        ],
+        'INFINET': [
+            'Fanor Velasco 85, oficina 201, Santiago'
+        ]
+    };
+
+    const selEmpresa = document.getElementById('visita-empresa-select');
+    const selLugar = document.getElementById('visita-lugar-select');
+    const btnRegistrarVisita = document.getElementById('btn-registrar-visita');
+    const calendarDaysContainer = document.getElementById('calendar-days-container');
+    const calendarMonthYear = document.getElementById('calendar-month-year');
+    const btnPrevMonth = document.getElementById('calendar-prev-btn');
+    const btnNextMonth = document.getElementById('calendar-next-btn');
+    const countMesActual = document.getElementById('visitas-mes-actual');
+
+    let currentDate = new Date();
+    let selectedDay = null;
+    let cachedVisits = [];
+
+    if (selEmpresa && selLugar) {
+        selEmpresa.addEventListener('change', () => {
+            const empresa = selEmpresa.value;
+            selLugar.innerHTML = '<option value="" disabled selected>Selecciona lugar...</option>';
+            if (locations[empresa]) {
+                locations[empresa].forEach(lugar => {
+                    const opt = document.createElement('option');
+                    opt.value = lugar;
+                    opt.textContent = lugar;
+                    selLugar.appendChild(opt);
+                });
+                selLugar.disabled = false;
+            } else {
+                selLugar.disabled = true;
+            }
+            checkRegistrarBtn();
+        });
+        selLugar.addEventListener('change', checkRegistrarBtn);
+    }
+
+    function checkRegistrarBtn() {
+        if (selEmpresa.value && selLugar.value && selectedDay && btnRegistrarVisita) {
+            btnRegistrarVisita.disabled = false;
+        } else if (btnRegistrarVisita) {
+            btnRegistrarVisita.disabled = true;
+        }
+    }
+
+    async function initVisitasModule() {
+        if (!pageVisitas) return;
+        renderCalendar(currentDate);
+        await loadVisitsForMonth(currentDate);
+    }
+
+    function renderCalendar(date) {
+        if (!calendarDaysContainer || !calendarMonthYear) return;
+        calendarDaysContainer.innerHTML = '';
+        selectedDay = null;
+        checkRegistrarBtn();
+
+        const year = date.getFullYear();
+        const month = date.getMonth();
+        const monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+        calendarMonthYear.textContent = `${monthNames[month]} ${year}`;
+
+        const firstDayOfMonth = new Date(year, month, 1).getDay();
+        // JS getDay() starts on Sunday (0). We want Monday (1) as start.
+        const firstDayAdjusted = firstDayOfMonth === 0 ? 6 : firstDayOfMonth - 1; 
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+        // Empty spots before month start
+        for (let i = 0; i < firstDayAdjusted; i++) {
+            const emptyDiv = document.createElement('div');
+            emptyDiv.className = 'calendar-day empty';
+            calendarDaysContainer.appendChild(emptyDiv);
+        }
+
+        // Days
+        for (let i = 1; i <= daysInMonth; i++) {
+            const dayDiv = document.createElement('div');
+            dayDiv.className = 'calendar-day';
+            const dayOfWeek = new Date(year, month, i).getDay();
+            if (dayOfWeek === 0 || dayOfWeek === 6) dayDiv.classList.add('weekend');
+            
+            dayDiv.dataset.date = `${year}-${String(month+1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
+            
+            dayDiv.innerHTML = `<div class="day-number">${i}</div><div class="visit-container"></div>`;
+            
+            dayDiv.addEventListener('click', () => {
+                document.querySelectorAll('.calendar-day').forEach(d => d.classList.remove('selected'));
+                dayDiv.classList.add('selected');
+                selectedDay = dayDiv.dataset.date;
+                checkRegistrarBtn();
+            });
+
+            calendarDaysContainer.appendChild(addVisitMarkers(dayDiv, dayDiv.dataset.date));
+        }
+    }
+
+    function addVisitMarkers(dayDiv, dateStr) {
+        const container = dayDiv.querySelector('.visit-container');
+        if (!container) return dayDiv;
+        container.innerHTML = '';
+        
+        const visits = cachedVisits.filter(v => v.fecha.startsWith(dateStr));
+        visits.forEach(v => {
+            const mark = document.createElement('div');
+            mark.className = 'visit-mark';
+            mark.innerHTML = `<i class="fas fa-check"></i> ${v.empresa}`;
+            mark.title = `${v.empresa} - ${v.ubicacion} (${v.nombre_tecnico})`;
+            
+            const tech = document.createElement('div');
+            tech.className = 'visit-tech';
+            tech.textContent = v.nombre_tecnico;
+            
+            container.appendChild(mark);
+            container.appendChild(tech);
+        });
+        return dayDiv;
+    }
+
+    if (btnPrevMonth) {
+        btnPrevMonth.addEventListener('click', async () => {
+            currentDate.setMonth(currentDate.getMonth() - 1);
+            renderCalendar(currentDate);
+            await loadVisitsForMonth(currentDate);
+        });
+    }
+    if (btnNextMonth) {
+        btnNextMonth.addEventListener('click', async () => {
+            currentDate.setMonth(currentDate.getMonth() + 1);
+            renderCalendar(currentDate);
+            await loadVisitsForMonth(currentDate);
+        });
+    }
+
+    async function loadVisitsForMonth(date) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const prefix = `${year}-${month}`;
+        
+        cachedVisits = [];
+        
+        if (!useLocalFallback && supabase) {
+            try {
+                const { data, error } = await supabase
+                    .from('visitas')
+                    .select('*')
+                    .like('fecha', `${prefix}%`);
+                
+                if (error) throw error;
+                if (data) cachedVisits = data;
+            } catch (e) {
+                console.warn('Error loading visits from Supabase, using localStorage.', e);
+                cachedVisits = loadVisitsLocally(prefix);
+            }
+        } else {
+            cachedVisits = loadVisitsLocally(prefix);
+        }
+        
+        // Re-render markers
+        document.querySelectorAll('.calendar-day[data-date]').forEach(dayDiv => {
+            addVisitMarkers(dayDiv, dayDiv.dataset.date);
+        });
+
+        // Update count
+        if (countMesActual) {
+            const uniqueDays = new Set(cachedVisits.map(v => v.fecha));
+            countMesActual.textContent = uniqueDays.size;
+        }
+    }
+
+    function loadVisitsLocally(prefix) {
+        const local = localStorage.getItem('visitas_storage');
+        if (!local) return [];
+        const allVisits = JSON.parse(local);
+        return allVisits.filter(v => v.fecha.startsWith(prefix));
+    }
+
+    if (btnRegistrarVisita) {
+        btnRegistrarVisita.addEventListener('click', async () => {
+            if (!selectedDay || !selEmpresa.value || !selLugar.value || !currentSession) {
+                alert('Faltan datos para registrar la visita o no hay sesión iniciada.');
+                return;
+            }
+
+            const nuevaVisita = {
+                fecha: selectedDay,
+                empresa: selEmpresa.value,
+                ubicacion: selLugar.value,
+                rut_tecnico: currentSession.rut || currentSession.email,
+                nombre_tecnico: currentSession.nombre
+            };
+
+            btnRegistrarVisita.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Registrando...';
+            btnRegistrarVisita.disabled = true;
+
+            if (!useLocalFallback && supabase) {
+                try {
+                    const { error } = await supabase.from('visitas').insert([nuevaVisita]);
+                    if (error) throw error;
+                } catch (e) {
+                    console.warn('Error guardando visita en Supabase, guardando en local.', e);
+                    saveVisitLocally(nuevaVisita);
+                }
+            } else {
+                saveVisitLocally(nuevaVisita);
+            }
+
+            btnRegistrarVisita.innerHTML = '<i class="fas fa-check"></i> Registrado';
+            setTimeout(() => {
+                btnRegistrarVisita.innerHTML = '<i class="fas fa-plus"></i> Registrar Visita';
+                checkRegistrarBtn();
+            }, 2000);
+            
+            // Recargar datos
+            await loadVisitsForMonth(currentDate);
+        });
+    }
+
+    function saveVisitLocally(visita) {
+        const local = localStorage.getItem('visitas_storage');
+        let allVisits = [];
+        if (local) allVisits = JSON.parse(local);
+        allVisits.push(visita);
+        localStorage.setItem('visitas_storage', JSON.stringify(allVisits));
+    }
 
 });

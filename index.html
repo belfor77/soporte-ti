@@ -27,9 +27,10 @@
                     <li><a href="#"><i class="fas fa-plus-square"></i> Crear Ticket</a></li>
                     <li id="nav-base-conocimientos"><a href="#"><i class="fas fa-book"></i> Base de Conocimientos</a></li>
                     <li id="nav-usuarios" style="display: none;"><a href="#"><i class="fas fa-users"></i> Usuarios</a></li>
+                    <li id="nav-visitas"><a href="#"><i class="fas fa-calendar-check"></i> Visitas <span class="badge new-badge" style="background: var(--accent-purple); color: white; padding: 2px 6px; border-radius: 10px; font-size: 0.7rem; margin-left: 8px;">NUEVO</span></a></li>
                     <li><a href="#"><i class="fas fa-server"></i> Estado del Sistema</a></li>
-                    <li><a href="#"><i class="fas fa-comments"></i> Chat en Vivo</a></li>
-                    <li><a href="#"><i class="fas fa-graduation-cap"></i> Tutoriales</a></li>
+                    <li style="display: none;"><a href="#"><i class="fas fa-comments"></i> Chat en Vivo</a></li>
+                    <li style="display: none;"><a href="#"><i class="fas fa-graduation-cap"></i> Tutoriales</a></li>
                     <li><a href="#"><i class="fas fa-question-circle"></i> Preguntas Frecuentes</a></li>
                 </ul>
             </nav>
@@ -50,6 +51,7 @@
 
         <main class="main-content">
             <header class="main-header">
+                <button id="mobile-menu-btn" class="mobile-menu-btn" style="display: none; background: transparent; border: none; color: var(--text-primary); font-size: 1.5rem; cursor: pointer; padding: 0 15px;"><i class="fas fa-bars"></i></button>
                 <div class="search-container">
                     </div>
                 <div class="header-user" id="header-user-menu" style="position: relative; cursor: pointer;">
@@ -1781,6 +1783,83 @@
                     <button class="kb-cta-btn" id="kb-contactar-soporte-btn">
                         <i class="fas fa-headset"></i> Crear Ticket de Soporte
                     </button>
+                </div>
+            </div>
+
+            <!-- ============ PÁGINA VISITAS ============ -->
+            <div id="page-visitas" class="page-section">
+                <div class="section-header" style="margin-bottom: 30px;">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 20px;">
+                        <div>
+                            <h2 style="font-size: 1.8rem; margin-bottom: 5px; display: flex; align-items: center; gap: 10px;">
+                                <i class="fas fa-calendar-alt" style="color: var(--accent-purple);"></i> Visitas
+                            </h2>
+                            <p style="color: var(--text-secondary);">Registra los días en que realizaste visitas a empresas</p>
+                        </div>
+                        <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                            <div class="dropdown-wrapper">
+                                <label style="display: block; font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 5px;">Empresa</label>
+                                <select id="visita-empresa-select" style="padding: 10px 15px; border-radius: 8px; background: var(--bg-sidebar); border: 1px solid var(--border-color); color: var(--text-primary); outline: none;">
+                                    <option value="" disabled selected>Seleccionar Empresa...</option>
+                                    <option value="T-SALES">T-SALES</option>
+                                    <option value="VPRIME">VPRIME</option>
+                                    <option value="INFINET">INFINET</option>
+                                </select>
+                            </div>
+                            <div class="dropdown-wrapper">
+                                <label style="display: block; font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 5px;">Lugar / Sucursal</label>
+                                <select id="visita-lugar-select" style="padding: 10px 15px; border-radius: 8px; background: var(--bg-sidebar); border: 1px solid var(--border-color); color: var(--text-primary); outline: none; min-width: 250px;" disabled>
+                                    <option value="" disabled selected>Primero selecciona empresa</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 30px;">
+                    <div class="stat-card" style="background: var(--bg-card); padding: 20px; border-radius: 12px; border: 1px solid var(--border-color); display: flex; align-items: center; gap: 15px;">
+                        <div style="width: 50px; height: 50px; border-radius: 50%; background: rgba(97, 62, 234, 0.1); color: var(--accent-purple); display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
+                            <i class="fas fa-calendar-check"></i>
+                        </div>
+                        <div>
+                            <h3 id="visitas-mes-actual" style="font-size: 1.5rem; margin: 0;">0</h3>
+                            <p style="color: var(--text-secondary); margin: 0; font-size: 0.9rem;">Días con visitas este mes</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="calendar-container" style="background: var(--bg-card); border-radius: 12px; border: 1px solid var(--border-color); padding: 20px;">
+                    <div class="calendar-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h3 id="calendar-month-year" style="margin: 0;">Calendario de Visitas</h3>
+                        <div class="calendar-nav" style="display: flex; gap: 10px;">
+                            <button id="calendar-prev-btn" style="background: var(--bg-sidebar); border: 1px solid var(--border-color); color: var(--text-primary); padding: 8px 12px; border-radius: 6px; cursor: pointer;"><i class="fas fa-chevron-left"></i></button>
+                            <button id="calendar-next-btn" style="background: var(--bg-sidebar); border: 1px solid var(--border-color); color: var(--text-primary); padding: 8px 12px; border-radius: 6px; cursor: pointer;"><i class="fas fa-chevron-right"></i></button>
+                        </div>
+                    </div>
+                    
+                    <div class="calendar-grid-wrapper" style="border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden;">
+                        <div class="calendar-grid" style="display: grid; grid-template-columns: repeat(7, 1fr); background: var(--bg-sidebar);">
+                            <div class="cal-day-header" style="padding: 10px; text-align: center; font-weight: 600; font-size: 0.8rem; color: var(--text-secondary); border-right: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);">LUN</div>
+                            <div class="cal-day-header" style="padding: 10px; text-align: center; font-weight: 600; font-size: 0.8rem; color: var(--text-secondary); border-right: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);">MAR</div>
+                            <div class="cal-day-header" style="padding: 10px; text-align: center; font-weight: 600; font-size: 0.8rem; color: var(--text-secondary); border-right: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);">MIÉ</div>
+                            <div class="cal-day-header" style="padding: 10px; text-align: center; font-weight: 600; font-size: 0.8rem; color: var(--text-secondary); border-right: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);">JUE</div>
+                            <div class="cal-day-header" style="padding: 10px; text-align: center; font-weight: 600; font-size: 0.8rem; color: var(--text-secondary); border-right: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);">VIE</div>
+                            <div class="cal-day-header" style="padding: 10px; text-align: center; font-weight: 600; font-size: 0.8rem; color: var(--text-secondary); border-right: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);">SÁB</div>
+                            <div class="cal-day-header" style="padding: 10px; text-align: center; font-weight: 600; font-size: 0.8rem; color: var(--text-secondary); border-bottom: 1px solid var(--border-color);">DOM</div>
+                        </div>
+                        <div id="calendar-days-container" class="calendar-grid" style="display: grid; grid-template-columns: repeat(7, 1fr); background: var(--bg-card);">
+                            <!-- JS renders days here -->
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+                        <div style="display: flex; gap: 15px; font-size: 0.85rem; color: var(--text-secondary);">
+                            <div style="display: flex; align-items: center; gap: 5px;"><span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: var(--accent-blue);"></span> Visita Registrada</div>
+                        </div>
+                        <button id="btn-registrar-visita" class="btn-primary" style="padding: 10px 20px; border-radius: 8px; font-weight: 600; display: flex; align-items: center; gap: 8px;" disabled>
+                            <i class="fas fa-plus"></i> Registrar Visita (Selecciona día)
+                        </button>
+                    </div>
                 </div>
             </div>
 
