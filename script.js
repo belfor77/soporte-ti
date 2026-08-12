@@ -5323,13 +5323,15 @@ document.addEventListener('DOMContentLoaded', () => {
         const prefix = `${year}-${month}`;
         
         cachedVisits = [];
+        const lastDay = new Date(year, date.getMonth() + 1, 0).getDate();
         
         if (!useLocalFallback && supabase) {
             try {
                 const { data, error } = await supabase
                     .from('visitas')
                     .select('*')
-                    .like('fecha', `${prefix}%`);
+                    .gte('fecha', `${prefix}-01`)
+                    .lte('fecha', `${prefix}-${lastDay}`);
                 
                 if (error) throw error;
                 if (data) cachedVisits = data;
