@@ -184,7 +184,7 @@
                                 </div>
                             </div>
                             <div class="notif-dropdown-footer">
-                                <button type="button" class="btn-full-link" onclick="document.querySelector('#nav-mis-tickets a').click();">Ver todos los tickets de soporte →</button>
+                                <button type="button" class="btn-full-link" onclick="document.querySelector('#nav-todos-tickets a').click();">Ver todos los tickets de soporte →</button>
                             </div>
                         </div>
                     </div>
@@ -319,7 +319,7 @@
                             <div class="dash-card-title-group">
                                 <h3>Actividad reciente</h3>
                             </div>
-                            <button type="button" class="dash-card-action-link" onclick="document.querySelector('#nav-mis-tickets a').click();">Ver todo</button>
+                            <button type="button" class="dash-card-action-link" onclick="document.querySelector('#nav-todos-tickets a').click();">Ver todo</button>
                         </div>
                         <div class="activity-feed-list" id="dash-activity-feed">
                             <div class="activity-feed-item">
@@ -474,7 +474,7 @@
                             <div class="dash-card-title-group">
                                 <h3>Tickets que requieren atención</h3>
                             </div>
-                            <button type="button" class="dash-card-action-link" onclick="document.querySelector('#nav-mis-tickets a').click();">Ver todos</button>
+                            <button type="button" class="dash-card-action-link" onclick="document.querySelector('#nav-todos-tickets a').click();">Ver todos</button>
                         </div>
                         <div class="dash-table-wrapper">
                             <table class="dash-table" id="table-attention-tickets">
@@ -857,19 +857,53 @@
 
                         <!-- Panel Paso 2: Información adicional -->
                         <div class="stepper-form-card" id="step-panel-2" style="background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; padding: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); display: none; flex-direction: column; gap: 16px;">
-                            <div style="display: flex; align-items: center; gap: 10px; border-bottom: 1px solid rgba(255,255,255,0.03); padding-bottom: 14px; margin-bottom: 4px;">
-                                <i class="fas fa-info-circle" style="color: var(--accent-blue); font-size: 1.2rem;"></i>
-                                <h3 style="margin: 0; font-size: 1rem; font-weight: 700; color: var(--text-primary);">Información adicional</h3>
+                            <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.03); padding-bottom: 14px; margin-bottom: 4px;">
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <i class="fas fa-user-tag" style="color: var(--accent-blue); font-size: 1.2rem;"></i>
+                                    <h3 style="margin: 0; font-size: 1rem; font-weight: 700; color: var(--text-primary);">Persona Afectada y Asignación</h3>
+                                </div>
+                                <span style="font-size: 0.75rem; color: var(--text-muted);">Paso 2 de 3</span>
                             </div>
 
+                            <!-- Selector de Modo: Usuario Existente vs Usuario Nuevo -->
+                            <div style="display: flex; background-color: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-color); border-radius: 10px; padding: 4px; gap: 6px;">
+                                <button type="button" id="btn-user-mode-existing" class="btn-user-type-tab" style="flex: 1; padding: 10px; border: none; background: var(--accent-blue); color: white; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 0.84rem; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s; font-family: var(--font-family);">
+                                    <i class="fas fa-users"></i> Ejecutivo / Usuario Existente
+                                </button>
+                                <button type="button" id="btn-user-mode-new" class="btn-user-type-tab" style="flex: 1; padding: 10px; border: none; background: transparent; color: var(--text-secondary); border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 0.84rem; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s; font-family: var(--font-family);">
+                                    <i class="fas fa-user-plus"></i> Registrar Usuario Nuevo
+                                </button>
+                            </div>
+
+                            <!-- 1. Barra de Búsqueda Rápida de Ejecutivos -->
+                            <div class="form-group" id="group-search-existing-user" style="position: relative;">
+                                <label for="ticket-search-user-input" style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center;">
+                                    <span><i class="fas fa-search" style="color: var(--accent-blue); margin-right: 4px;"></i> Buscar Ejecutivo en el Directorio:</span>
+                                    <span style="font-size: 0.72rem; color: var(--accent-blue); font-weight: 600;"><i class="fas fa-bolt" style="color: #f59e0b;"></i> Escribe nombre, RUT o correo</span>
+                                </label>
+                                <div style="position: relative;">
+                                    <input type="text" id="ticket-search-user-input" autocomplete="off" placeholder="🔍 Escribe para buscar (Ej: Francisca, Anthony, Aaron, 19456...)" style="width: 100%; padding: 12px 38px 12px 14px; background-color: var(--bg-sidebar); border: 2px solid rgba(50, 102, 235, 0.4); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family); font-size: 0.9rem; transition: all 0.2s;">
+                                    <i class="fas fa-search" style="position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: var(--accent-blue); font-size: 0.95rem; pointer-events: none;"></i>
+                                    <div id="ticket-search-user-dropdown" class="autocomplete-suggestions-dropdown" style="display: none; max-height: 260px; overflow-y: auto;"></div>
+                                </div>
+                            </div>
+
+                            <!-- 2. Selector rápido de ejecutivos del directorio -->
+                            <div class="form-group" id="group-existing-user-select">
+                                <label for="ticket-existing-user-select" style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 6px; display: block;">O seleccionar directamente de la lista:</label>
+                                <select id="ticket-existing-user-select" style="width: 100%; padding: 12px; background-color: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family); font-size: 0.88rem; cursor: pointer;">
+                                    <option value="">-- Elige un colaborador o usa el buscador de arriba --</option>
+                                </select>
+                            </div>
+
+                            <!-- 3. Campos con los datos del usuario seleccionado / a ingresar -->
                             <div class="form-group" style="position: relative;">
                                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                                    <label for="ticket-client-name" style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; margin: 0; display: block;">Nombre de la persona (Afectado) *</label>
-                                    <span style="font-size: 0.72rem; color: var(--accent-blue); font-weight: 600; display: inline-flex; align-items: center; gap: 4px;"><i class="fas fa-bolt" style="color: #f59e0b;"></i> Autocompletado inteligente</span>
+                                    <label for="ticket-client-name" id="label-ticket-client-name" style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; margin: 0; display: block;">Nombre de la persona (Afectado) *</label>
+                                    <span id="badge-autocomplete-status" style="font-size: 0.72rem; color: var(--accent-blue); font-weight: 600; display: inline-flex; align-items: center; gap: 4px;"><i class="fas fa-check-circle" style="color: var(--accent-green);"></i> Datos listos</span>
                                 </div>
                                 <div class="autocomplete-wrapper">
-                                    <input type="text" id="ticket-client-name" autocomplete="off" required placeholder="Escribe el nombre o RUT (Ej: Francisca, Aaron...)" style="width: 100%; padding: 12px 38px 12px 12px; background-color: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family); font-size: 0.88rem;">
-                                    <i class="fas fa-search" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 0.85rem; pointer-events: none;"></i>
+                                    <input type="text" id="ticket-client-name" autocomplete="off" required placeholder="Nombre de la persona afectada" style="width: 100%; padding: 12px; background-color: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family); font-size: 0.88rem;">
                                     <div id="ticket-client-autocomplete-list" class="autocomplete-suggestions-dropdown" style="display: none;"></div>
                                 </div>
                             </div>
@@ -881,13 +915,32 @@
                                 </div>
                                 <div class="form-group">
                                     <label for="ticket-client-email" style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 6px; display: block;">Correo de la persona *</label>
-                                    <input type="email" id="ticket-client-email" required placeholder="Ej: juan.perez@empresa.com" style="width: 100%; padding: 12px; background-color: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family); font-size: 0.88rem;">
+                                    <input type="email" id="ticket-client-email" required placeholder="Ej: persona@empresa.com" style="width: 100%; padding: 12px; background-color: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family); font-size: 0.88rem;">
                                 </div>
                             </div>
                             
-                            <div class="form-group">
-                                <label for="ticket-phone" style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 6px; display: block;">Teléfono de contacto (Opcional)</label>
-                                <input type="text" id="ticket-phone" placeholder="Ej: +56 9 1234 5678" style="width: 100%; padding: 12px; background-color: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family); font-size: 0.88rem;">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                                <div class="form-group">
+                                    <label for="ticket-phone" style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 6px; display: block;">Teléfono de contacto (Opcional)</label>
+                                    <input type="text" id="ticket-phone" placeholder="Ej: +56 9 1234 5678" style="width: 100%; padding: 12px; background-color: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family); font-size: 0.88rem;">
+                                </div>
+                                <div class="form-group">
+                                    <label for="ticket-assigned-tech" style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 6px; display: block;">Técnico / Ejecutivo Asignado *</label>
+                                    <select id="ticket-assigned-tech" style="width: 100%; padding: 12px; background-color: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family); font-size: 0.88rem; cursor: pointer;">
+                                        <option value="">Sin Asignar (Disponible para el equipo)</option>
+                                        <option value="Belfor Aburto">Belfor Aburto (Administrador TI)</option>
+                                        <option value="Felipe Olivares">Felipe Olivares (Soporte)</option>
+                                        <option value="Omar Gálvez">Omar Gálvez (Soporte)</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Checkbox para guardar usuario nuevo en directorio -->
+                            <div id="group-save-new-user-checkbox" style="display: none; background: rgba(50, 102, 235, 0.05); border: 1px solid rgba(50, 102, 235, 0.2); border-radius: 8px; padding: 10px 14px;">
+                                <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 0.82rem; color: var(--text-primary);">
+                                    <input type="checkbox" id="check-save-to-directory" checked style="width: 16px; height: 16px; accent-color: var(--accent-blue);">
+                                    <span><i class="fas fa-save" style="color: var(--accent-blue); margin-right: 4px;"></i> Guardar automáticamente este usuario en el Directorio Corporativo</span>
+                                </label>
                             </div>
                             
                             <div class="form-group">

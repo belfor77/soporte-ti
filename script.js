@@ -330,37 +330,58 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         let tickets = JSON.parse(localStorage.getItem('local_tickets'));
-        if (!tickets || tickets.length === 0) {
+        if (!tickets || tickets.length === 0 || !tickets[0].tecnico_asignado) {
             tickets = [
                 {
                     id: '12',
                     codigo: 'TK-2026-0012',
                     created_at: new Date(Date.now() - 2 * 3600 * 1000).toISOString(),
-                    asunto: 'Error al iniciar sesión',
+                    asunto: 'Error al iniciar sesión en Teams',
                     categoria: 'cuenta',
                     prioridad: 'alta',
                     estado: 'abierto',
-                    descripcion: 'No puedo acceder a mi cuenta desde ayer.'
+                    descripcion: 'No puedo acceder a mi cuenta desde ayer.',
+                    usuario_nombre: 'Omar Gálvez',
+                    usuario_email: 'omar.galvez@t-sales.cl',
+                    tecnico_asignado: 'Omar Gálvez',
+                    cliente_nombre: 'Anthony German',
+                    cliente_rut: '26007243-9',
+                    cliente_email: 'anthony.german@t-sales.cl',
+                    empresa: 'T-Sales'
                 },
                 {
                     id: '11',
                     codigo: 'TK-2026-0011',
                     created_at: new Date(Date.now() - 5 * 3600 * 1000).toISOString(),
-                    asunto: 'Problema con la VPN',
+                    asunto: 'Problema con la VPN corporativa',
                     categoria: 'redes',
                     prioridad: 'media',
                     estado: 'en progreso',
-                    descripcion: 'No logro establecer conexión a la VPN corporativa desde mi equipo.'
+                    descripcion: 'No logro establecer conexión a la VPN corporativa desde mi equipo.',
+                    usuario_nombre: 'Felipe Olivares',
+                    usuario_email: 'felipe.olivares@t-sales.cl',
+                    tecnico_asignado: 'Felipe Olivares',
+                    cliente_nombre: 'Francisca Morales Castro',
+                    cliente_rut: '19456789-0',
+                    cliente_email: 'francisca.morales@t-sales.cl',
+                    empresa: 'T-Sales'
                 },
                 {
                     id: '10',
                     codigo: 'TK-2026-0010',
                     created_at: new Date(Date.now() - 24 * 3600 * 1000).toISOString(),
-                    asunto: 'Solicitud de licencia Office',
+                    asunto: 'Solicitud de licencia Office M365',
                     categoria: 'software',
                     prioridad: 'baja',
                     estado: 'en espera',
-                    descripcion: 'Solicito activación de licencia para el uso de Excel y Word en mi laptop de trabajo.'
+                    descripcion: 'Solicito activación de licencia para el uso de Excel y Word en mi laptop de trabajo.',
+                    usuario_nombre: 'Belfor Aburto',
+                    usuario_email: 'belfor.aburto@t-sales.cl',
+                    tecnico_asignado: 'Belfor Aburto',
+                    cliente_nombre: 'Aaron Andres Aros',
+                    cliente_rut: '20123456-7',
+                    cliente_email: 'aaron.aros@infinet.cl',
+                    empresa: 'Infinet'
                 },
                 {
                     id: '9',
@@ -370,7 +391,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     categoria: 'redes',
                     prioridad: 'media',
                     estado: 'resuelto',
-                    descripcion: 'La red wifi de la oficina se desconecta continuamente y presenta lentitud en la navegación.'
+                    descripcion: 'La red wifi de la oficina se desconecta continuamente y presenta lentitud en la navegación.',
+                    usuario_nombre: 'Omar Gálvez',
+                    usuario_email: 'omar.galvez@t-sales.cl',
+                    tecnico_asignado: 'Omar Gálvez',
+                    cliente_nombre: 'Camila Sepulveda',
+                    cliente_rut: '18765432-1',
+                    cliente_email: 'camila.sepulveda@vprime.cl',
+                    empresa: 'VPrime'
                 },
                 {
                     id: '8',
@@ -380,7 +408,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     categoria: 'configuracion',
                     prioridad: 'alta',
                     estado: 'resuelto',
-                    descripcion: 'La plataforma muestra un error al guardar.'
+                    descripcion: 'La plataforma muestra un error al guardar.',
+                    usuario_nombre: 'Felipe Olivares',
+                    usuario_email: 'felipe.olivares@t-sales.cl',
+                    tecnico_asignado: 'Felipe Olivares',
+                    cliente_nombre: 'Diego Valenzuela',
+                    cliente_rut: '17987654-3',
+                    cliente_email: 'diego.valenzuela@t-sales.cl',
+                    empresa: 'T-Sales'
                 }
             ];
             localStorage.setItem('local_tickets', JSON.stringify(tickets));
@@ -393,7 +428,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return tickets;
     }
 
-    async function saveTicket(asunto, categoria, descripcion, prioridad, sede = '', telefono = '', dispositivo = '', impacto = '', modalidad = 'Online', cliente_nombre = '', cliente_rut = '', cliente_email = '', empresa = 'Infinet') {
+    async function saveTicket(asunto, categoria, descripcion, prioridad, sede = '', telefono = '', dispositivo = '', impacto = '', modalidad = 'Online', cliente_nombre = '', cliente_rut = '', cliente_email = '', empresa = 'Infinet', tecnico_asignado = null) {
         let u_nombre = currentSession ? currentSession.nombre : 'Usuario Externo';
         let u_email = currentSession ? currentSession.email : 'correo@empresa.com';
         let u_rut = currentSession ? currentSession.rut : '';
@@ -430,7 +465,7 @@ document.addEventListener('DOMContentLoaded', () => {
             usuario_rut: u_rut,
             usuario_nombre: u_nombre,
             usuario_email: u_email,
-            tecnico_asignado: null
+            tecnico_asignado: tecnico_asignado || null
         };
 
         if (!useLocalFallback && supabase) {
@@ -754,6 +789,10 @@ document.addEventListener('DOMContentLoaded', () => {
         } else if (targetPageId === 'page-inicio') {
             updateDashboardCharts();
         } else if (targetPageId === 'page-mis-tickets') {
+            if (activeLi) {
+                const scope = activeLi.getAttribute('data-scope') || activeLi.querySelector('[data-scope]')?.getAttribute('data-scope') || (activeLi.id === 'nav-mis-tickets' ? 'mis-tickets' : (activeLi.id === 'nav-todos-tickets' ? 'todos' : null));
+                if (scope) currentTicketScope = scope;
+            }
             if (!allTicketsCached || allTicketsCached.length === 0) {
                 refreshTickets();
             } else {
@@ -1148,20 +1187,52 @@ document.addEventListener('DOMContentLoaded', () => {
     function isTicketAssignedToUser(ticket, session) {
         if (!session) return true;
         const myName = (session.nombre || '').toLowerCase().trim();
-        const myRut = (session.rut || '').toLowerCase().trim();
         const myEmail = (session.email || '').toLowerCase().trim();
+        const myRut = (session.rut || '').toLowerCase().trim();
+
+        const meta = (typeof extractMetadata === 'function') ? extractMetadata(ticket) : {};
 
         const assigned = (ticket.tecnico_asignado || '').toLowerCase().trim();
         const creator = (ticket.creado_por || ticket.usuario_nombre || '').toLowerCase().trim();
-        const rut = (ticket.usuario_rut || '').toLowerCase().trim();
-        const email = (ticket.usuario_email || '').toLowerCase().trim();
+        const rut = (ticket.usuario_rut || meta.cliente_rut || '').toLowerCase().trim();
+        const email = (ticket.usuario_email || meta.cliente_email || '').toLowerCase().trim();
+        const clientName = (meta.cliente_nombre || '').toLowerCase().trim();
 
-        const isAssigned = assigned && (assigned.includes(myName) || myName.includes(assigned));
-        const isCreator = creator && (creator.includes(myName) || myName.includes(creator));
-        const isRutMatch = myRut && rut && (rut === myRut || rut.includes(myRut) || myRut.includes(rut));
-        const isEmailMatch = myEmail && email && email === myEmail;
+        // 1. Técnico asignado
+        if (assigned) {
+            if (assigned.includes(myName) || myName.includes(assigned)) return true;
+            if (myName.includes('omar') && assigned.includes('omar')) return true;
+            if (myName.includes('felipe') && assigned.includes('felipe')) return true;
+            if (myName.includes('belfor') && assigned.includes('belfor')) return true;
+        }
 
-        return isAssigned || isCreator || isRutMatch || isEmailMatch;
+        // 2. Creador del ticket
+        if (creator) {
+            if (creator.includes(myName) || myName.includes(creator)) return true;
+            if (myName.includes('omar') && creator.includes('omar')) return true;
+            if (myName.includes('felipe') && creator.includes('felipe')) return true;
+            if (myName.includes('belfor') && creator.includes('belfor')) return true;
+        }
+
+        // 3. Cliente / Persona afectada
+        if (clientName) {
+            if (clientName.includes(myName) || myName.includes(clientName)) return true;
+            if (myName.includes('omar') && clientName.includes('omar')) return true;
+            if (myName.includes('felipe') && clientName.includes('felipe')) return true;
+            if (myName.includes('belfor') && clientName.includes('belfor')) return true;
+        }
+
+        // 4. Correo
+        if (myEmail && email) {
+            if (email === myEmail || email.includes(myEmail) || myEmail.includes(email)) return true;
+        }
+
+        // 5. RUT
+        if (myRut && rut && rut !== 'admin' && rut !== 'usuario' && rut !== 'omar' && rut !== 'felipe' && rut !== 'belfor') {
+            if (rut === myRut || rut.includes(myRut) || myRut.includes(rut)) return true;
+        }
+
+        return false;
     }
 
     function updateStats(tickets) {
@@ -1883,6 +1954,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const device = document.getElementById('ticket-device')?.value || 'ninguno';
         const impact = document.getElementById('ticket-impact');
         const impactText = impact ? impact.options[impact.selectedIndex]?.text : '';
+        const assignedTech = document.getElementById('ticket-assigned-tech')?.value || 'Sin Asignar';
 
         const activeCompanyCard = document.querySelector('.company-card.active');
         const empresa = activeCompanyCard ? activeCompanyCard.getAttribute('data-company') : 'Infinet';
@@ -1894,6 +1966,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div><span style="color: var(--text-muted);">Empresa:</span> <span class="meta-val" style="font-weight: bold; color: var(--accent-blue); text-transform: uppercase;">${escapeHtml(empresa)}</span></div>
                 <div><span style="color: var(--text-muted);">Sede:</span> <span class="meta-val">${escapeHtml(office)}</span></div>
                 <div><span style="color: var(--text-muted);">Modalidad:</span> <span class="meta-val" style="font-weight: 600; color: var(--accent-purple);">${escapeHtml(modality)}</span></div>
+                <div><span style="color: var(--text-muted);">Técnico Asignado:</span> <span class="meta-val" style="font-weight: 600; color: var(--accent-green);">${escapeHtml(assignedTech)}</span></div>
                 <div><span style="color: var(--text-muted);">Teléfono:</span> <span class="meta-val">${escapeHtml(phone)}</span></div>
                 
                 <div style="grid-column: span 2; border-top: 1px dashed rgba(255,255,255,0.05); padding-top: 8px; margin-top: 4px;">
@@ -1971,16 +2044,39 @@ document.addEventListener('DOMContentLoaded', () => {
                 const phone = document.getElementById('ticket-phone').value.trim();
                 const device = document.getElementById('ticket-device').value;
                 const impact = document.getElementById('ticket-impact').value;
+                const assignedTech = document.getElementById('ticket-assigned-tech')?.value || null;
 
                 const activeCompanyCard = document.querySelector('.company-card.active');
                 const empresa = activeCompanyCard ? activeCompanyCard.getAttribute('data-company') : 'Infinet';
+
+                const isNewUserMode = document.getElementById('btn-user-mode-new')?.classList.contains('active');
+                const saveToDirectory = document.getElementById('check-save-to-directory')?.checked;
+
+                if (isNewUserMode && saveToDirectory && clientName) {
+                    const dirUsers = loadDirectoryUsers();
+                    const exists = dirUsers.some(u => (u.rut && u.rut === clientRut) || (u.email && u.email.toLowerCase() === clientEmail.toLowerCase()));
+                    if (!exists) {
+                        dirUsers.unshift({
+                            id: 'user-' + Date.now(),
+                            nombre: clientName,
+                            rut: clientRut,
+                            email: clientEmail,
+                            telefono: phone,
+                            empresa: empresa,
+                            tipo: 'Ejecutivo',
+                            licencia: 'M365 Empresa Básico'
+                        });
+                        saveDirectoryUsers(dirUsers);
+                        if (typeof renderDirectoryPage === 'function') renderDirectoryPage();
+                    }
+                }
 
                 btnStepperNext.disabled = true;
                 const originalHtml = btnStepperNext.innerHTML;
                 btnStepperNext.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
 
                 try {
-                    await saveTicket(subject, category, description, priority, office, phone, device, impact, modality, clientName, clientRut, clientEmail, empresa);
+                    await saveTicket(subject, category, description, priority, office, phone, device, impact, modality, clientName, clientRut, clientEmail, empresa, assignedTech);
                     alert('¡Ticket creado con éxito!');
                     
                     const form = document.getElementById('stepper-ticket-form');
@@ -5080,12 +5176,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Función auxiliar de autenticación unificada
     async function authenticateUser(email, pass, requiredRole = null) {
-        const cleanEmail = email.trim().toLowerCase();
-        const cleanPass = pass.trim();
+        const cleanEmail = (email || '').trim().toLowerCase();
+        const cleanPass = (pass || '').trim();
+
+        if (!cleanEmail || !cleanPass) return null;
 
         // 1. Validar Belfor Aburto (Admin)
         if (cleanEmail === 'belfor.aburto@t-sales.cl' || cleanEmail === 'belfor.aburto' || cleanEmail === 'belfor') {
-            if (cleanPass === '143belfor@' || cleanPass === '143belfor' || cleanPass === 'belfor' || cleanPass === 'admin' || cleanPass === '123456' || cleanPass === 'belfor2026@' || cleanPass === '1438') {
+            if (cleanPass === '143belfor@') {
                 return {
                     role: 'admin',
                     nombre: 'Belfor Aburto',
@@ -5093,11 +5191,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     rut: 'belfor'
                 };
             }
+            return null; // Contraseña incorrecta para Belfor
         }
 
         // 2. Validar Felipe Olivares (Admin)
         if (cleanEmail === 'felipe.olivares@t-sales.cl' || cleanEmail === 'felipe.olivares' || cleanEmail === 'felipe') {
-            if (cleanPass === 'felipe2026@@' || cleanPass === 'felipe2026@' || cleanPass === 'felipe' || cleanPass === '123456' || cleanPass === 'felipe.tsales#26' || cleanPass === '7392') {
+            if (cleanPass === 'felipe2026@@') {
                 return {
                     role: 'admin',
                     nombre: 'Felipe Olivares',
@@ -5105,11 +5204,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     rut: 'felipe'
                 };
             }
+            return null; // Contraseña incorrecta para Felipe
         }
 
         // 3. Validar Omar Gálvez (Admin)
         if (cleanEmail === 'omar.galvez@t-sales.cl' || cleanEmail === 'omar.galvez' || cleanEmail === 'omar') {
-            if (cleanPass === 'omar2026@##' || cleanPass === 'omar2026@' || cleanPass === 'omar' || cleanPass === '123456' || cleanPass === 'omar.tsales#26' || cleanPass === '5841') {
+            if (cleanPass === 'omar2026@##') {
                 return {
                     role: 'admin',
                     nombre: 'Omar Gálvez',
@@ -5117,6 +5217,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     rut: 'omar'
                 };
             }
+            return null; // Contraseña incorrecta para Omar
         }
 
         // 4. Validar en lista dinámica de usuarios
@@ -5188,6 +5289,7 @@ document.addEventListener('DOMContentLoaded', () => {
             e.stopPropagation();
             localStorage.removeItem('session_soporte');
             removeSessionStorageItem('m365_unlocked');
+            isM365Unlocked = false;
             currentSession = null;
             
             const userDropdown = document.getElementById('header-user-dropdown');
@@ -5196,9 +5298,13 @@ document.addEventListener('DOMContentLoaded', () => {
             const loginModal = document.getElementById('login-modal');
             if (loginModal) {
                 loginModal.style.display = 'flex';
+                const techEmail = document.getElementById('login-tech-email');
                 const techPass = document.getElementById('login-tech-pass');
+                const adminEmail = document.getElementById('login-admin-email');
                 const adminPass = document.getElementById('login-admin-pass');
+                if (techEmail) techEmail.value = '';
                 if (techPass) techPass.value = '';
+                if (adminEmail) adminEmail.value = '';
                 if (adminPass) adminPass.value = '';
             } else {
                 location.reload();
@@ -7855,9 +7961,236 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // ========================================================
+    // TABS Y SELECTOR: USUARIO EXISTENTE VS USUARIO NUEVO
+    // ========================================================
+    function setupTicketUserModeTabs() {
+        const btnExisting = document.getElementById('btn-user-mode-existing');
+        const btnNew = document.getElementById('btn-user-mode-new');
+        const groupSearch = document.getElementById('group-search-existing-user');
+        const groupExisting = document.getElementById('group-existing-user-select');
+        const groupSaveCheck = document.getElementById('group-save-new-user-checkbox');
+        const searchInput = document.getElementById('ticket-search-user-input');
+        const searchDropdown = document.getElementById('ticket-search-user-dropdown');
+        const userSelect = document.getElementById('ticket-existing-user-select');
+        const nameInput = document.getElementById('ticket-client-name');
+        const rutInput = document.getElementById('ticket-client-rut');
+        const emailInput = document.getElementById('ticket-client-email');
+        const phoneInput = document.getElementById('ticket-phone');
+        const labelName = document.getElementById('label-ticket-client-name');
+        const badgeStatus = document.getElementById('badge-autocomplete-status');
+        const techSelect = document.getElementById('ticket-assigned-tech');
+
+        // Preseleccionar técnico logueado
+        if (techSelect && currentSession && currentSession.nombre) {
+            Array.from(techSelect.options).forEach(opt => {
+                if (opt.value && currentSession.nombre.toLowerCase().includes(opt.value.toLowerCase())) {
+                    opt.selected = true;
+                }
+            });
+        }
+
+        function populateExistingUsersDropdown(filterText = '') {
+            if (!userSelect) return;
+            const users = loadDirectoryUsers();
+            userSelect.innerHTML = '<option value="">-- Elige un colaborador o usa el buscador de arriba --</option>';
+            
+            const cleanFilter = filterText.toLowerCase().trim();
+            const filteredUsers = cleanFilter
+                ? users.filter(u => (u.nombre || '').toLowerCase().includes(cleanFilter) || (u.rut || '').toLowerCase().includes(cleanFilter) || (u.email || '').toLowerCase().includes(cleanFilter) || (u.empresa || '').toLowerCase().includes(cleanFilter))
+                : users;
+
+            const companies = ['T-Sales', 'Infinet', 'VPrime'];
+            companies.forEach(comp => {
+                const compUsers = filteredUsers.filter(u => (u.empresa || '').toLowerCase() === comp.toLowerCase());
+                if (compUsers.length > 0) {
+                    const optgroup = document.createElement('optgroup');
+                    optgroup.label = `─── ${comp.toUpperCase()} (${compUsers.length} usuarios) ───`;
+                    compUsers.forEach(u => {
+                        const opt = document.createElement('option');
+                        opt.value = JSON.stringify(u);
+                        opt.textContent = `${u.nombre} (${u.rut || 'Sin RUT'}) - ${u.email || ''}`;
+                        optgroup.appendChild(opt);
+                    });
+                    userSelect.appendChild(optgroup);
+                }
+            });
+
+            const others = filteredUsers.filter(u => !companies.some(c => (u.empresa || '').toLowerCase() === c.toLowerCase()));
+            if (others.length > 0) {
+                const optgroup = document.createElement('optgroup');
+                optgroup.label = '─── Otros Colaboradores ───';
+                others.forEach(u => {
+                    const opt = document.createElement('option');
+                    opt.value = JSON.stringify(u);
+                    opt.textContent = `${u.nombre} (${u.rut || 'Sin RUT'})`;
+                    optgroup.appendChild(opt);
+                });
+                userSelect.appendChild(optgroup);
+            }
+        }
+
+        populateExistingUsersDropdown();
+
+        function applySelectedUser(user) {
+            if (!user) return;
+            if (nameInput) nameInput.value = user.nombre || '';
+            if (rutInput) rutInput.value = user.rut || '';
+            if (emailInput) emailInput.value = user.email || '';
+            if (phoneInput && user.telefono) phoneInput.value = user.telefono;
+            if (user.empresa) selectCompanyCard(user.empresa);
+            if (searchInput) searchInput.value = `${user.nombre} (${user.rut || ''})`;
+
+            [nameInput, rutInput, emailInput, searchInput].forEach(inp => {
+                if (inp) {
+                    inp.style.borderColor = 'var(--accent-blue)';
+                    setTimeout(() => { inp.style.borderColor = 'var(--border-color)'; }, 1000);
+                }
+            });
+
+            if (searchDropdown) searchDropdown.style.display = 'none';
+        }
+
+        // Barra de búsqueda con autocompletado en tiempo real
+        if (searchInput && searchDropdown) {
+            function renderSearchDropdown(matches) {
+                if (!matches || matches.length === 0) {
+                    searchDropdown.innerHTML = `
+                        <div style="padding: 14px; text-align: center; color: var(--text-muted); font-size: 0.85rem;">
+                            <i class="fas fa-user-slash" style="margin-bottom: 4px; display: block; font-size: 1.2rem; opacity: 0.5;"></i>
+                            No se encontraron colaboradores con ese término.
+                        </div>
+                    `;
+                    searchDropdown.style.display = 'block';
+                    return;
+                }
+
+                searchDropdown.innerHTML = matches.map((u, idx) => {
+                    const initials = (u.nombre || 'U').split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase();
+                    const empColor = (u.empresa || '').toLowerCase() === 't-sales' ? '#3266eb' : ((u.empresa || '').toLowerCase() === 'vprime' ? '#8b5cf6' : '#10b981');
+                    return `
+                        <div class="autocomplete-suggestion-item" data-index="${idx}" style="display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; border-bottom: 1px solid rgba(255,255,255,0.03); cursor: pointer; transition: background 0.15s;">
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <div style="width: 32px; height: 32px; border-radius: 50%; background: rgba(50, 102, 235, 0.15); color: var(--accent-blue); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.75rem; border: 1px solid rgba(50, 102, 235, 0.3);">
+                                    ${initials}
+                                </div>
+                                <div>
+                                    <div style="font-weight: 700; font-size: 0.86rem; color: var(--text-primary);">${escapeHtml(u.nombre)}</div>
+                                    <div style="font-size: 0.75rem; color: var(--text-muted); display: flex; gap: 8px;">
+                                        <span><i class="fas fa-id-card" style="font-size: 0.68rem;"></i> ${escapeHtml(u.rut || 'Sin RUT')}</span>
+                                        <span><i class="fas fa-envelope" style="font-size: 0.68rem;"></i> ${escapeHtml(u.email || '')}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <span style="font-size: 0.68rem; font-weight: 700; padding: 2px 8px; border-radius: 4px; background: rgba(255,255,255,0.05); color: ${empColor}; border: 1px solid rgba(255,255,255,0.1); text-transform: uppercase;">
+                                ${escapeHtml(u.empresa || 'Empresa')}
+                            </span>
+                        </div>
+                    `;
+                }).join('');
+
+                searchDropdown.style.display = 'block';
+
+                searchDropdown.querySelectorAll('.autocomplete-suggestion-item').forEach(item => {
+                    item.addEventListener('click', () => {
+                        const idx = parseInt(item.getAttribute('data-index'), 10);
+                        applySelectedUser(matches[idx]);
+                    });
+                });
+            }
+
+            searchInput.addEventListener('input', () => {
+                const query = searchInput.value.trim().toLowerCase();
+                populateExistingUsersDropdown(query);
+                if (query.length < 1) {
+                    searchDropdown.style.display = 'none';
+                    return;
+                }
+                const allUsers = loadDirectoryUsers();
+                const filtered = allUsers.filter(u => {
+                    const n = (u.nombre || '').toLowerCase();
+                    const r = (u.rut || '').toLowerCase();
+                    const e = (u.email || '').toLowerCase();
+                    const emp = (u.empresa || '').toLowerCase();
+                    return n.includes(query) || r.includes(query) || e.includes(query) || emp.includes(query);
+                }).slice(0, 10);
+
+                renderSearchDropdown(filtered);
+            });
+
+            searchInput.addEventListener('focus', () => {
+                if (searchInput.value.trim().length >= 1) {
+                    searchInput.dispatchEvent(new Event('input'));
+                }
+            });
+
+            document.addEventListener('click', (e) => {
+                if (!searchInput.contains(e.target) && !searchDropdown.contains(e.target)) {
+                    searchDropdown.style.display = 'none';
+                }
+            });
+        }
+
+        if (userSelect) {
+            userSelect.addEventListener('change', () => {
+                if (!userSelect.value) return;
+                try {
+                    const user = JSON.parse(userSelect.value);
+                    applySelectedUser(user);
+                } catch(e) {}
+            });
+        }
+
+        if (btnExisting && btnNew) {
+            btnExisting.addEventListener('click', () => {
+                btnExisting.classList.add('active');
+                btnExisting.style.background = 'var(--accent-blue)';
+                btnExisting.style.color = 'white';
+
+                btnNew.classList.remove('active');
+                btnNew.style.background = 'transparent';
+                btnNew.style.color = 'var(--text-secondary)';
+
+                if (groupSearch) groupSearch.style.display = 'block';
+                if (groupExisting) groupExisting.style.display = 'block';
+                if (groupSaveCheck) groupSaveCheck.style.display = 'none';
+                if (labelName) labelName.textContent = 'Nombre de la persona (Afectado) *';
+                if (badgeStatus) badgeStatus.style.display = 'inline-flex';
+                if (nameInput) nameInput.placeholder = 'Nombre de la persona afectada';
+            });
+
+            btnNew.addEventListener('click', () => {
+                btnNew.classList.add('active');
+                btnNew.style.background = 'var(--accent-blue)';
+                btnNew.style.color = 'white';
+
+                btnExisting.classList.remove('active');
+                btnExisting.style.background = 'transparent';
+                btnExisting.style.color = 'var(--text-secondary)';
+
+                if (groupSearch) groupSearch.style.display = 'none';
+                if (groupExisting) groupExisting.style.display = 'none';
+                if (groupSaveCheck) groupSaveCheck.style.display = 'block';
+                if (labelName) labelName.textContent = 'Nombre completo del nuevo usuario *';
+                if (badgeStatus) badgeStatus.style.display = 'none';
+                if (nameInput) {
+                    nameInput.value = '';
+                    nameInput.placeholder = 'Ingresa el nombre del nuevo colaborador';
+                    nameInput.focus();
+                }
+                if (rutInput) rutInput.value = '';
+                if (emailInput) emailInput.value = '';
+                if (phoneInput) phoneInput.value = '';
+                if (userSelect) userSelect.value = '';
+                if (searchInput) searchInput.value = '';
+            });
+        }
+    }
+
     // Inicializar Módulos
     try {
         setupClientAutocomplete();
+        setupTicketUserModeTabs();
         initDirectoryModule();
         initM365Module();
     } catch(e) {
