@@ -37,8 +37,8 @@
                 <!-- SOPORTE -->
                 <div class="nav-group-title">SOPORTE</div>
                 <ul>
-                    <li id="nav-mis-tickets"><a href="#" data-page="page-mis-tickets"><i class="fas fa-ticket-alt"></i> Mis Tickets <span class="nav-badge" id="sidebar-badge-mis-tickets">5</span></a></li>
-                    <li id="nav-todos-tickets"><a href="#" data-page="page-mis-tickets" data-filter="todos"><i class="fas fa-layer-group"></i> Todos los Tickets</a></li>
+                    <li id="nav-mis-tickets"><a href="#" data-page="page-mis-tickets" data-scope="mis-tickets"><i class="fas fa-ticket-alt"></i> Mis Tickets <span class="nav-badge" id="sidebar-badge-mis-tickets">5</span></a></li>
+                    <li id="nav-todos-tickets"><a href="#" data-page="page-mis-tickets" data-scope="todos"><i class="fas fa-layer-group"></i> Todos los Tickets</a></li>
                     <li id="nav-crear-ticket"><a href="#" data-page="page-crear-ticket"><i class="fas fa-plus-square"></i> Crear Ticket</a></li>
                     <li id="nav-sla"><a href="#" data-page="page-sla"><i class="fas fa-shield-alt"></i> SLA</a></li>
                 </ul>
@@ -1007,8 +1007,8 @@
             <div id="page-mis-tickets" class="page-section">
                 <div class="tickets-page-header">
                     <div class="tickets-page-title">
-                        <h1>Mis tickets</h1>
-                        <p class="tickets-page-sub">Consulta el estado de tus solicitudes de soporte</p>
+                        <h1 id="tickets-page-title-text">Mis tickets</h1>
+                        <p class="tickets-page-sub" id="tickets-page-sub-text">Consulta el estado de tus solicitudes de soporte</p>
                     </div>
                     <div class="tickets-header-actions">
                         <button class="mobile-filter-btn" id="mobile-filter-toggle" title="Filtrar tickets"><i class="fas fa-sliders-h"></i></button>
@@ -3596,11 +3596,11 @@
             <form id="form-login-user" onsubmit="event.preventDefault(); if(window.doLogin) window.doLogin('user'); return false;" style="padding: 10px 24px 24px;">
                 <div class="form-group" style="margin-bottom: 16px;">
                     <label for="login-tech-email" style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 6px; display: block; text-align: left;">Correo Electrónico</label>
-                    <input type="email" id="login-tech-email" placeholder="felipe.olivares@t-sales.cl" style="width: 100%; padding: 10px; background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family);">
+                    <input type="email" id="login-tech-email" placeholder="usuario@empresa.com" autocomplete="username" style="width: 100%; padding: 10px; background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family);">
                 </div>
                 <div class="form-group" style="margin-bottom: 20px;">
                     <label for="login-tech-pass" style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 6px; display: block; text-align: left;">Contraseña</label>
-                    <input type="password" id="login-tech-pass" placeholder="Contraseña de Técnico" style="width: 100%; padding: 10px; background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family);">
+                    <input type="password" id="login-tech-pass" placeholder="Ingresa tu contraseña" autocomplete="current-password" style="width: 100%; padding: 10px; background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family);">
                 </div>
                 <button type="button" onclick="if(window.doLogin) window.doLogin('user');" style="width: 100%; background: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-blue) 100%); color: white; border: none; padding: 12px; border-radius: 8px; font-weight: 600; cursor: pointer; font-family: var(--font-family); box-shadow: 0 4px 15px rgba(97, 62, 234, 0.3);">Ingresar como Técnico</button>
             </form>
@@ -3609,11 +3609,11 @@
             <form id="form-login-admin" onsubmit="event.preventDefault(); if(window.doLogin) window.doLogin('admin'); return false;" style="padding: 10px 24px 24px; display: none;">
                 <div class="form-group" style="margin-bottom: 16px;">
                     <label for="login-admin-email" style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 6px; display: block; text-align: left;">Correo Electrónico</label>
-                    <input type="email" id="login-admin-email" placeholder="belfor.aburto@t-sales.cl" value="belfor.aburto@t-sales.cl" style="width: 100%; padding: 10px; background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family);">
+                    <input type="email" id="login-admin-email" placeholder="usuario@empresa.com" autocomplete="username" style="width: 100%; padding: 10px; background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family);">
                 </div>
                 <div class="form-group" style="margin-bottom: 20px;">
                     <label for="login-admin-pass" style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 6px; display: block; text-align: left;">Contraseña</label>
-                    <input type="password" id="login-admin-pass" placeholder="Contraseña de Administrador" style="width: 100%; padding: 10px; background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family);">
+                    <input type="password" id="login-admin-pass" placeholder="Ingresa tu contraseña" autocomplete="current-password" style="width: 100%; padding: 10px; background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family);">
                 </div>
                 <button type="button" onclick="if(window.doLogin) window.doLogin('admin');" style="width: 100%; background: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-blue) 100%); color: white; border: none; padding: 12px; border-radius: 8px; font-weight: 600; cursor: pointer; font-family: var(--font-family); box-shadow: 0 4px 15px rgba(97, 62, 234, 0.3);">Ingresar como Administrador</button>
             </form>
@@ -3637,8 +3637,6 @@
                 }
                 if (formAdmin) formAdmin.style.display = 'block';
                 if (formUser) formUser.style.display = 'none';
-                var adminEmail = document.getElementById('login-admin-email');
-                if (adminEmail && !adminEmail.value) adminEmail.value = 'belfor.aburto@t-sales.cl';
             } else {
                 if (tabUser) {
                     tabUser.style.backgroundColor = 'var(--accent-blue)';
@@ -3667,10 +3665,10 @@
 
             <!-- Administrador actual identificado -->
             <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-color); border-radius: 10px; padding: 12px 16px; margin-bottom: 20px; display: flex; align-items: center; gap: 12px; text-align: left;">
-                <div class="user-avatar" id="pin-admin-avatar" style="width: 36px; height: 36px; background: var(--accent-blue); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 0.85rem;">BA</div>
+                <div class="user-avatar" id="pin-admin-avatar" style="width: 36px; height: 36px; background: var(--accent-blue); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 0.85rem;"><i class="fas fa-user-shield"></i></div>
                 <div>
-                    <span style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; display: block;">Administrador</span>
-                    <strong id="pin-admin-name" style="font-size: 0.9rem; color: var(--text-primary);">Belfor Aburto</strong>
+                    <span style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; display: block;">Identidad de Acceso</span>
+                    <strong id="pin-admin-name" style="font-size: 0.9rem; color: var(--text-primary);">Administrador Autorizado</strong>
                 </div>
                 <span class="status-badge status-resuelto" style="margin-left: auto; font-size: 0.7rem; padding: 2px 8px;"><i class="fas fa-lock"></i> PIN Requerido</span>
             </div>

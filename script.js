@@ -775,6 +775,12 @@ document.addEventListener('DOMContentLoaded', () => {
             const parentLi = link.closest('li');
             const dataFilter = link.getAttribute('data-filter');
             const dataCompany = link.getAttribute('data-company');
+            const dataScope = link.getAttribute('data-scope') || (parentLi && parentLi.id === 'nav-mis-tickets' ? 'mis-tickets' : (parentLi && parentLi.id === 'nav-todos-tickets' ? 'todos' : null));
+
+            if (dataScope) {
+                currentTicketScope = dataScope;
+            }
+
             if (dataFilter) {
                 currentFilter = dataFilter;
                 document.querySelectorAll('.tickets-filter-tabs .filter-tab').forEach(tab => {
@@ -1037,6 +1043,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentFilter = 'todos';
     let currentSearch = '';
     let currentTicketPage = 1;
+    let currentTicketScope = 'mis-tickets'; // 'mis-tickets' | 'todos'
     const ticketsPerPage = 10;
 
     async function refreshTickets() {
@@ -1138,6 +1145,25 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    function isTicketAssignedToUser(ticket, session) {
+        if (!session) return true;
+        const myName = (session.nombre || '').toLowerCase().trim();
+        const myRut = (session.rut || '').toLowerCase().trim();
+        const myEmail = (session.email || '').toLowerCase().trim();
+
+        const assigned = (ticket.tecnico_asignado || '').toLowerCase().trim();
+        const creator = (ticket.creado_por || ticket.usuario_nombre || '').toLowerCase().trim();
+        const rut = (ticket.usuario_rut || '').toLowerCase().trim();
+        const email = (ticket.usuario_email || '').toLowerCase().trim();
+
+        const isAssigned = assigned && (assigned.includes(myName) || myName.includes(assigned));
+        const isCreator = creator && (creator.includes(myName) || myName.includes(creator));
+        const isRutMatch = myRut && rut && (rut === myRut || rut.includes(myRut) || myRut.includes(rut));
+        const isEmailMatch = myEmail && email && email === myEmail;
+
+        return isAssigned || isCreator || isRutMatch || isEmailMatch;
+    }
+
     function updateStats(tickets) {
         const statsOpen = document.getElementById('dash-metric-abiertos');
         const statsUnassigned = document.getElementById('dash-metric-sin-asignar');
@@ -1150,7 +1176,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (statsOpen) statsOpen.textContent = openTickets.length || 5;
         if (statsUnassigned) statsUnassigned.textContent = `${unassignedTickets.length || 3} sin asignar`;
-        if (sidebarBadge) sidebarBadge.textContent = openTickets.length || 5;
+        
+        let myOpenTickets = openTickets;
+        if (currentSession) {
+            myOpenTickets = openTickets.filter(t => isTicketAssignedToUser(t, currentSession));
+        }
+        if (sidebarBadge) sidebarBadge.textContent = myOpenTickets.length;
 
         // SLA
         if (statsSlaRisk) statsSlaRisk.textContent = 3;
@@ -1255,6 +1286,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
         let filtered = [...allTicketsCached];
 
+        // 1. Filtrar por ámbito (Mis Tickets vs Todos los Tickets)
+        if (currentTicketScope === 'mis-tickets' && currentSession) {
+            filtered = filtered.filter(t => isTicketAssignedToUser(t, currentSession));
+        }
+
+        // 2. Actualizar títulos dinámicos en la vista
+        const pageTitle = document.getElementById('tickets-page-title-text');
+        const pageSub = document.getElementById('tickets-page-sub-text');
+        if (pageTitle) {
+            pageTitle.textContent = currentTicketScope === 'mis-tickets' ? 'Mis tickets' : 'Todos los Tickets';
+        }
+        if (pageSub) {
+            pageSub.textContent = currentTicketScope === 'mis-tickets'
+                ? 'Consulta el estado de tus solicitudes y tickets asignados'
+                : 'Consulta todos los tickets registrados en la organización';
+        }
+
+        // 3. Actualizar conteo en los chips
+        updateFilterCounts(filtered);
+
+        // 4. Filtrar por estado
         if (currentFilter !== 'todos') {
             filtered = filtered.filter(t => t.estado.toLowerCase() === currentFilter.toLowerCase());
         }
@@ -4846,7 +4898,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const creatorGroup = document.getElementById('ticket-creator-group');
         const belforPanel = document.getElementById('belfor-metrics-panel');
 
-        if (session.role === 'admin') {
+        const isAdmin = session.role === 'admin' || (session.email && (session.email.includes('felipe') || session.email.includes('omar') || session.email.includes('belfor')));
+
+        if (isAdmin) {
+            session.role = 'admin';
             if (headerName) headerName.textContent = session.nombre || 'Administrador';
             if (headerRole) headerRole.textContent = 'Soporte TI';
             const initials = session.nombre ? session.nombre.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : 'A';
@@ -4854,7 +4909,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (dropdownName) dropdownName.textContent = session.nombre || 'Administrador TI';
             if (dropdownEmail) dropdownEmail.textContent = session.email || 'belfor.aburto@t-sales.cl';
             if (navBase) navBase.style.display = 'block'; // Mostrar inventario al Admin
-            if (navUsuarios) navUsuarios.style.display = 'block'; // Mostrar usuarios al Admin
+            if (navUsuarios) navUsuarios.style.display = 'block'; // Mostrar usuarios a todos los Admins (Belfor, Felipe, Omar)
             if (creatorGroup) creatorGroup.style.display = 'none';
             if (belforPanel) belforPanel.style.display = (session.nombre === 'Belfor Aburto') ? 'block' : 'none';
         } else if (session.role === 'technician') {
@@ -4863,9 +4918,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const initials = session.nombre ? session.nombre.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : 'T';
             if (headerAvatar) headerAvatar.textContent = initials;
             if (dropdownName) dropdownName.textContent = session.nombre || 'Técnico Soporte';
-            if (dropdownEmail) dropdownEmail.textContent = session.email || 'felipe.olivares@t-sales.cl';
+            if (dropdownEmail) dropdownEmail.textContent = session.email || '';
             if (navBase) navBase.style.display = 'block'; // Mostrar inventario a técnicos
-            if (navUsuarios) navUsuarios.style.display = 'none';
+            if (navUsuarios) navUsuarios.style.display = 'block'; // Permitir ver usuarios
             if (creatorGroup) creatorGroup.style.display = 'none'; // Ocultar selector de creador
             if (belforPanel) belforPanel.style.display = 'none'; // Ocultar panel de métricas
         } else {
@@ -5004,10 +5059,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             if (formAdmin) formAdmin.style.display = 'block';
             if (formUser) formUser.style.display = 'none';
-            const adminEmailInput = document.getElementById('login-admin-email');
-            if (adminEmailInput && !adminEmailInput.value) {
-                adminEmailInput.value = 'belfor.aburto@t-sales.cl';
-            }
         } else {
             if (tabUser) {
                 tabUser.style.backgroundColor = 'var(--accent-blue)';
@@ -5034,7 +5085,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // 1. Validar Belfor Aburto (Admin)
         if (cleanEmail === 'belfor.aburto@t-sales.cl' || cleanEmail === 'belfor.aburto' || cleanEmail === 'belfor') {
-            if (cleanPass === '143belfor@' || cleanPass === '143belfor' || cleanPass === 'belfor' || cleanPass === 'admin' || cleanPass === '123456' || cleanPass === 'belfor2026@') {
+            if (cleanPass === '143belfor@' || cleanPass === '143belfor' || cleanPass === 'belfor' || cleanPass === 'admin' || cleanPass === '123456' || cleanPass === 'belfor2026@' || cleanPass === '1438') {
                 return {
                     role: 'admin',
                     nombre: 'Belfor Aburto',
@@ -5044,11 +5095,11 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        // 2. Validar Felipe Olivares (Técnico)
+        // 2. Validar Felipe Olivares (Admin)
         if (cleanEmail === 'felipe.olivares@t-sales.cl' || cleanEmail === 'felipe.olivares' || cleanEmail === 'felipe') {
-            if (cleanPass === 'felipe2026@@' || cleanPass === 'felipe2026@' || cleanPass === 'felipe' || cleanPass === '123456') {
+            if (cleanPass === 'felipe2026@@' || cleanPass === 'felipe2026@' || cleanPass === 'felipe' || cleanPass === '123456' || cleanPass === 'felipe.tsales#26' || cleanPass === '7392') {
                 return {
-                    role: 'technician',
+                    role: 'admin',
                     nombre: 'Felipe Olivares',
                     email: 'felipe.olivares@t-sales.cl',
                     rut: 'felipe'
@@ -5056,11 +5107,11 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        // 3. Validar Omar Gálvez (Técnico)
+        // 3. Validar Omar Gálvez (Admin)
         if (cleanEmail === 'omar.galvez@t-sales.cl' || cleanEmail === 'omar.galvez' || cleanEmail === 'omar') {
-            if (cleanPass === 'omar2026@##' || cleanPass === 'omar2026@' || cleanPass === 'omar' || cleanPass === '123456') {
+            if (cleanPass === 'omar2026@##' || cleanPass === 'omar2026@' || cleanPass === 'omar' || cleanPass === '123456' || cleanPass === 'omar.tsales#26' || cleanPass === '5841') {
                 return {
-                    role: 'technician',
+                    role: 'admin',
                     nombre: 'Omar Gálvez',
                     email: 'omar.galvez@t-sales.cl',
                     rut: 'omar'
@@ -5073,7 +5124,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const found = users.find(u => u.email && u.email.toLowerCase() === cleanEmail && u.password === cleanPass);
         if (found) {
             return {
-                role: found.role || 'technician',
+                role: (found.email.includes('felipe') || found.email.includes('omar') || found.email.includes('belfor')) ? 'admin' : (found.role || 'technician'),
                 nombre: found.nombre,
                 email: found.email,
                 rut: found.rut || 'usuario'
@@ -5092,8 +5143,9 @@ document.addEventListener('DOMContentLoaded', () => {
         let pass = (passInput ? passInput.value : '').trim();
 
         if (!email) {
-            if (!isTech) email = 'belfor.aburto@t-sales.cl';
-            else email = 'felipe.olivares@t-sales.cl';
+            alert('Por favor ingresa tu correo electrónico.');
+            if (emailInput) emailInput.focus();
+            return;
         }
 
         if (!pass) {
@@ -5107,9 +5159,7 @@ document.addEventListener('DOMContentLoaded', () => {
             localStorage.setItem('session_soporte', JSON.stringify(session));
             applySession(session);
         } else {
-            alert(isTech 
-                ? 'Correo o contraseña incorrectos. Verifica tus credenciales (ej: felipe2026@@ o tu clave de Admin).' 
-                : 'Correo o contraseña de Administrador incorrectos. Clave esperada: 143belfor@');
+            alert('Correo o contraseña incorrectos. Por favor verifica tus credenciales.');
         }
     };
 
@@ -5137,7 +5187,22 @@ document.addEventListener('DOMContentLoaded', () => {
         btnLogout.addEventListener('click', (e) => {
             e.stopPropagation();
             localStorage.removeItem('session_soporte');
-            location.reload(); // Recarga y forzará mostrar login modal de nuevo
+            removeSessionStorageItem('m365_unlocked');
+            currentSession = null;
+            
+            const userDropdown = document.getElementById('header-user-dropdown');
+            if (userDropdown) userDropdown.style.display = 'none';
+
+            const loginModal = document.getElementById('login-modal');
+            if (loginModal) {
+                loginModal.style.display = 'flex';
+                const techPass = document.getElementById('login-tech-pass');
+                const adminPass = document.getElementById('login-admin-pass');
+                if (techPass) techPass.value = '';
+                if (adminPass) adminPass.value = '';
+            } else {
+                location.reload();
+            }
         });
     }
 
@@ -5990,6 +6055,9 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const session = JSON.parse(savedSession);
             if (session && session.email) {
+                if (session.email.includes('felipe') || session.email.includes('omar') || session.email.includes('belfor')) {
+                    session.role = 'admin';
+                }
                 applySession(session);
             } else {
                 const loginModal = document.getElementById('login-modal');
@@ -6619,7 +6687,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // ============================================
     const headerNotifBtn = document.getElementById('header-notif-btn');
     const notifDropdown = document.getElementById('notification-dropdown');
-    const headerUserBtn = document.getElementById('header-user-btn');
+    const headerUserBtn = document.getElementById('header-user-menu') || document.getElementById('header-user-btn');
     const userDropdown = document.getElementById('header-user-dropdown');
     const btnMarkAllRead = document.getElementById('btn-mark-all-read');
 
@@ -6639,9 +6707,13 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    document.addEventListener('click', () => {
-        if (notifDropdown) notifDropdown.style.display = 'none';
-        if (userDropdown) userDropdown.style.display = 'none';
+    document.addEventListener('click', (e) => {
+        if (notifDropdown && !notifDropdown.contains(e.target) && e.target !== headerNotifBtn) {
+            notifDropdown.style.display = 'none';
+        }
+        if (userDropdown && !userDropdown.contains(e.target) && headerUserBtn && !headerUserBtn.contains(e.target)) {
+            userDropdown.style.display = 'none';
+        }
     });
 
     if (btnMarkAllRead) {
@@ -7157,9 +7229,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // PINs de Administradores
     const DEFAULT_ADMIN_PINS = {
-        'belfor.aburto@t-sales.cl': ['1438', '143belfor', 'admin2026', '1234', 'tsales2026'],
-        'felipe.olivares@t-sales.cl': ['2026', 'felipe2026', 'admin2026', '1234', 'tsales2026'],
-        'omar.galvez@t-sales.cl': ['2026', 'omar2026', 'admin2026', '1234', 'tsales2026']
+        'belfor.aburto@t-sales.cl': ['1438', '143belfor', 'admin2026', 'tsales2026'],
+        'felipe.olivares@t-sales.cl': ['7392', 'felipe.tsales#26', 'felipe7392', 'admin2026', 'tsales2026'],
+        'omar.galvez@t-sales.cl': ['5841', 'omar.tsales#26', 'omar5841', 'admin2026', 'tsales2026']
     };
 
     function getAdminValidPins() {
@@ -7168,6 +7240,39 @@ document.addEventListener('DOMContentLoaded', () => {
             try { return JSON.parse(custom); } catch(e){}
         }
         return DEFAULT_ADMIN_PINS;
+    }
+
+    async function verifyAdminPinFromSupabase(email, enteredPin) {
+        const cleanEmail = (email || '').toLowerCase().trim();
+        const cleanPin = (enteredPin || '').trim();
+
+        // 1. Intentar validar en la tabla 'admin_security_pins' en Supabase
+        if (!useLocalFallback && supabase) {
+            try {
+                const { data, error } = await supabase
+                    .from('admin_security_pins')
+                    .select('*')
+                    .eq('email', cleanEmail)
+                    .maybeSingle();
+
+                if (!error && data) {
+                    const dbPin = (data.pin || '').toString().trim();
+                    const dbPass = (data.password_secret || data.password || '').toString().trim();
+                    if (cleanPin === dbPin || cleanPin === dbPass) {
+                        return true;
+                    }
+                }
+            } catch (err) {
+                console.warn('Tabla admin_security_pins no disponible en Supabase. Usando fallback:', err);
+            }
+        }
+
+        // 2. Si no hay conexión o no está en Supabase, usar DEFAULT_ADMIN_PINS
+        const pinsObj = getAdminValidPins();
+        let validPins = pinsObj[cleanEmail] || ['admin2026', 'tsales2026'];
+        if (!Array.isArray(validPins)) validPins = [validPins];
+
+        return validPins.includes(cleanPin) || cleanPin === 'admin2026' || cleanPin === 'tsales2026';
     }
 
     function openSecurityPinModal(targetCompany = 'T-Sales') {
@@ -7199,7 +7304,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     window.openSecurityPinModal = openSecurityPinModal;
 
-    function submitSecurityPin() {
+    async function submitSecurityPin() {
         const input = document.getElementById('input-security-pin');
         const errorMsg = document.getElementById('pin-error-msg');
         const modal = document.getElementById('modal-security-pin-gate');
@@ -7208,13 +7313,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!input) return;
         const enteredPin = input.value.trim();
 
-        const pinsObj = getAdminValidPins();
-        const currentEmail = (currentSession?.email || '').toLowerCase();
-        
-        let validPins = pinsObj[currentEmail] || ['admin2026', '1438', '2026', '1234', 'tsales2026'];
-        if (!Array.isArray(validPins)) validPins = [validPins];
-
-        const isValid = validPins.includes(enteredPin) || enteredPin === 'admin2026' || enteredPin === '1438' || enteredPin === 'tsales2026' || enteredPin === '1234';
+        const currentEmail = (currentSession?.email || 'belfor.aburto@t-sales.cl').toLowerCase();
+        const isValid = await verifyAdminPinFromSupabase(currentEmail, enteredPin);
 
         if (isValid) {
             isM365Unlocked = true;
