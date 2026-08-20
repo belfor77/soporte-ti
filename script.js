@@ -213,14 +213,23 @@ document.addEventListener('DOMContentLoaded', () => {
             cliente_nombre: ticket.cliente_nombre || '',
             cliente_rut: ticket.cliente_rut || '',
             cliente_email: ticket.cliente_email || '',
-            empresa: ticket.empresa || ''
+            empresa: ticket.empresa || '',
+            tecnico_asignado: ticket.tecnico_asignado || ''
         };
 
-        if (ticket.descripcion && (!meta.cliente_nombre || !meta.cliente_email || !meta.sede || !meta.empresa)) {
+        if (ticket.descripcion) {
             const getVal = (pattern) => {
                 const match = ticket.descripcion.match(pattern);
                 return match ? match[1].trim() : null;
             };
+
+            const techVal = getVal(/Técnico:\s*([^|\]\n]+)/i);
+            if (techVal && (!meta.tecnico_asignado || meta.tecnico_asignado === 'Sin Asignar')) {
+                if (techVal !== 'Sin Asignar') {
+                    meta.tecnico_asignado = techVal;
+                    ticket.tecnico_asignado = techVal;
+                }
+            }
 
             const empresaVal = getVal(/Empresa:\s*([^|\]\n]+)/i);
             if (empresaVal && !meta.empresa) meta.empresa = empresaVal;
@@ -313,10 +322,27 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Merge local updates (like assignments or status changes that failed on Supabase)
                 const localUpdates = JSON.parse(localStorage.getItem('ticket_updates')) || {};
                 const mergedData = data.map(t => {
+                    let item = { ...t };
                     if (localUpdates[t.id]) {
-                        return { ...t, ...localUpdates[t.id] };
+                        item = { ...item, ...localUpdates[t.id] };
                     }
-                    return t;
+                    const meta = extractMetadata(item);
+                    if (!item.tecnico_asignado && meta.tecnico_asignado && meta.tecnico_asignado !== 'Sin Asignar') {
+                        item.tecnico_asignado = meta.tecnico_asignado;
+                    }
+                    if (!item.cliente_nombre && meta.cliente_nombre) {
+                        item.cliente_nombre = meta.cliente_nombre;
+                    }
+                    if (!item.cliente_rut && meta.cliente_rut) {
+                        item.cliente_rut = meta.cliente_rut;
+                    }
+                    if (!item.cliente_email && meta.cliente_email) {
+                        item.cliente_email = meta.cliente_email;
+                    }
+                    if (!item.empresa && meta.empresa) {
+                        item.empresa = meta.empresa;
+                    }
+                    return item;
                 });
 
                 // Si la sesión actual es de un usuario, filtrar por su RUT
@@ -447,6 +473,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
+        const validTech = (tecnico_asignado && String(tecnico_asignado).trim() !== '' && tecnico_asignado !== 'Sin Asignar') ? String(tecnico_asignado).trim() : null;
+
         const ticketData = {
             asunto,
             categoria,
@@ -465,7 +493,7 @@ document.addEventListener('DOMContentLoaded', () => {
             usuario_rut: u_rut,
             usuario_nombre: u_nombre,
             usuario_email: u_email,
-            tecnico_asignado: tecnico_asignado || null
+            tecnico_asignado: validTech
         };
 
         if (!useLocalFallback && supabase) {
@@ -479,7 +507,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     const standardData = {
                         asunto,
                         categoria,
-                        descripcion: `[Empresa: ${empresa}]\n\n${descripcion}\n\n[Sede: ${sede} | Teléfono: ${telefono} | Dispositivo: ${dispositivo} | Impacto: ${impacto} | Modalidad: ${modalidad} | Cliente: ${cliente_nombre} (${cliente_rut}) - ${cliente_email}]`,
+                        descripcion: `[Empresa: ${empresa}]\n\n${descripcion}\n\n[Sede: ${sede} | Teléfono: ${telefono} | Dispositivo: ${dispositivo} | Impacto: ${impacto} | Modalidad: ${modalidad} | Cliente: ${cliente_nombre} (${cliente_rut}) - ${cliente_email} | Técnico: ${validTech || 'Sin Asignar'}]`,
                         prioridad,
                         estado: 'abierto',
                         usuario_rut: ticketData.usuario_rut,
@@ -491,6 +519,23 @@ document.addEventListener('DOMContentLoaded', () => {
                         .insert([standardData])
                         .select();
                     if (retryError) throw retryError;
+                    if (retryData && retryData[0]) {
+                        const localUpdates = JSON.parse(localStorage.getItem('ticket_updates')) || {};
+                        localUpdates[retryData[0].id] = {
+                            tecnico_asignado: validTech,
+                            cliente_nombre,
+                            cliente_rut,
+                            cliente_email,
+                            empresa,
+                            sede,
+                            telefono,
+                            modalidad,
+                            dispositivo,
+                            impacto
+                        };
+                        localStorage.setItem('ticket_updates', JSON.stringify(localUpdates));
+                        return { ...retryData[0], ...localUpdates[retryData[0].id] };
+                    }
                     return retryData[0];
                 }
                 return data[0];
