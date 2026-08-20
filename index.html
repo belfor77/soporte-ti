@@ -4,42 +4,98 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Soportes - Centro de Soporte - Mi Empresa</title>
-    <link rel="stylesheet" href="style.css?v=2.0">
+    <link rel="stylesheet" href="style.css?v=2.9">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 </head>
 <body class="dark-mode">
 
     <div class="dashboard-container">
 
-        <aside class="sidebar">
+        <!-- Backdrop para cerrar sidebar en móvil -->
+        <div id="sidebar-backdrop" class="sidebar-backdrop"></div>
+
+        <aside class="sidebar" id="main-sidebar">
             <div class="sidebar-header">
-                <div class="logo-icon"></div>
-                <div class="logo-text">
-                    <span class="company-name">Mi Empresa</span>
-                    <span class="app-name">Soportes</span>
+                <div class="logo-icon">
+                    <i class="fas fa-headset" style="color: white; font-size: 1rem;"></i>
                 </div>
+                <div class="logo-text">
+                    <span class="company-name">Centro de Soporte</span>
+                    <span class="app-name">Soporte TI</span>
+                </div>
+                <button id="sidebar-close-btn" class="sidebar-close-btn" aria-label="Cerrar menú"><i class="fas fa-times"></i></button>
             </div>
 
             <nav class="sidebar-nav">
+                <!-- INICIO -->
+                <div class="nav-group-title">INICIO</div>
                 <ul>
-                    <li class="active"><a href="#"><i class="fas fa-home"></i> Inicio</a></li>
-                    <li><a href="#"><i class="fas fa-ticket-alt"></i> Mis Tickets</a></li>
-                    <li><a href="#"><i class="fas fa-plus-square"></i> Crear Ticket</a></li>
-                    <li id="nav-base-conocimientos"><a href="#"><i class="fas fa-book"></i> Base de Conocimientos</a></li>
-                    <li id="nav-usuarios" style="display: none;"><a href="#"><i class="fas fa-users"></i> Usuarios</a></li>
-                    <li id="nav-visitas"><a href="#"><i class="fas fa-calendar-check"></i> Visitas <span class="badge new-badge" style="background: var(--accent-purple); color: white; padding: 2px 6px; border-radius: 10px; font-size: 0.7rem; margin-left: 8px;">NUEVO</span></a></li>
-                    <li><a href="#"><i class="fas fa-server"></i> Estado del Sistema</a></li>
-                    <li style="display: none;"><a href="#"><i class="fas fa-comments"></i> Chat en Vivo</a></li>
-                    <li style="display: none;"><a href="#"><i class="fas fa-graduation-cap"></i> Tutoriales</a></li>
-                    <li><a href="#"><i class="fas fa-question-circle"></i> Preguntas Frecuentes</a></li>
+                    <li class="active" id="nav-inicio"><a href="#" data-page="page-inicio"><i class="fas fa-home"></i> Inicio</a></li>
+                </ul>
+
+                <!-- SOPORTE -->
+                <div class="nav-group-title">SOPORTE</div>
+                <ul>
+                    <li id="nav-mis-tickets"><a href="#" data-page="page-mis-tickets"><i class="fas fa-ticket-alt"></i> Mis Tickets <span class="nav-badge" id="sidebar-badge-mis-tickets">5</span></a></li>
+                    <li id="nav-todos-tickets"><a href="#" data-page="page-mis-tickets" data-filter="todos"><i class="fas fa-layer-group"></i> Todos los Tickets</a></li>
+                    <li id="nav-crear-ticket"><a href="#" data-page="page-crear-ticket"><i class="fas fa-plus-square"></i> Crear Ticket</a></li>
+                    <li id="nav-sla"><a href="#" data-page="page-sla"><i class="fas fa-shield-alt"></i> SLA</a></li>
+                </ul>
+
+                <!-- CONOCIMIENTO -->
+                <div class="nav-group-title">CONOCIMIENTO</div>
+                <ul>
+                    <li id="nav-base-conocimientos"><a href="#" data-page="page-tutoriales"><i class="fas fa-book"></i> Base de Conocimientos</a></li>
+                    <li id="nav-faq"><a href="#" data-page="page-faq"><i class="fas fa-question-circle"></i> Preguntas Frecuentes</a></li>
+                </ul>
+
+                <!-- ORGANIZACIÓN -->
+                <div class="nav-group-title">ORGANIZACIÓN</div>
+                <ul>
+                    <li id="nav-usuarios"><a href="#" data-page="page-usuarios"><i class="fas fa-users"></i> Usuarios</a></li>
+                    <li id="nav-equipos"><a href="#" data-page="page-base-conocimientos"><i class="fas fa-desktop"></i> Equipos</a></li>
+                </ul>
+
+                <!-- ANALÍTICA -->
+                <div class="nav-group-title">ANALÍTICA</div>
+                <ul>
+                    <li id="nav-dashboard"><a href="#" data-page="page-inicio"><i class="fas fa-chart-pie"></i> Dashboard</a></li>
+                    <li id="nav-tecnicos"><a href="#" data-page="page-tecnicos"><i class="fas fa-user-tie"></i> Técnicos</a></li>
+                    <li id="nav-reportes"><a href="#" data-page="page-reportes"><i class="fas fa-chart-line"></i> Reportes</a></li>
+                </ul>
+
+                <!-- OPERACIONES -->
+                <div class="nav-group-title">OPERACIONES</div>
+                <ul>
+                    <li id="nav-estado"><a href="#" data-page="page-estado"><i class="fas fa-server"></i> Estado del Sistema</a></li>
+                    <li id="nav-visitas"><a href="#" data-page="page-visitas"><i class="fas fa-calendar-check"></i> Visitas <span class="badge new-badge" style="background: var(--accent-purple); color: white; padding: 2px 6px; border-radius: 10px; font-size: 0.7rem; margin-left: 8px;">NUEVO</span></a></li>
+                </ul>
+
+                <!-- ADMINISTRACIÓN M365 (ACCESO CON PIN) -->
+                <div class="nav-group-title" style="display: flex; align-items: center; justify-content: space-between;">
+                    <span>ADMINISTRACIÓN M365</span>
+                    <i class="fas fa-lock" style="font-size: 0.65rem; color: var(--accent-purple);" title="Protegido con PIN"></i>
+                </div>
+                <ul>
+                    <li id="nav-panel-tsales"><a href="#" data-page="page-panel-m365" data-company="T-Sales" style="display: flex; align-items: center; justify-content: space-between;"><span style="display: flex; align-items: center; gap: 8px;"><i class="fas fa-building" style="color: #00c9a7;"></i> Panel T-Sales</span> <span class="badge" style="background: rgba(0, 201, 167, 0.15); color: #00c9a7; padding: 2px 6px; border-radius: 4px; font-size: 0.65rem; font-weight: 700;"><i class="fas fa-lock"></i> PIN</span></a></li>
+                    <li id="nav-panel-infinet"><a href="#" data-page="page-panel-m365" data-company="Infinet" style="display: flex; align-items: center; justify-content: space-between;"><span style="display: flex; align-items: center; gap: 8px;"><i class="fas fa-building" style="color: #f59e0b;"></i> Panel INFINET</span> <span class="badge" style="background: rgba(245, 158, 11, 0.15); color: #f59e0b; padding: 2px 6px; border-radius: 4px; font-size: 0.65rem; font-weight: 700;"><i class="fas fa-lock"></i> PIN</span></a></li>
+                    <li id="nav-panel-vprime"><a href="#" data-page="page-panel-m365" data-company="VPrime" style="display: flex; align-items: center; justify-content: space-between;"><span style="display: flex; align-items: center; gap: 8px;"><i class="fas fa-building" style="color: #ef4444;"></i> Panel V PRIME</span> <span class="badge" style="background: rgba(239, 68, 68, 0.15); color: #ef4444; padding: 2px 6px; border-radius: 4px; font-size: 0.65rem; font-weight: 700;"><i class="fas fa-lock"></i> PIN</span></a></li>
+                </ul>
+
+                <!-- CONFIGURACIÓN -->
+                <div class="nav-group-title">CONFIGURACIÓN</div>
+                <ul>
+                    <li id="nav-categorias"><a href="#" data-page="page-configuracion" data-tab="categorias"><i class="fas fa-tags"></i> Categorías</a></li>
+                    <li id="nav-plantillas"><a href="#" data-page="page-configuracion" data-tab="plantillas"><i class="fas fa-file-code"></i> Plantillas</a></li>
+                    <li id="nav-ajustes"><a href="#" data-page="page-configuracion" data-tab="ajustes"><i class="fas fa-cog"></i> Ajustes</a></li>
                 </ul>
             </nav>
-
 
             <div class="sidebar-footer">
                 <div class="mode-switch">
                     <i class="fas fa-moon"></i>
-                    <span>Modo Oscuro</span>
+                    <span>Modo oscuro</span>
                     <label class="switch">
                         <input type="checkbox" id="mode-toggle" checked>
                         <span class="slider round"></span>
@@ -51,195 +107,597 @@
 
         <main class="main-content">
             <header class="main-header">
-                <button id="mobile-menu-btn" class="mobile-menu-btn" style="display: none; background: transparent; border: none; color: var(--text-primary); font-size: 1.5rem; cursor: pointer; padding: 0 15px;"><i class="fas fa-bars"></i></button>
-                <div class="search-container">
+                <div class="mobile-header-left">
+                    <button id="mobile-menu-btn" class="mobile-menu-btn" aria-label="Abrir menú"><i class="fas fa-bars"></i></button>
+                    <div class="mobile-brand-title">
+                        <div class="mobile-logo-box"><i class="fas fa-headset"></i></div>
+                        <span>Soporte TI</span>
                     </div>
-                <div class="header-user" id="header-user-menu" style="position: relative; cursor: pointer;">
-                    <div class="notification-icon">
-                        <i class="fas fa-bell"></i>
-                        <span class="notification-badge">3</span>
+                </div>
+                
+                <!-- Buscador Global Estilo Linear / Raycast -->
+                <div class="search-command-bar" id="header-search-trigger" role="button" tabindex="0" title="Buscar (⌘K o Ctrl+K)">
+                    <i class="fas fa-search search-icon"></i>
+                    <span class="search-placeholder">Buscar tickets, usuarios...</span>
+                    <div class="cmd-k-badge">
+                        <span class="cmd-symbol">⌘</span> K
                     </div>
-                    <div class="user-avatar" id="header-user-avatar" style="background: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-blue) 100%);">
-                        <span>A</span>
-                    </div>
-                    <div class="user-info">
-                        <span class="user-name" id="header-user-name">Administrador</span>
-                        <span class="user-account" id="header-user-role">Soporte TI</span>
-                    </div>
-                    <i class="fas fa-chevron-down"></i>
-                    
-                    <!-- Dropdown de cuenta -->
-                    <div id="header-user-dropdown" style="display: none; position: absolute; top: calc(100% + 8px); right: 0; background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4); padding: 8px 0; z-index: 1000; width: 150px;">
-                        <button id="btn-logout" style="width: 100%; border: none; background: none; text-align: left; padding: 10px 16px; color: #f87171; font-weight: 600; cursor: pointer; font-family: var(--font-family); transition: background-color 0.2s; display: flex; align-items: center; gap: 8px;">
-                            <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+                </div>
+
+                <div class="header-actions">
+                    <!-- Notificaciones -->
+                    <div class="header-notification-wrapper" id="header-notification-wrapper">
+                        <button class="header-action-icon-btn" id="btn-notification-toggle" title="Centro de notificaciones">
+                            <i class="fas fa-bell"></i>
+                            <span class="notification-badge" id="header-notification-badge">5</span>
                         </button>
+
+                        <!-- Menú Desplegable de Notificaciones -->
+                        <div id="notification-center-dropdown" class="notification-dropdown-panel" style="display: none;">
+                            <div class="notif-dropdown-header">
+                                <div class="notif-header-title">
+                                    <h4>Notificaciones</h4>
+                                    <span class="notif-pill-count" id="notif-pill-count">5 no leídas</span>
+                                </div>
+                                <button type="button" class="btn-text-action" id="btn-mark-all-read">Marcar leídas</button>
+                            </div>
+                            <div class="notif-dropdown-list" id="notif-dropdown-list">
+                                <div class="notif-item unread" onclick="document.querySelector('#nav-mis-tickets a').click();">
+                                    <div class="notif-icon-box bg-red"><i class="fas fa-exclamation-triangle"></i></div>
+                                    <div class="notif-content">
+                                        <div class="notif-title">SLA vencido en <strong>#1039</strong></div>
+                                        <div class="notif-desc">No conecta VPN GlobalProtect</div>
+                                        <div class="notif-time">Hace 10 min</div>
+                                    </div>
+                                </div>
+                                <div class="notif-item unread" onclick="document.querySelector('#nav-mis-tickets a').click();">
+                                    <div class="notif-icon-box bg-amber"><i class="fas fa-clock"></i></div>
+                                    <div class="notif-content">
+                                        <div class="notif-title">SLA próximo a vencer</div>
+                                        <div class="notif-desc">Ticket #1041 - 18 min restantes</div>
+                                        <div class="notif-time">Hace 14 min</div>
+                                    </div>
+                                </div>
+                                <div class="notif-item unread" onclick="document.querySelector('#nav-mis-tickets a').click();">
+                                    <div class="notif-icon-box bg-blue"><i class="fas fa-plus-circle"></i></div>
+                                    <div class="notif-content">
+                                        <div class="notif-title">Nuevo ticket recibido</div>
+                                        <div class="notif-desc">#1046 - No puedo acceder a OneDrive</div>
+                                        <div class="notif-time">Hace 25 min</div>
+                                    </div>
+                                </div>
+                                <div class="notif-item" onclick="document.querySelector('#nav-mis-tickets a').click();">
+                                    <div class="notif-icon-box bg-purple"><i class="fas fa-user-check"></i></div>
+                                    <div class="notif-content">
+                                        <div class="notif-title">Ticket asignado</div>
+                                        <div class="notif-desc">#1047 asignado a Omar Gálvez</div>
+                                        <div class="notif-time">Hace 32 min</div>
+                                    </div>
+                                </div>
+                                <div class="notif-item" onclick="document.querySelector('#nav-estado a').click();">
+                                    <div class="notif-icon-box bg-green"><i class="fas fa-check-circle"></i></div>
+                                    <div class="notif-content">
+                                        <div class="notif-title">Sistemas 100% operativos</div>
+                                        <div class="notif-desc">Todos los servicios respondiendo con normalidad</div>
+                                        <div class="notif-time">Hace 1 hora</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="notif-dropdown-footer">
+                                <button type="button" class="btn-full-link" onclick="document.querySelector('#nav-mis-tickets a').click();">Ver todos los tickets de soporte →</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Dark/Light icon toggle -->
+                    <button class="header-action-icon-btn" id="header-theme-btn" title="Alternar tema">
+                        <i class="fas fa-moon"></i>
+                    </button>
+
+                    <!-- Usuario Conectado -->
+                    <div class="header-user" id="header-user-menu">
+                        <div class="user-avatar" id="header-user-avatar">
+                            <span>BA</span>
+                        </div>
+                        <div class="user-info">
+                            <span class="user-name" id="header-user-name">Belfor Aburto</span>
+                            <span class="user-account" id="header-user-role">Soporte TI</span>
+                        </div>
+                        <i class="fas fa-chevron-down header-chevron"></i>
+                        
+                        <!-- Dropdown de cuenta -->
+                        <div id="header-user-dropdown" class="header-user-dropdown" style="display: none;">
+                            <div class="user-dropdown-info">
+                                <strong id="dropdown-user-name">Belfor Aburto</strong>
+                                <span id="dropdown-user-email">belfor.aburto@t-sales.cl</span>
+                            </div>
+                            <div class="dropdown-sep"></div>
+                            <button type="button" class="dropdown-item-btn" id="btn-menu-perfil" onclick="document.querySelector('#nav-usuarios a').click();">
+                                <i class="fas fa-user-shield"></i> Gestión de Usuarios
+                            </button>
+                            <button type="button" class="dropdown-item-btn" id="btn-menu-ajustes" onclick="document.querySelector('#nav-ajustes a').click();">
+                                <i class="fas fa-cog"></i> Configuración
+                            </button>
+                            <div class="dropdown-sep"></div>
+                            <button id="btn-logout" class="dropdown-item-btn logout-btn">
+                                <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+                            </button>
+                        </div>
                     </div>
                 </div>
             </header>
 
-            <!-- ============ PÁGINA INICIO ============ -->
+            <!-- ============ PÁGINA INICIO (DASHBOARD EJECUTIVO PRINCIPAL) ============ -->
             <div id="page-inicio" class="page-section active-page">
-                <section class="support-intro">
-                    <div class="intro-visual">
-                        <svg class="headset-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <defs>
-                                <linearGradient id="headsetGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                                    <stop offset="0%" style="stop-color:#3266eb;stop-opacity:1" />
-                                    <stop offset="100%" style="stop-color:#613eea;stop-opacity:1" />
-                                </linearGradient>
-                            </defs>
-                            <path d="M12 1c-5.52 0-10 4.48-10 10v9c0 1.1.9 2 2 2h4.17c1.1 0 2-.9 2-2v-3.67c0-1.1-.9-2-2-2h-3.17c-.36-1.07-1-3.07-1-4.33 0-4.41 3.59-8 8-8s8 3.59 8 8c0 1.26-.64 3.26-1 4.33h-3.17c-1.1 0-2 .9-2 2v3.67c0 1.1.9 2 2 2h4.17c1.1 0 2-.9 2-2v-9c0-5.52-4.48-10-10-10zM12 21c-.55 0-1-.45-1-1v-4c0-.55.45-1 1-1h2c.55 0 1 .45 1 1v4c0 .55-.45 1-1 1h-2zM4 16h2c.55 0 1 .45 1 1v4c0 .55-.45 1-1 1h-2c-.55 0-1-.45-1-1v-4c0-.55.45-1 1-1zm14 0h2c.55 0 1 .45 1 1v4c0 .55-.45 1-1 1h-2c-.55 0-1-.45-1-1v-4c0-.55.45-1 1-1z" fill="url(#headsetGradient)"/>
-                        </svg>
-                        <div class="chat-bubble chat-bubble-left"><i class="fas fa-ellipsis-h"></i></div>
-                        <div class="chat-bubble chat-bubble-right"><i class="fas fa-ellipsis-h"></i></div>
-                        <div class="deco-shape deco-sphere"></div>
+                
+                <!-- 5 MÉTRICAS KPI PRINCIPALES -->
+                <section class="kpi-metrics-grid">
+                    <div class="kpi-card kpi-blue" id="kpi-card-abiertos" onclick="document.querySelector('#nav-mis-tickets a').click();" role="button" tabindex="0" title="Ver tickets abiertos">
+                        <div class="kpi-icon-wrapper">
+                            <i class="fas fa-ticket-alt"></i>
+                        </div>
+                        <div class="kpi-details">
+                            <div class="kpi-header-label">Tickets abiertos</div>
+                            <div class="kpi-value-row">
+                                <span class="kpi-number" id="dash-metric-abiertos">5</span>
+                            </div>
+                            <div class="kpi-subtext" id="dash-metric-sin-asignar">3 sin asignar</div>
+                        </div>
                     </div>
-                    <div class="intro-text">
-                        <h1>Centro de Soporte</h1>
-                        <p>Estamos aquí para ayudarte <span class="highlight-time">24/7</span></p>
-                    </div>
-                    <div class="search-bar" style="position: relative;">
-                        <i class="fas fa-search search-icon"></i>
-                        <input type="text" id="main-search-input" placeholder="Buscar soluciones, artículos o temas..." autocomplete="off">
-                        <button class="search-button" id="main-search-btn">Buscar</button>
-                        <div id="search-suggestions" class="search-suggestions-dropdown"></div>
-                    </div>
-                </section>
 
-                <section class="stats-grid">
-                    <div class="stat-card stat-blue">
-                        <i class="fas fa-ticket-alt stat-icon"></i>
-                        <div class="stat-details">
-                            <span class="stat-number">12</span>
-                            <span class="stat-label">Tickets Abiertos</span>
-                            <span class="stat-sublabel">Actualmente</span>
+                    <div class="kpi-card kpi-amber" id="kpi-card-sla-riesgo" onclick="document.querySelector('#nav-sla a').click();" role="button" tabindex="0" title="Ver SLA en riesgo">
+                        <div class="kpi-icon-wrapper">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="kpi-details">
+                            <div class="kpi-header-label">SLA en riesgo</div>
+                            <div class="kpi-value-row">
+                                <span class="kpi-number" id="dash-metric-sla-riesgo">3</span>
+                            </div>
+                            <div class="kpi-subtext">Próximos a vencer</div>
                         </div>
                     </div>
-                    <div class="stat-card stat-green">
-                        <i class="fas fa-check-circle stat-icon"></i>
-                        <div class="stat-details">
-                            <span class="stat-number">48</span>
-                            <span class="stat-label">Tickets Resueltos</span>
-                            <span class="stat-sublabel">Este mes</span>
-                        </div>
-                    </div>
-                    <div class="stat-card stat-purple">
-                        <i class="fas fa-clock stat-icon"></i>
-                        <div class="stat-details">
-                            <span class="stat-number">5 min</span>
-                            <span class="stat-label">Tiempo de Respuesta</span>
-                            <span class="stat-sublabel">Promedio</span>
-                        </div>
-                    </div>
-                    <div class="stat-card stat-yellow">
-                        <i class="fas fa-star stat-icon"></i>
-                        <div class="stat-details">
-                            <span class="stat-number">98%</span>
-                            <span class="stat-label">Satisfacción</span>
-                            <span class="stat-sublabel">De nuestros clientes</span>
-                        </div>
-                    </div>
-                </section>
 
-                <!-- Panel de Control y Feedback (Sólo visible para Administrador Belfor) -->
-                <section id="belfor-metrics-panel" style="display: none; margin-top: 30px; margin-bottom: 30px;">
-                    <div style="margin-bottom: 20px;">
-                        <h2 style="display: flex; align-items: center; gap: 8px; margin: 0; font-size: 1.25rem; font-weight: 700; color: var(--text-primary);">
-                            <i class="fas fa-chart-line" style="color: var(--accent-purple);"></i>
-                            Panel de Feedback de Técnicos
-                        </h2>
-                        <p style="margin: 4px 0 0 0; font-size: 0.85rem; color: var(--text-secondary);">Estadísticas de rendimiento y resolución de casos</p>
+                    <div class="kpi-card kpi-red" id="kpi-card-sla-vencidos" onclick="document.querySelector('#nav-sla a').click();" role="button" tabindex="0" title="Ver SLA vencidos">
+                        <div class="kpi-icon-wrapper">
+                            <i class="fas fa-exclamation-circle"></i>
+                        </div>
+                        <div class="kpi-details">
+                            <div class="kpi-header-label">SLA vencidos</div>
+                            <div class="kpi-value-row">
+                                <span class="kpi-number" id="dash-metric-sla-vencidos">1</span>
+                            </div>
+                            <div class="kpi-subtext">Requieren atención</div>
+                        </div>
                     </div>
-                    <div class="stats-grid">
-                        <div class="stat-card stat-purple">
-                            <i class="fas fa-plus-circle stat-icon"></i>
-                            <div class="stat-details">
-                                <span class="stat-number" id="metric-felipe-created">0</span>
-                                <span class="stat-label">Creados por Felipe</span>
-                                <span class="stat-sublabel">Total tickets</span>
-                            </div>
+
+                    <div class="kpi-card kpi-green" role="button" tabindex="0">
+                        <div class="kpi-icon-wrapper">
+                            <i class="fas fa-star"></i>
                         </div>
-                        <div class="stat-card stat-blue">
-                            <i class="fas fa-check-double stat-icon"></i>
-                            <div class="stat-details">
-                                <span class="stat-number" id="metric-felipe-resolved">0</span>
-                                <span class="stat-label">Resueltos por Felipe</span>
-                                <span class="stat-sublabel">Total tickets</span>
+                        <div class="kpi-details">
+                            <div class="kpi-header-label">Satisfacción</div>
+                            <div class="kpi-value-row">
+                                <span class="kpi-number" id="dash-metric-satisfaccion">98%</span>
                             </div>
+                            <div class="kpi-subtext text-positive"><i class="fas fa-arrow-up"></i> +2% vs mes anterior</div>
                         </div>
-                        <div class="stat-card stat-green">
-                            <i class="fas fa-check-double stat-icon"></i>
-                            <div class="stat-details">
-                                <span class="stat-number" id="metric-omar-resolved">0</span>
-                                <span class="stat-label">Resueltos por Omar</span>
-                                <span class="stat-sublabel">Total tickets</span>
+                    </div>
+
+                    <div class="kpi-card kpi-purple" role="button" tabindex="0">
+                        <div class="kpi-icon-wrapper">
+                            <i class="fas fa-bolt"></i>
+                        </div>
+                        <div class="kpi-details">
+                            <div class="kpi-header-label">Tiempo de respuesta</div>
+                            <div class="kpi-value-row">
+                                <span class="kpi-number" id="dash-metric-tiempo-resp">5 min</span>
                             </div>
+                            <div class="kpi-subtext">Promedio</div>
                         </div>
                     </div>
                 </section>
 
-                <div class="content-grid-two-cols">
-                    <section class="common-solutions">
-                        <div class="section-header">
-                            <h2>Soluciones Frecuentes</h2>
-                            <p>Explora nuestras categorías más populares</p>
+                <!-- BARRA HORIZONTAL: ESTADO DE LOS SISTEMAS -->
+                <section class="system-status-banner" onclick="document.querySelector('#nav-estado a').click();" role="button" tabindex="0">
+                    <div class="status-banner-left">
+                        <div class="status-indicator-dot online"></div>
+                        <span class="status-banner-title">Estado de los sistemas</span>
+                        <span class="status-banner-sub"><span class="bullet-online">●</span> Todos los sistemas operativos</span>
+                    </div>
+                    <div class="status-banner-right">
+                        <span class="status-banner-link">Ver estado del sistema <i class="fas fa-arrow-right"></i></span>
+                    </div>
+                </section>
+
+                <!-- FILA 1: ACTIVIDAD RECIENTE + TICKETS POR DÍA + TICKETS POR PRIORIDAD Y SLA -->
+                <div class="dashboard-row-three-cols">
+                    
+                    <!-- 1. Actividad Reciente -->
+                    <section class="dash-card dash-card-activity">
+                        <div class="dash-card-header">
+                            <div class="dash-card-title-group">
+                                <h3>Actividad reciente</h3>
+                            </div>
+                            <button type="button" class="dash-card-action-link" onclick="document.querySelector('#nav-mis-tickets a').click();">Ver todo</button>
                         </div>
-                        <div class="solutions-grid">
-                            <div class="solution-card">
-                                <i class="fas fa-cog sol-icon sol-icon-blue"></i>
-                                <h3>Problemas Técnicos</h3>
-                                <p>Soluciones a errores, fallos y problemas técnicos comunes.</p>
-                                <a href="#" class="sol-link">Ver artículos <i class="fas fa-arrow-right"></i></a>
+                        <div class="activity-feed-list" id="dash-activity-feed">
+                            <div class="activity-feed-item">
+                                <div class="activity-feed-icon bg-green"><i class="fas fa-check"></i></div>
+                                <div class="activity-feed-body">
+                                    <div class="activity-feed-title">Ticket <strong>#1042</strong> resuelto</div>
+                                    <div class="activity-feed-meta">Felipe Olivares</div>
+                                </div>
+                                <div class="activity-feed-time">Hace 2 min</div>
                             </div>
-                            <div class="solution-card">
-                                <i class="fas fa-wifi sol-icon sol-icon-purple"></i>
-                                <h3>Redes y VPN</h3>
-                                <p>Solución de problemas con redes inalámbricas, VPN y accesos a internet.</p>
-                                <a href="#" class="sol-link">Ver artículos <i class="fas fa-arrow-right"></i></a>
+
+                            <div class="activity-feed-item">
+                                <div class="activity-feed-icon bg-purple"><i class="fas fa-user-check"></i></div>
+                                <div class="activity-feed-body">
+                                    <div class="activity-feed-title">Ticket <strong>#1047</strong> asignado a Omar</div>
+                                    <div class="activity-feed-meta">Soporte TI</div>
+                                </div>
+                                <div class="activity-feed-time">Hace 5 min</div>
                             </div>
-                            <div class="solution-card">
-                                <i class="fas fa-user-circle sol-icon sol-icon-blue"></i>
-                                <h3>Cuenta y Acceso</h3>
-                                <p>Recupera tu cuenta, contraseñas y configuración de seguridad.</p>
-                                <a href="#" class="sol-link">Ver artículos <i class="fas fa-arrow-right"></i></a>
+
+                            <div class="activity-feed-item">
+                                <div class="activity-feed-icon bg-blue"><i class="fas fa-plus-circle"></i></div>
+                                <div class="activity-feed-body">
+                                    <div class="activity-feed-title">Nuevo ticket recibido</div>
+                                    <div class="activity-feed-meta">Usuario: Juan Pérez</div>
+                                </div>
+                                <div class="activity-feed-time">Hace 8 min</div>
                             </div>
-                            <div class="solution-card">
-                                <i class="fas fa-file-excel sol-icon sol-icon-green"></i>
-                                <h3>Software y Office</h3>
-                                <p>Asistencia en Excel, correo corporativo y aplicaciones de la empresa.</p>
-                                <a href="#" class="sol-link">Ver artículos <i class="fas fa-arrow-right"></i></a>
+
+                            <div class="activity-feed-item">
+                                <div class="activity-feed-icon bg-amber"><i class="fas fa-exclamation-triangle"></i></div>
+                                <div class="activity-feed-body">
+                                    <div class="activity-feed-title">SLA próximo a vencer</div>
+                                    <div class="activity-feed-meta">Ticket #1039 - 12 min restantes</div>
+                                </div>
+                                <div class="activity-feed-time">Hace 10 min</div>
+                            </div>
+
+                            <div class="activity-feed-item">
+                                <div class="activity-feed-icon bg-blue"><i class="fas fa-comment-alt"></i></div>
+                                <div class="activity-feed-body">
+                                    <div class="activity-feed-title">Nuevo comentario en <strong>#1046</strong></div>
+                                    <div class="activity-feed-meta">Usuario: Francisca Silva</div>
+                                </div>
+                                <div class="activity-feed-time">Hace 15 min</div>
                             </div>
                         </div>
-                        <button class="view-all-button"><i class="fas fa-th-large"></i> Ver todas las categorías</button>
                     </section>
 
-                    <section class="quick-access-panel" style="background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; padding: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); display: flex; flex-direction: column; gap: 20px;">
-                        <div class="section-header">
-                            <h2>Accesos Rápidos</h2>
-                            <p>Servicios de asistencia en línea</p>
+                    <!-- 2. Gráfico: Tickets por Día (Creados vs Resueltos) -->
+                    <section class="dash-card dash-card-chart-main">
+                        <div class="dash-card-header">
+                            <div class="dash-card-title-group">
+                                <h3>Tickets por día</h3>
+                                <div class="chart-legend-row">
+                                    <span class="legend-item"><span class="legend-box color-created"></span> Creados</span>
+                                    <span class="legend-item"><span class="legend-box color-resolved"></span> Resueltos</span>
+                                </div>
+                            </div>
+                            <div class="chart-filter-select-wrapper">
+                                <select id="chart-period-select" class="dash-compact-select">
+                                    <option value="30">Últimos 30 días</option>
+                                    <option value="7">Últimos 7 días</option>
+                                    <option value="mes">Este mes</option>
+                                </select>
+                            </div>
                         </div>
-                        <div style="display: flex; flex-direction: column; gap: 16px;">
-                            <a href="#" onclick="document.querySelector('.sidebar-nav li:nth-child(3) a').click(); return false;" style="text-decoration: none; display: flex; align-items: center; gap: 14px; padding: 16px; background-color: rgba(50, 102, 235, 0.05); border: 1px solid rgba(50, 102, 235, 0.15); border-radius: 12px; color: var(--text-primary); transition: all 0.2s;">
-                                <i class="fas fa-plus-square" style="font-size: 1.5rem; color: var(--accent-blue);"></i>
-                                <div>
-                                    <h4 style="margin: 0; font-size: 0.9rem; font-weight: 700; color: var(--text-primary);">Crear Nuevo Ticket</h4>
-                                    <span style="font-size: 0.75rem; color: var(--text-secondary);">Genera una solicitud formal de soporte</span>
+                        <div class="chart-canvas-container">
+                            <canvas id="ticketsTimelineChart"></canvas>
+                        </div>
+                    </section>
+
+                    <!-- 3. Gráficos Donut: Tickets por Prioridad & SLA por Estado -->
+                    <section class="dash-card dash-card-donuts">
+                        <!-- Tickets por Prioridad -->
+                        <div class="donut-sub-block">
+                            <div class="dash-card-header no-pad">
+                                <div class="dash-card-title-group">
+                                    <h3>Tickets por prioridad</h3>
                                 </div>
-                            </a>
-                            <a href="#" onclick="document.querySelector('.sidebar-nav li:nth-child(6) a').click(); return false;" style="text-decoration: none; display: flex; align-items: center; gap: 14px; padding: 16px; background-color: rgba(97, 62, 234, 0.05); border: 1px solid rgba(97, 62, 234, 0.15); border-radius: 12px; color: var(--text-primary); transition: all 0.2s;">
-                                <i class="fas fa-comments" style="font-size: 1.5rem; color: var(--accent-purple);"></i>
-                                <div>
-                                    <h4 style="margin: 0; font-size: 0.9rem; font-weight: 700; color: var(--text-primary);">Chat en Vivo</h4>
-                                    <span style="font-size: 0.75rem; color: var(--text-secondary);">Habla en tiempo real con un técnico</span>
+                            </div>
+                            <div class="donut-layout-row">
+                                <div class="donut-chart-box">
+                                    <canvas id="priorityDonutChart"></canvas>
                                 </div>
-                            </a>
-                            <a href="#" onclick="document.querySelector('.sidebar-nav li:nth-child(7) a').click(); return false;" style="text-decoration: none; display: flex; align-items: center; gap: 14px; padding: 16px; background-color: rgba(29, 200, 109, 0.05); border: 1px solid rgba(29, 200, 109, 0.15); border-radius: 12px; color: var(--text-primary); transition: all 0.2s;">
-                                <i class="fas fa-graduation-cap" style="font-size: 1.5rem; color: var(--accent-green);"></i>
-                                <div>
-                                    <h4 style="margin: 0; font-size: 0.9rem; font-weight: 700; color: var(--text-primary);">Base de Tutoriales</h4>
-                                    <span style="font-size: 0.75rem; color: var(--text-secondary);">Guías paso a paso auto-administrables</span>
+                                <div class="donut-legend-col" id="priority-legend-list">
+                                    <div class="donut-legend-item">
+                                        <span class="legend-bullet bg-red"></span>
+                                        <span class="legend-text">Crítica</span>
+                                        <span class="legend-val">8 (8%)</span>
+                                    </div>
+                                    <div class="donut-legend-item">
+                                        <span class="legend-bullet bg-amber"></span>
+                                        <span class="legend-text">Alta</span>
+                                        <span class="legend-val">21 (21%)</span>
+                                    </div>
+                                    <div class="donut-legend-item">
+                                        <span class="legend-bullet bg-yellow"></span>
+                                        <span class="legend-text">Media</span>
+                                        <span class="legend-val">45 (45%)</span>
+                                    </div>
+                                    <div class="donut-legend-item">
+                                        <span class="legend-bullet bg-green"></span>
+                                        <span class="legend-text">Baja</span>
+                                        <span class="legend-val">26 (26%)</span>
+                                    </div>
                                 </div>
-                            </a>
+                            </div>
+                        </div>
+
+                        <div class="donut-divider-line"></div>
+
+                        <!-- SLA por Estado -->
+                        <div class="donut-sub-block">
+                            <div class="dash-card-header no-pad">
+                                <div class="dash-card-title-group">
+                                    <h3>SLA por estado</h3>
+                                </div>
+                            </div>
+                            <div class="donut-layout-row">
+                                <div class="donut-chart-box small">
+                                    <canvas id="slaDonutChart"></canvas>
+                                </div>
+                                <div class="donut-legend-col">
+                                    <div class="donut-legend-item">
+                                        <span class="legend-bullet bg-green"></span>
+                                        <span class="legend-text">Cumplido</span>
+                                        <span class="legend-val">97%</span>
+                                    </div>
+                                    <div class="donut-legend-item">
+                                        <span class="legend-bullet bg-amber"></span>
+                                        <span class="legend-text">En riesgo</span>
+                                        <span class="legend-val">2%</span>
+                                    </div>
+                                    <div class="donut-legend-item">
+                                        <span class="legend-bullet bg-red"></span>
+                                        <span class="legend-text">Incumplido</span>
+                                        <span class="legend-val">1%</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- FILA 2: TICKETS QUE REQUIEREN ATENCIÓN + RANKING DE TÉCNICOS -->
+                <div class="dashboard-row-two-cols">
+                    
+                    <!-- Tabla: Tickets que requieren atención -->
+                    <section class="dash-card dash-card-attention">
+                        <div class="dash-card-header">
+                            <div class="dash-card-title-group">
+                                <h3>Tickets que requieren atención</h3>
+                            </div>
+                            <button type="button" class="dash-card-action-link" onclick="document.querySelector('#nav-mis-tickets a').click();">Ver todos</button>
+                        </div>
+                        <div class="dash-table-wrapper">
+                            <table class="dash-table" id="table-attention-tickets">
+                                <thead>
+                                    <tr>
+                                        <th>TICKET</th>
+                                        <th>ASUNTO</th>
+                                        <th>PRIORIDAD</th>
+                                        <th>TÉCNICO</th>
+                                        <th>SLA</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="attention-tickets-tbody">
+                                    <tr class="attention-ticket-row" onclick="openSampleTicket(1039);">
+                                        <td class="ticket-id-cell">#1039</td>
+                                        <td class="ticket-subject-cell">No conecta VPN GlobalProtect</td>
+                                        <td><span class="priority-dot-pill priority-alta"><span class="p-dot"></span> Alta</span></td>
+                                        <td class="tech-cell"><i class="far fa-user-circle"></i> Sin asignar</td>
+                                        <td class="sla-cell">
+                                            <span class="sla-time-text text-red">12 min</span>
+                                            <div class="sla-progress-bar"><div class="sla-progress-fill bg-red" style="width: 20%;"></div></div>
+                                        </td>
+                                    </tr>
+                                    <tr class="attention-ticket-row" onclick="openSampleTicket(1041);">
+                                        <td class="ticket-id-cell">#1041</td>
+                                        <td class="ticket-subject-cell">Error al enviar correos Outlook</td>
+                                        <td><span class="priority-dot-pill priority-alta"><span class="p-dot"></span> Alta</span></td>
+                                        <td class="tech-cell"><div class="tech-avatar-mini">FO</div> Felipe Olivares</td>
+                                        <td class="sla-cell">
+                                            <span class="sla-time-text text-amber">18 min</span>
+                                            <div class="sla-progress-bar"><div class="sla-progress-fill bg-amber" style="width: 35%;"></div></div>
+                                        </td>
+                                    </tr>
+                                    <tr class="attention-ticket-row" onclick="openSampleTicket(1043);">
+                                        <td class="ticket-id-cell">#1043</td>
+                                        <td class="ticket-subject-cell">Impresora no imprime</td>
+                                        <td><span class="priority-dot-pill priority-media"><span class="p-dot"></span> Media</span></td>
+                                        <td class="tech-cell"><div class="tech-avatar-mini">OG</div> Omar Gálvez</td>
+                                        <td class="sla-cell">
+                                            <span class="sla-time-text text-amber">32 min</span>
+                                            <div class="sla-progress-bar"><div class="sla-progress-fill bg-amber" style="width: 55%;"></div></div>
+                                        </td>
+                                    </tr>
+                                    <tr class="attention-ticket-row" onclick="openSampleTicket(1044);">
+                                        <td class="ticket-id-cell">#1044</td>
+                                        <td class="ticket-subject-cell">Lentitud en equipo</td>
+                                        <td><span class="priority-dot-pill priority-baja"><span class="p-dot"></span> Baja</span></td>
+                                        <td class="tech-cell"><div class="tech-avatar-mini">FO</div> Felipe Olivares</td>
+                                        <td class="sla-cell">
+                                            <span class="sla-time-text text-green">1 h 15 min</span>
+                                            <div class="sla-progress-bar"><div class="sla-progress-fill bg-green" style="width: 80%;"></div></div>
+                                        </td>
+                                    </tr>
+                                    <tr class="attention-ticket-row" onclick="openSampleTicket(1046);">
+                                        <td class="ticket-id-cell">#1046</td>
+                                        <td class="ticket-subject-cell">No puedo acceder a OneDrive</td>
+                                        <td><span class="priority-dot-pill priority-media"><span class="p-dot"></span> Media</span></td>
+                                        <td class="tech-cell"><i class="far fa-user-circle"></i> Sin asignar</td>
+                                        <td class="sla-cell">
+                                            <span class="sla-time-text text-green">1 h 32 min</span>
+                                            <div class="sla-progress-bar"><div class="sla-progress-fill bg-green" style="width: 90%;"></div></div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="table-legend-footer">
+                            <span class="legend-indicator"><span class="legend-bullet bg-red"></span> SLA vencido</span>
+                            <span class="legend-indicator"><span class="legend-bullet bg-amber"></span> Pronto a vencer</span>
+                            <span class="legend-indicator"><span class="legend-bullet bg-green"></span> Dentro del tiempo</span>
+                        </div>
+                    </section>
+
+                    <!-- Tabla: Técnicos destacados (mes actual) -->
+                    <section class="dash-card dash-card-technicians">
+                        <div class="dash-card-header">
+                            <div class="dash-card-title-group">
+                                <h3>Técnicos destacados (mes actual)</h3>
+                            </div>
+                            <button type="button" class="dash-card-action-link" onclick="document.querySelector('#nav-tecnicos a').click();">Ver ranking</button>
+                        </div>
+                        <div class="dash-table-wrapper">
+                            <table class="dash-table">
+                                <thead>
+                                    <tr>
+                                        <th>TÉCNICO</th>
+                                        <th>RESUELTOS</th>
+                                        <th>TIEMPO PROM.</th>
+                                        <th>SLA</th>
+                                        <th>SATISFACCIÓN</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="dashboard-technicians-tbody">
+                                    <tr>
+                                        <td class="tech-cell">
+                                            <div class="tech-avatar-mini bg-indigo">OG</div>
+                                            <span class="tech-name">Omar Gálvez</span>
+                                        </td>
+                                        <td class="val-bold">398</td>
+                                        <td>4m 12s</td>
+                                        <td class="text-positive font-bold">98%</td>
+                                        <td><span class="star-rating"><i class="fas fa-star"></i> 4.9</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="tech-cell">
+                                            <div class="tech-avatar-mini bg-blue">FO</div>
+                                            <span class="tech-name">Felipe Olivares</span>
+                                        </td>
+                                        <td class="val-bold">388</td>
+                                        <td>5m 03s</td>
+                                        <td class="text-positive font-bold">96%</td>
+                                        <td><span class="star-rating"><i class="fas fa-star"></i> 4.8</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="tech-cell">
+                                            <div class="tech-avatar-mini bg-purple">BA</div>
+                                            <span class="tech-name">Belfor Aburto</span>
+                                        </td>
+                                        <td class="val-bold">6</td>
+                                        <td>3m 45s</td>
+                                        <td class="text-positive font-bold">99%</td>
+                                        <td><span class="star-rating"><i class="fas fa-star"></i> 5.0</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- FILA 3: BASE DE CONOCIMIENTOS RÁPIDA + DISTRIBUCIÓN POR EMPRESA -->
+                <div class="dashboard-row-kb-distribution">
+                    
+                    <!-- Base de conocimientos rápida (7 tarjetas) -->
+                    <section class="dash-card dash-card-kb-quick">
+                        <div class="dash-card-header">
+                            <div class="dash-card-title-group">
+                                <h3>Base de conocimientos rápida</h3>
+                            </div>
+                            <button type="button" class="dash-card-action-link" onclick="document.querySelector('#nav-base-conocimientos a').click();">Ver toda la base</button>
+                        </div>
+                        <div class="kb-quick-grid">
+                            <div class="kb-quick-card" onclick="openKbCategory('VPN GlobalProtect');" role="button" tabindex="0">
+                                <div class="kb-quick-icon bg-blue"><i class="fas fa-shield-alt"></i></div>
+                                <h4>VPN GlobalProtect</h4>
+                                <p>18 artículos</p>
+                            </div>
+
+                            <div class="kb-quick-card" onclick="openKbCategory('Outlook');" role="button" tabindex="0">
+                                <div class="kb-quick-icon bg-purple"><i class="fas fa-envelope"></i></div>
+                                <h4>Outlook</h4>
+                                <p>24 artículos</p>
+                            </div>
+
+                            <div class="kb-quick-card" onclick="openKbCategory('OneDrive');" role="button" tabindex="0">
+                                <div class="kb-quick-icon bg-green"><i class="fas fa-cloud"></i></div>
+                                <h4>OneDrive</h4>
+                                <p>12 artículos</p>
+                            </div>
+
+                            <div class="kb-quick-card" onclick="openKbCategory('Windows');" role="button" tabindex="0">
+                                <div class="kb-quick-icon bg-amber"><i class="fab fa-windows"></i></div>
+                                <h4>Windows</h4>
+                                <p>31 artículos</p>
+                            </div>
+
+                            <div class="kb-quick-card" onclick="openKbCategory('Impresoras');" role="button" tabindex="0">
+                                <div class="kb-quick-icon bg-red"><i class="fas fa-print"></i></div>
+                                <h4>Impresoras</h4>
+                                <p>15 artículos</p>
+                            </div>
+
+                            <div class="kb-quick-card" onclick="openKbCategory('Contraseñas');" role="button" tabindex="0">
+                                <div class="kb-quick-icon bg-teal"><i class="fas fa-lock"></i></div>
+                                <h4>Contraseñas</h4>
+                                <p>9 artículos</p>
+                            </div>
+
+                            <div class="kb-quick-card" onclick="openKbCategory('Telefonía');" role="button" tabindex="0">
+                                <div class="kb-quick-icon bg-indigo"><i class="fas fa-phone-alt"></i></div>
+                                <h4>Telefonía</h4>
+                                <p>11 artículos</p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Distribución por Empresa -->
+                    <section class="dash-card dash-card-distribution">
+                        <div class="dash-card-header">
+                            <div class="dash-card-title-group">
+                                <h3>Distribución por empresa</h3>
+                            </div>
+                            <button type="button" class="dash-card-action-link" onclick="document.querySelector('#nav-reportes a').click();">Ver reporte</button>
+                        </div>
+                        <div class="distribution-bars-list">
+                            <div class="distribution-item">
+                                <div class="distrib-label-row">
+                                    <span class="distrib-name font-bold">T-SALES</span>
+                                    <span class="distrib-val">71% (912)</span>
+                                </div>
+                                <div class="distrib-progress-bar">
+                                    <div class="distrib-progress-fill bg-blue" style="width: 71%;"></div>
+                                </div>
+                            </div>
+
+                            <div class="distribution-item">
+                                <div class="distrib-label-row">
+                                    <span class="distrib-name font-bold">VPRIME</span>
+                                    <span class="distrib-val">18% (231)</span>
+                                </div>
+                                <div class="distrib-progress-bar">
+                                    <div class="distrib-progress-fill bg-purple" style="width: 18%;"></div>
+                                </div>
+                            </div>
+
+                            <div class="distribution-item">
+                                <div class="distrib-label-row">
+                                    <span class="distrib-name font-bold">INFINET</span>
+                                    <span class="distrib-val">11% (141)</span>
+                                </div>
+                                <div class="distrib-progress-bar">
+                                    <div class="distrib-progress-fill bg-green" style="width: 11%;"></div>
+                                </div>
+                            </div>
                         </div>
                     </section>
                 </div>
@@ -268,19 +726,19 @@
                     
                     <div class="company-cards-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
                         <!-- Card INFINET -->
-                        <div class="company-card active" data-company="Infinet" style="position: relative; border: 2px solid var(--accent-blue); border-radius: 12px; padding: 20px; display: flex; align-items: center; justify-content: center; background-color: rgba(255,255,255,0.01); cursor: pointer; transition: all 0.25s ease; min-height: 120px; box-sizing: border-box;">
-                            <div class="company-check-badge" style="position: absolute; top: 12px; right: 12px; width: 20px; height: 20px; border-radius: 50%; background-color: var(--accent-blue); color: white; display: flex; align-items: center; justify-content: center; font-size: 0.75rem;"><i class="fas fa-check"></i></div>
-                            <img src="img/logo_infinet.png" alt="INFINET" style="max-height: 70px; max-width: 90%; object-fit: contain; filter: drop-shadow(0 2px 8px rgba(0,0,0,0.3));">
+                        <div class="company-card active" data-company="Infinet" style="position: relative; border: 2px solid var(--accent-blue); border-radius: 14px; padding: 16px; display: flex; align-items: center; justify-content: center; background-color: rgba(255,255,255,0.02); cursor: pointer; transition: all 0.25s ease; min-height: 120px; box-sizing: border-box;">
+                            <div class="company-check-badge" style="position: absolute; top: 12px; right: 12px; width: 22px; height: 22px; border-radius: 50%; background-color: var(--accent-blue); color: white; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; box-shadow: 0 0 10px rgba(50, 102, 235, 0.5);"><i class="fas fa-check"></i></div>
+                            <img src="img/logo_infinet.png" alt="INFINET" style="max-height: 80px; max-width: 90%; object-fit: contain; border-radius: 10px; filter: drop-shadow(0 4px 12px rgba(0,0,0,0.4));">
                         </div>
                         <!-- Card T-Sales -->
-                        <div class="company-card" data-company="T-Sales" style="position: relative; border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; display: flex; align-items: center; justify-content: center; background-color: rgba(255,255,255,0.01); cursor: pointer; transition: all 0.25s ease; min-height: 120px; box-sizing: border-box;">
-                            <div class="company-check-badge" style="position: absolute; top: 12px; right: 12px; width: 20px; height: 20px; border-radius: 50%; background-color: var(--accent-blue); color: white; display: none; align-items: center; justify-content: center; font-size: 0.75rem;"><i class="fas fa-check"></i></div>
-                            <img src="img/logo_tsales.png" alt="T-Sales" style="max-height: 70px; max-width: 90%; object-fit: contain; filter: drop-shadow(0 2px 8px rgba(0,0,0,0.3));">
+                        <div class="company-card" data-company="T-Sales" style="position: relative; border: 1px solid var(--border-color); border-radius: 14px; padding: 16px; display: flex; align-items: center; justify-content: center; background-color: rgba(255,255,255,0.02); cursor: pointer; transition: all 0.25s ease; min-height: 120px; box-sizing: border-box;">
+                            <div class="company-check-badge" style="position: absolute; top: 12px; right: 12px; width: 22px; height: 22px; border-radius: 50%; background-color: var(--accent-blue); color: white; display: none; align-items: center; justify-content: center; font-size: 0.75rem; box-shadow: 0 0 10px rgba(50, 102, 235, 0.5);"><i class="fas fa-check"></i></div>
+                            <img src="img/logo_tsales.png" alt="T-Sales" style="max-height: 80px; max-width: 90%; object-fit: contain; border-radius: 10px; filter: drop-shadow(0 4px 12px rgba(0,0,0,0.4));">
                         </div>
                         <!-- Card VPRIME -->
-                        <div class="company-card" data-company="VPrime" style="position: relative; border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; display: flex; align-items: center; justify-content: center; background-color: rgba(255,255,255,0.01); cursor: pointer; transition: all 0.25s ease; min-height: 120px; box-sizing: border-box;">
-                            <div class="company-check-badge" style="position: absolute; top: 12px; right: 12px; width: 20px; height: 20px; border-radius: 50%; background-color: var(--accent-blue); color: white; display: none; align-items: center; justify-content: center; font-size: 0.75rem;"><i class="fas fa-check"></i></div>
-                            <img src="img/logo_vprime.png" alt="VPRIME" style="max-height: 70px; max-width: 90%; object-fit: contain; filter: drop-shadow(0 2px 8px rgba(0,0,0,0.3));">
+                        <div class="company-card" data-company="VPrime" style="position: relative; border: 1px solid var(--border-color); border-radius: 14px; padding: 16px; display: flex; align-items: center; justify-content: center; background-color: rgba(255,255,255,0.02); cursor: pointer; transition: all 0.25s ease; min-height: 120px; box-sizing: border-box;">
+                            <div class="company-check-badge" style="position: absolute; top: 12px; right: 12px; width: 22px; height: 22px; border-radius: 50%; background-color: var(--accent-blue); color: white; display: none; align-items: center; justify-content: center; font-size: 0.75rem; box-shadow: 0 0 10px rgba(50, 102, 235, 0.5);"><i class="fas fa-check"></i></div>
+                            <img src="img/logo_vprime.png" alt="VPRIME" style="max-height: 80px; max-width: 90%; object-fit: contain; border-radius: 10px; filter: drop-shadow(0 4px 12px rgba(0,0,0,0.4));">
                         </div>
                     </div>
                 </div>
@@ -404,9 +862,16 @@
                                 <h3 style="margin: 0; font-size: 1rem; font-weight: 700; color: var(--text-primary);">Información adicional</h3>
                             </div>
 
-                            <div class="form-group">
-                                <label for="ticket-client-name" style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 6px; display: block;">Nombre de la persona (Afectado) *</label>
-                                <input type="text" id="ticket-client-name" required placeholder="Ej: Juan Pérez" style="width: 100%; padding: 12px; background-color: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family); font-size: 0.88rem;">
+                            <div class="form-group" style="position: relative;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                                    <label for="ticket-client-name" style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; margin: 0; display: block;">Nombre de la persona (Afectado) *</label>
+                                    <span style="font-size: 0.72rem; color: var(--accent-blue); font-weight: 600; display: inline-flex; align-items: center; gap: 4px;"><i class="fas fa-bolt" style="color: #f59e0b;"></i> Autocompletado inteligente</span>
+                                </div>
+                                <div class="autocomplete-wrapper">
+                                    <input type="text" id="ticket-client-name" autocomplete="off" required placeholder="Escribe el nombre o RUT (Ej: Francisca, Aaron...)" style="width: 100%; padding: 12px 38px 12px 12px; background-color: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family); font-size: 0.88rem;">
+                                    <i class="fas fa-search" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 0.85rem; pointer-events: none;"></i>
+                                    <div id="ticket-client-autocomplete-list" class="autocomplete-suggestions-dropdown" style="display: none;"></div>
+                                </div>
                             </div>
                             
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
@@ -530,52 +995,45 @@
                                 <div style="display: flex; align-items: center; gap: 8px; color: var(--text-secondary);">
                                     <i class="fas fa-check-circle" style="color: var(--accent-blue); font-size: 0.85rem;"></i>
                                     <span>Indica el impacto que tiene en tu trabajo</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- ¿No encuentras lo que buscas? -->
-                        <div style="background: linear-gradient(135deg, rgba(97, 62, 234, 0.08) 0%, rgba(50, 102, 235, 0.08) 100%); border: 1px solid rgba(50, 102, 235, 0.15); border-radius: 16px; padding: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); display: flex; align-items: center; gap: 16px;">
-                            <i class="fas fa-headset" style="font-size: 2.2rem; color: var(--accent-blue); filter: drop-shadow(0 0 6px var(--accent-blue));"></i>
-                            <div>
-                                <h5 style="margin: 0 0 4px 0; font-size: 0.85rem; font-weight: 700; color: var(--text-primary);">¿No encuentras lo que buscas?</h5>
-                                <p style="margin: 0 0 12px 0; font-size: 0.72rem; color: var(--text-secondary); line-height: 1.3;">Consulta nuestra base de conocimientos o chatea con un agente en vivo.</p>
-                                <button class="page-btn" type="button" style="background-color: var(--accent-blue); border: none; color: white; font-size: 0.75rem; font-weight: 600; padding: 6px 12px; border-radius: 6px; cursor: pointer; transition: all 0.2s;" onclick="document.querySelector('.sidebar-nav li:nth-child(6) a').click();">Explorar recursos</button>
                             </div>
                         </div>
 
                     </div>
                 </div>
             </div>
+        </div>
 
             <!-- ============ PÁGINA MIS TICKETS ============ -->
             <div id="page-mis-tickets" class="page-section">
                 <div class="tickets-page-header">
                     <div class="tickets-page-title">
-                        <h1>Mis Tickets</h1>
-                        <p>Consulta el estado de tus solicitudes de soporte</p>
+                        <h1>Mis tickets</h1>
+                        <p class="tickets-page-sub">Consulta el estado de tus solicitudes de soporte</p>
                     </div>
-                    <button class="btn-crear-ticket" id="btn-crear-nuevo-ticket">
-                        <i class="fas fa-plus"></i> Crear Nuevo Ticket
-                    </button>
+                    <div class="tickets-header-actions">
+                        <button class="mobile-filter-btn" id="mobile-filter-toggle" title="Filtrar tickets"><i class="fas fa-sliders-h"></i></button>
+                        <button class="btn-crear-ticket" id="btn-crear-nuevo-ticket">
+                            <i class="fas fa-plus"></i> Crear Nuevo Ticket
+                        </button>
+                    </div>
                 </div>
 
-                <!-- Filtros por estado -->
-                <div class="tickets-filter-tabs">
+                <!-- Filtros por estado (Chips Táctiles Estilo App) -->
+                <div class="tickets-filter-tabs" id="mobile-filter-tabs">
                     <button class="filter-tab active" data-filter="todos">
-                        <i class="fas fa-list"></i> Todos
+                        <i class="fas fa-th-large"></i> <span>Todos</span> <span class="filter-count">12</span>
                     </button>
                     <button class="filter-tab" data-filter="abierto">
-                        <span class="filter-dot dot-abierto"></span> Abiertos <span class="filter-count">12</span>
+                        <i class="far fa-circle text-pink"></i> <span>Abiertos</span> <span class="filter-count">2</span>
                     </button>
                     <button class="filter-tab" data-filter="en progreso">
-                        <span class="filter-dot dot-progreso"></span> En Progreso <span class="filter-count">5</span>
+                        <i class="fas fa-sync-alt text-blue"></i> <span>En progreso</span> <span class="filter-count">4</span>
                     </button>
                     <button class="filter-tab" data-filter="en espera">
-                        <span class="filter-dot dot-espera"></span> En Espera <span class="filter-count">3</span>
+                        <i class="far fa-clock text-amber"></i> <span>En espera</span> <span class="filter-count">1</span>
                     </button>
                     <button class="filter-tab" data-filter="resuelto">
-                        <span class="filter-dot dot-resuelto"></span> Resueltos <span class="filter-count">28</span>
+                        <i class="fas fa-check text-green"></i> <span>Resueltos</span> <span class="filter-count">28</span>
                     </button>
                 </div>
 
@@ -694,6 +1152,9 @@
                         </tbody>
                     </table>
                 </div>
+
+                <!-- Lista de Tarjetas de Tickets para Celular (Mobile Cards) -->
+                <div class="mobile-tickets-card-list" id="mobile-tickets-cards-container"></div>
 
                 <!-- Paginación -->
                 <div class="tickets-pagination">
@@ -861,67 +1322,137 @@
                 </div>
             </div>
 
-            <!-- ============ PÁGINA GESTIÓN DE USUARIOS ============ -->
+            <!-- ============ PÁGINA GESTIÓN DE USUARIOS & DIRECTORIO ============ -->
             <div id="page-usuarios" class="page-section">
-                <div class="tickets-page-header">
+                <div class="tickets-page-header" style="margin-bottom: 20px;">
                     <div class="tickets-page-title">
-                        <h1>Gestión de Usuarios</h1>
-                        <p>Administra los accesos de los técnicos y visualiza sus métricas de tickets.</p>
+                        <h1><i class="fas fa-users-cog" style="color: var(--accent-purple); margin-right: 10px;"></i> Gestión de Usuarios & Directorio</h1>
+                        <p>Administra los roles del equipo TI y consulta el directorio de colaboradores de las 3 empresas</p>
+                    </div>
+                    <div style="display: flex; gap: 10px;">
+                        <button type="button" id="btn-open-add-collab-modal" class="btn-primary" style="padding: 10px 18px; border-radius: 8px; font-weight: 600; display: flex; align-items: center; gap: 8px; background: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-blue) 100%); color: white; border: none; cursor: pointer;">
+                            <i class="fas fa-user-plus"></i> Nuevo Colaborador
+                        </button>
                     </div>
                 </div>
 
-                <!-- Banner de advertencia de Supabase si la tabla no existe -->
-                <div id="user-supabase-warning" style="display: none; background-color: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); color: #f59e0b; padding: 15px; border-radius: 10px; margin-bottom: 20px; font-family: var(--font-family); font-size: 0.88rem; align-items: center; gap: 10px;">
-                    <i class="fas fa-exclamation-triangle" style="font-size: 1.2rem; flex-shrink: 0; color: #f59e0b;"></i>
-                    <div>
-                        <strong>⚠️ Tabla 'user_roles' ausente en Supabase:</strong> Los cambios que realices aquí solo se aplicarán temporalmente en tu navegador actual. Para sincronizar los roles con los demás ejecutivos en sus computadores, ejecuta la consulta SQL en tu consola de Supabase (Editor de SQL).
+                <!-- Tabs de Navegación de Usuarios -->
+                <div style="display: flex; gap: 8px; border-bottom: 1px solid var(--border-color); margin-bottom: 24px;">
+                    <button type="button" class="directory-tab-btn active" id="tab-btn-directorio">
+                        <i class="fas fa-address-book" style="margin-right: 6px;"></i> Directorio de Colaboradores (<span id="directory-total-badge">249</span>)
+                    </button>
+                    <button type="button" class="directory-tab-btn" id="tab-btn-roles">
+                        <i class="fas fa-user-shield" style="margin-right: 6px;"></i> Equipo TI & Roles
+                    </button>
+                </div>
+
+                <!-- CONTENIDO PESTAÑA 1: DIRECTORIO DE COLABORADORES -->
+                <div id="user-tab-directorio-content">
+                    <!-- Barra de Búsqueda y Filtros del Directorio -->
+                    <div class="tickets-toolbar" style="margin-bottom: 20px; display: flex; gap: 14px; flex-wrap: wrap; align-items: center;">
+                        <div class="tickets-search" style="flex: 1; min-width: 250px;">
+                            <i class="fas fa-search"></i>
+                            <input type="text" id="directory-search-input" placeholder="Buscar por nombre, RUT o correo en el directorio..." style="width: 100%;">
+                        </div>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                            <select id="directory-company-filter" class="dash-compact-select" style="padding: 10px 14px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family); font-size: 0.85rem; cursor: pointer;">
+                                <option value="todas">Todas las Empresas</option>
+                                <option value="T-Sales">T-Sales</option>
+                                <option value="Infinet">INFINET</option>
+                                <option value="VPrime">V PRIME</option>
+                            </select>
+                            <select id="directory-type-filter" class="dash-compact-select" style="padding: 10px 14px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family); font-size: 0.85rem; cursor: pointer;">
+                                <option value="todos">Todos los Tipos</option>
+                                <option value="Ejecutivo">Ejecutivos</option>
+                                <option value="Freelance">Freelance</option>
+                                <option value="Externo">Externos</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Tabla del Directorio -->
+                    <div class="tickets-list-card" style="background-color: var(--bg-card); border-radius: 12px; padding: 20px; border: 1px solid rgba(255,255,255,0.03); box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);">
+                        <div style="overflow-x: auto;">
+                            <table class="tickets-table" style="width: 100%; border-collapse: collapse;">
+                                <thead>
+                                    <tr style="border-bottom: 1px solid var(--border-color); text-align: left;">
+                                        <th style="padding: 12px 16px; color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; font-weight: 600;">Colaborador</th>
+                                        <th style="padding: 12px 16px; color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; font-weight: 600;">RUT</th>
+                                        <th style="padding: 12px 16px; color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; font-weight: 600;">Empresa</th>
+                                        <th style="padding: 12px 16px; color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; font-weight: 600;">Tipo</th>
+                                        <th style="padding: 12px 16px; color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; font-weight: 600;">Licencia M365</th>
+                                        <th style="padding: 12px 16px; color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; font-weight: 600; text-align: right;">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="directory-table-body">
+                                    <!-- Poblado dinámicamente -->
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Paginación del Directorio -->
+                        <div id="directory-pagination" style="display: flex; justify-content: space-between; align-items: center; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.05); margin-top: 10px;">
+                            <span id="directory-page-info" style="font-size: 0.8rem; color: var(--text-secondary);">Mostrando 1-15 de 249</span>
+                            <div id="directory-page-buttons" style="display: flex; gap: 6px;"></div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Tarjetas de métricas rápidas de usuarios -->
-                <div class="stats-grid" style="grid-template-columns: repeat(3, 1fr); margin-bottom: 30px;">
-                    <div class="stat-card stat-purple">
-                        <div class="stat-icon"><i class="fas fa-users"></i></div>
-                        <div class="stat-info">
-                            <span class="stat-number" id="user-stat-total">0</span>
-                            <span class="stat-label">Total Usuarios</span>
+                <!-- CONTENIDO PESTAÑA 2: ROLES DEL EQUIPO TI -->
+                <div id="user-tab-roles-content" style="display: none;">
+                    <!-- Banner de advertencia de Supabase si la tabla no existe -->
+                    <div id="user-supabase-warning" style="display: none; background-color: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); color: #f59e0b; padding: 15px; border-radius: 10px; margin-bottom: 20px; font-family: var(--font-family); font-size: 0.88rem; align-items: center; gap: 10px;">
+                        <i class="fas fa-exclamation-triangle" style="font-size: 1.2rem; flex-shrink: 0; color: #f59e0b;"></i>
+                        <div>
+                            <strong>⚠️ Tabla 'user_roles' ausente en Supabase:</strong> Los cambios que realices aquí solo se aplicarán temporalmente en tu navegador actual. Para sincronizar los roles con los demás ejecutivos en sus computadores, ejecuta la consulta SQL en tu consola de Supabase (Editor de SQL).
                         </div>
                     </div>
-                    <div class="stat-card stat-blue">
-                        <div class="stat-icon"><i class="fas fa-user-shield"></i></div>
-                        <div class="stat-info">
-                            <span class="stat-number" id="user-stat-admins">0</span>
-                            <span class="stat-label">Administradores</span>
-                        </div>
-                    </div>
-                    <div class="stat-card stat-green">
-                        <div class="stat-icon"><i class="fas fa-user-tie"></i></div>
-                        <div class="stat-info">
-                            <span class="stat-number" id="user-stat-techs">0</span>
-                            <span class="stat-label">Técnicos</span>
-                        </div>
-                    </div>
-                </div>
 
-                <!-- Tabla de usuarios -->
-                <div class="tickets-list-card" style="background-color: var(--bg-card); border-radius: 12px; padding: 24px; border: 1px solid rgba(255,255,255,0.03); box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);">
-                    <div style="overflow-x: auto;">
-                        <table class="tickets-table" style="width: 100%; border-collapse: collapse;">
-                            <thead>
-                                <tr style="border-bottom: 1px solid var(--border-color); text-align: left;">
-                                    <th style="padding: 12px 16px; color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; font-weight: 600;">Usuario</th>
-                                    <th style="padding: 12px 16px; color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; font-weight: 600;">RUT</th>
-                                    <th style="padding: 12px 16px; color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; font-weight: 600;">Rol</th>
-                                    <th style="padding: 12px 16px; color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; font-weight: 600; text-align: center;">Tickets Creados</th>
-                                    <th style="padding: 12px 16px; color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; font-weight: 600; text-align: center;">Casos Asignados</th>
-                                    <th style="padding: 12px 16px; color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; font-weight: 600; text-align: center;">Casos Resueltos</th>
-                                    <th style="padding: 12px 16px; color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; font-weight: 600; text-align: right;">Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody id="users-table-body">
-                                <!-- Poblado dinámicamente -->
-                            </tbody>
-                        </table>
+                    <!-- Tarjetas de métricas rápidas de usuarios -->
+                    <div class="stats-grid" style="grid-template-columns: repeat(3, 1fr); margin-bottom: 30px;">
+                        <div class="stat-card stat-purple">
+                            <div class="stat-icon"><i class="fas fa-users"></i></div>
+                            <div class="stat-info">
+                                <span class="stat-number" id="user-stat-total">3</span>
+                                <span class="stat-label">Total Usuarios TI</span>
+                            </div>
+                        </div>
+                        <div class="stat-card stat-blue">
+                            <div class="stat-icon"><i class="fas fa-user-shield"></i></div>
+                            <div class="stat-info">
+                                <span class="stat-number" id="user-stat-admins">3</span>
+                                <span class="stat-label">Administradores</span>
+                            </div>
+                        </div>
+                        <div class="stat-card stat-green">
+                            <div class="stat-icon"><i class="fas fa-user-tie"></i></div>
+                            <div class="stat-info">
+                                <span class="stat-number" id="user-stat-techs">0</span>
+                                <span class="stat-label">Técnicos</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tabla de usuarios TI -->
+                    <div class="tickets-list-card" style="background-color: var(--bg-card); border-radius: 12px; padding: 24px; border: 1px solid rgba(255,255,255,0.03); box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);">
+                        <div style="overflow-x: auto;">
+                            <table class="tickets-table" style="width: 100%; border-collapse: collapse;">
+                                <thead>
+                                    <tr style="border-bottom: 1px solid var(--border-color); text-align: left;">
+                                        <th style="padding: 12px 16px; color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; font-weight: 600;">Usuario TI</th>
+                                        <th style="padding: 12px 16px; color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; font-weight: 600;">RUT</th>
+                                        <th style="padding: 12px 16px; color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; font-weight: 600;">Rol</th>
+                                        <th style="padding: 12px 16px; color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; font-weight: 600; text-align: center;">Tickets Creados</th>
+                                        <th style="padding: 12px 16px; color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; font-weight: 600; text-align: center;">Casos Asignados</th>
+                                        <th style="padding: 12px 16px; color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; font-weight: 600; text-align: center;">Casos Resueltos</th>
+                                        <th style="padding: 12px 16px; color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; font-weight: 600; text-align: right;">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="users-table-body">
+                                    <!-- Poblado dinámicamente -->
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1853,12 +2384,514 @@
                     </div>
 
                     <div style="margin-top: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
-                        <div style="display: flex; gap: 15px; font-size: 0.85rem; color: var(--text-secondary);">
+                        <div style="display: flex; gap: 15px; font-size: 0.85rem; color: var(--text-secondary); align-items: center; flex-wrap: wrap;">
                             <div style="display: flex; align-items: center; gap: 5px;"><span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: var(--accent-blue);"></span> Visita Registrada</div>
+                            <span style="color: var(--text-muted); font-size: 0.78rem; display: flex; align-items: center; gap: 5px;"><i class="fas fa-info-circle" style="color: var(--accent-blue);"></i> Pasa el mouse sobre una etiqueta para eliminarla (icono ✖) o selecciónala abajo</span>
                         </div>
                         <button id="btn-registrar-visita" class="btn-primary" style="padding: 10px 20px; border-radius: 8px; font-weight: 600; display: flex; align-items: center; gap: 8px;" disabled>
                             <i class="fas fa-plus"></i> Registrar Visita (Selecciona día)
                         </button>
+                    </div>
+
+                    <!-- Panel de Visitas del Día Seleccionado -->
+                    <div id="visitas-dia-panel" style="display: none; margin-top: 20px; background: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: 10px; padding: 16px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                            <h4 id="visitas-dia-title" style="margin: 0; font-size: 0.95rem; color: var(--text-primary);"><i class="fas fa-calendar-day" style="color: var(--accent-purple); margin-right: 8px;"></i> Visitas registradas en el día</h4>
+                        </div>
+                        <div id="visitas-dia-lista" style="display: flex; flex-direction: column; gap: 8px;">
+                            <!-- items dinámicos -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============ PÁGINA PANEL DE ADMINISTRACIÓN M365 (CON PIN) ============ -->
+            <div id="page-panel-m365" class="page-section">
+                <!-- Header con selector de empresa, estado API y acciones -->
+                <div class="tickets-page-header" style="margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+                    <div class="tickets-page-title">
+                        <h1 style="display: flex; align-items: center; gap: 12px;">
+                            <img id="m365-panel-company-logo" src="img/logo_tsales.png" alt="Empresa" style="height: 38px; border-radius: 6px; object-fit: contain;">
+                            <span id="m365-panel-title">Panel de Administración M365 • T-Sales</span>
+                        </h1>
+                        <p style="margin-top: 4px; color: var(--text-secondary);">Muestreo, directorio de usuarios y monitoreo de licencias de Microsoft 365 (Solo lectura)</p>
+                    </div>
+                    <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                        <!-- Badge Estado API Microsoft Graph -->
+                        <div id="m365-graph-status-badge" style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 20px; font-size: 0.78rem; font-weight: 600; background: rgba(0, 201, 167, 0.12); color: #00c9a7; border: 1px solid rgba(0, 201, 167, 0.25);">
+                            <span style="width: 8px; height: 8px; border-radius: 50%; background: #00c9a7; display: inline-block; box-shadow: 0 0 8px #00c9a7;"></span>
+                            <span id="m365-graph-status-text">Muestreo M365 Activo</span>
+                        </div>
+
+                        <!-- Botón Configurar API Graph -->
+                        <button type="button" id="btn-open-graph-config" style="background: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-primary); padding: 9px 14px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.2s;">
+                            <i class="fab fa-microsoft" style="color: #00a4ef;"></i> Configurar API Graph
+                        </button>
+
+                        <!-- Botón Sincronizar -->
+                        <button type="button" id="btn-sync-m365" style="background: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-blue) 100%); color: white; border: none; padding: 9px 16px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(97,62,234,0.3);">
+                            <i class="fas fa-sync-alt" id="m365-sync-icon"></i> Sincronizar
+                        </button>
+
+                        <!-- Botón Bloquear Panel -->
+                        <button type="button" id="btn-lock-m365-panel" style="background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.3); color: #ef4444; padding: 9px 14px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px;" title="Bloquear panel por seguridad">
+                            <i class="fas fa-lock"></i> Bloquear
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Tabs de Empresa (T-Sales / INFINET / V PRIME) -->
+                <div style="display: flex; gap: 8px; border-bottom: 1px solid var(--border-color); margin-bottom: 24px;">
+                    <button type="button" class="directory-tab-btn active" id="m365-tab-tsales">
+                        <i class="fas fa-building" style="color: #00c9a7; margin-right: 6px;"></i> T-Sales (<span id="m365-count-tsales">249</span>)
+                    </button>
+                    <button type="button" class="directory-tab-btn" id="m365-tab-infinet">
+                        <i class="fas fa-building" style="color: #f59e0b; margin-right: 6px;"></i> INFINET (<span id="m365-count-infinet">2</span>)
+                    </button>
+                    <button type="button" class="directory-tab-btn" id="m365-tab-vprime">
+                        <i class="fas fa-building" style="color: #ef4444; margin-right: 6px;"></i> V PRIME (<span id="m365-count-vprime">2</span>)
+                    </button>
+                </div>
+
+                <!-- Tarjetas de Métricas M365 -->
+                <div class="stats-grid" style="grid-template-columns: repeat(4, 1fr); margin-bottom: 24px;">
+                    <div class="stat-card stat-blue">
+                        <div class="stat-icon"><i class="fab fa-microsoft"></i></div>
+                        <div class="stat-info">
+                            <span class="stat-number" id="m365-stat-total">249</span>
+                            <span class="stat-label">Usuarios M365</span>
+                        </div>
+                    </div>
+                    <div class="stat-card stat-green">
+                        <div class="stat-icon"><i class="fas fa-id-badge"></i></div>
+                        <div class="stat-info">
+                            <span class="stat-number" id="m365-stat-basic">180</span>
+                            <span class="stat-label">Licencias Básico</span>
+                        </div>
+                    </div>
+                    <div class="stat-card stat-purple">
+                        <div class="stat-icon"><i class="fas fa-bolt"></i></div>
+                        <div class="stat-info">
+                            <span class="stat-number" id="m365-stat-fabric">69</span>
+                            <span class="stat-label">Fabric / Automate</span>
+                        </div>
+                    </div>
+                    <div class="stat-card stat-yellow">
+                        <div class="stat-icon"><i class="fas fa-user-check"></i></div>
+                        <div class="stat-info">
+                            <span class="stat-number" id="m365-stat-active">100%</span>
+                            <span class="stat-label">Cuentas Habilitadas</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Barra de Búsqueda y Filtros M365 -->
+                <div class="tickets-toolbar" style="margin-bottom: 20px; display: flex; gap: 14px; flex-wrap: wrap; align-items: center;">
+                    <div class="tickets-search" style="flex: 1; min-width: 250px;">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="m365-search-input" placeholder="Buscar por nombre, correo M365 o RUT..." style="width: 100%;">
+                    </div>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <select id="m365-license-filter" class="dash-compact-select" style="padding: 10px 14px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family); font-size: 0.85rem; cursor: pointer;">
+                            <option value="todas">Todas las Licencias</option>
+                            <option value="Empresa Básico">Empresa Básico</option>
+                            <option value="Fabric">Fabric (Gratis)</option>
+                            <option value="Power Automate">Power Automate Free</option>
+                            <option value="Unlicensed">Sin Licencia (Unlicensed)</option>
+                        </select>
+                        <select id="m365-type-filter" class="dash-compact-select" style="padding: 10px 14px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family); font-size: 0.85rem; cursor: pointer;">
+                            <option value="todos">Todos los Tipos</option>
+                            <option value="Ejecutivo">Ejecutivos</option>
+                            <option value="Freelance">Freelance</option>
+                            <option value="Externo">Externos</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Tabla M365 -->
+                <div class="tickets-list-card" style="background-color: var(--bg-card); border-radius: 12px; padding: 20px; border: 1px solid rgba(255,255,255,0.03); box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);">
+                    <div style="overflow-x: auto;">
+                        <table class="tickets-table" style="width: 100%; border-collapse: collapse;">
+                            <thead>
+                                <tr style="border-bottom: 1px solid var(--border-color); text-align: left;">
+                                    <th style="padding: 12px 16px; color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; font-weight: 600;">Usuario M365</th>
+                                    <th style="padding: 12px 16px; color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; font-weight: 600;">RUT</th>
+                                    <th style="padding: 12px 16px; color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; font-weight: 600;">Licencias Asignadas</th>
+                                    <th style="padding: 12px 16px; color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; font-weight: 600;">Tipo</th>
+                                    <th style="padding: 12px 16px; color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; font-weight: 600;">Estado</th>
+                                    <th style="padding: 12px 16px; color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; font-weight: 600; text-align: right;">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="m365-table-body">
+                                <!-- Poblado dinámicamente -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Paginación M365 -->
+                    <div id="m365-pagination" style="display: flex; justify-content: space-between; align-items: center; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.05); margin-top: 10px;">
+                        <span id="m365-page-info" style="font-size: 0.8rem; color: var(--text-secondary);">Mostrando 1-15</span>
+                        <div id="m365-page-buttons" style="display: flex; gap: 6px;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============ PÁGINA SLA (GESTIÓN Y MONITOREO) ============ -->
+            <div id="page-sla" class="page-section">
+                <div class="tickets-page-header" style="margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                    <div class="tickets-page-title">
+                        <h1><i class="fas fa-shield-alt" style="color: var(--accent-purple); margin-right: 10px;"></i> Gestión y Monitoreo de SLA</h1>
+                        <p>Supervisión de tiempos de respuesta, resolución y niveles de servicio acordados</p>
+                    </div>
+                    <div style="display: flex; gap: 10px;">
+                        <button type="button" class="btn-primary" onclick="document.querySelector('#nav-mis-tickets a').click();" style="padding: 10px 18px; border-radius: 8px; font-weight: 600; display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-ticket-alt"></i> Ver Tickets Afectados
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Métricas de SLA -->
+                <section class="kpi-metrics-grid" style="margin-bottom: 24px;">
+                    <div class="kpi-card kpi-green">
+                        <div class="kpi-icon-wrapper"><i class="fas fa-check-circle"></i></div>
+                        <div class="kpi-details">
+                            <div class="kpi-header-label">Cumplimiento Global</div>
+                            <div class="kpi-value-row"><span class="kpi-number">97.4%</span></div>
+                            <div class="kpi-subtext text-positive"><i class="fas fa-arrow-up"></i> Meta: 95.0%</div>
+                        </div>
+                    </div>
+
+                    <div class="kpi-card kpi-amber">
+                        <div class="kpi-icon-wrapper"><i class="fas fa-clock"></i></div>
+                        <div class="kpi-details">
+                            <div class="kpi-header-label">En Riesgo (&lt; 30 min)</div>
+                            <div class="kpi-value-row"><span class="kpi-number" id="sla-page-metric-riesgo">3</span></div>
+                            <div class="kpi-subtext">Requieren atención rápida</div>
+                        </div>
+                    </div>
+
+                    <div class="kpi-card kpi-red">
+                        <div class="kpi-icon-wrapper"><i class="fas fa-exclamation-triangle"></i></div>
+                        <div class="kpi-details">
+                            <div class="kpi-header-label">Incumplidos</div>
+                            <div class="kpi-value-row"><span class="kpi-number" id="sla-page-metric-vencidos">1</span></div>
+                            <div class="kpi-subtext">Escalados a jefatura</div>
+                        </div>
+                    </div>
+
+                    <div class="kpi-card kpi-blue">
+                        <div class="kpi-icon-wrapper"><i class="fas fa-stopwatch"></i></div>
+                        <div class="kpi-details">
+                            <div class="kpi-header-label">Tiempo Prom. Resolución</div>
+                            <div class="kpi-value-row"><span class="kpi-number">42 min</span></div>
+                            <div class="kpi-subtext">Promedio general</div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Matriz de Políticas SLA -->
+                <section class="dash-card" style="margin-bottom: 24px;">
+                    <div class="dash-card-header">
+                        <div class="dash-card-title-group">
+                            <h3><i class="fas fa-layer-group" style="color: var(--accent-blue); margin-right: 8px;"></i> Políticas de SLA por Nivel de Prioridad</h3>
+                            <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 4px;">Tiempos límite de primera respuesta y resolución total</p>
+                        </div>
+                    </div>
+                    <div class="dash-table-wrapper">
+                        <table class="dash-table">
+                            <thead>
+                                <tr>
+                                    <th>PRIORIDAD</th>
+                                    <th>PRIMERA RESPUESTA</th>
+                                    <th>TIEMPO DE RESOLUCIÓN</th>
+                                    <th>HORARIO DE COBERTURA</th>
+                                    <th>CUMPLIMIENTO ESTE MES</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><span class="priority-dot-pill priority-critica"><span class="p-dot"></span> Crítica</span></td>
+                                    <td class="font-bold text-red">≤ 15 minutos</td>
+                                    <td class="font-bold">≤ 2 horas</td>
+                                    <td>24/7 Continuo</td>
+                                    <td><span class="text-positive font-bold">100%</span> (8/8)</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="priority-dot-pill priority-alta"><span class="p-dot"></span> Alta</span></td>
+                                    <td class="font-bold text-amber">≤ 30 minutos</td>
+                                    <td class="font-bold">≤ 4 horas</td>
+                                    <td>08:00 a 20:00</td>
+                                    <td><span class="text-positive font-bold">95.2%</span> (20/21)</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="priority-dot-pill priority-media"><span class="p-dot"></span> Media</span></td>
+                                    <td class="font-bold">≤ 2 horas</td>
+                                    <td class="font-bold">≤ 8 horas</td>
+                                    <td>09:00 a 19:00</td>
+                                    <td><span class="text-positive font-bold">97.8%</span> (44/45)</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="priority-dot-pill priority-baja"><span class="p-dot"></span> Baja</span></td>
+                                    <td class="font-bold">≤ 4 horas</td>
+                                    <td class="font-bold">≤ 24 horas</td>
+                                    <td>09:00 a 18:00</td>
+                                    <td><span class="text-positive font-bold">100%</span> (26/26)</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+
+            <!-- ============ PÁGINA TÉCNICOS (RANKING & SCORECARD) ============ -->
+            <div id="page-tecnicos" class="page-section">
+                <div class="tickets-page-header" style="margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                    <div class="tickets-page-title">
+                        <h1><i class="fas fa-user-tie" style="color: var(--accent-purple); margin-right: 10px;"></i> Técnicos y Rendimiento</h1>
+                        <p>Ranking, métricas de resolución y satisfacción de usuarios del equipo TI</p>
+                    </div>
+                </div>
+
+                <div class="dashboard-row-two-cols" style="margin-bottom: 24px;">
+                    <div class="dash-card">
+                        <div class="dash-card-header">
+                            <div class="dash-card-title-group">
+                                <h3>Scorecard del Equipo de Soporte</h3>
+                            </div>
+                        </div>
+                        <div class="dash-table-wrapper">
+                            <table class="dash-table">
+                                <thead>
+                                    <tr>
+                                        <th>TÉCNICO</th>
+                                        <th>RESUELTOS</th>
+                                        <th>TIEMPO PROM.</th>
+                                        <th>SLA %</th>
+                                        <th>SATISFACCIÓN</th>
+                                        <th>ESTADO</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="scorecard-technicians-tbody">
+                                    <tr>
+                                        <td class="tech-cell">
+                                            <div class="tech-avatar-mini bg-indigo">OG</div>
+                                            <div>
+                                                <div class="tech-name">Omar Gálvez</div>
+                                                <small style="color: var(--text-secondary);">omar.galvez@t-sales.cl</small>
+                                            </div>
+                                        </td>
+                                        <td class="val-bold">398</td>
+                                        <td>4m 12s</td>
+                                        <td class="text-positive font-bold">98%</td>
+                                        <td><span class="star-rating"><i class="fas fa-star"></i> 4.9</span></td>
+                                        <td><span class="status-badge status-resuelto"><i class="fas fa-circle" style="font-size: 0.5rem; margin-right: 4px;"></i> En línea</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="tech-cell">
+                                            <div class="tech-avatar-mini bg-blue">FO</div>
+                                            <div>
+                                                <div class="tech-name">Felipe Olivares</div>
+                                                <small style="color: var(--text-secondary);">felipe.olivares@t-sales.cl</small>
+                                            </div>
+                                        </td>
+                                        <td class="val-bold">388</td>
+                                        <td>5m 03s</td>
+                                        <td class="text-positive font-bold">96%</td>
+                                        <td><span class="star-rating"><i class="fas fa-star"></i> 4.8</span></td>
+                                        <td><span class="status-badge status-resuelto"><i class="fas fa-circle" style="font-size: 0.5rem; margin-right: 4px;"></i> En línea</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="tech-cell">
+                                            <div class="tech-avatar-mini bg-purple">BA</div>
+                                            <div>
+                                                <div class="tech-name">Belfor Aburto</div>
+                                                <small style="color: var(--text-secondary);">belfor.aburto@t-sales.cl</small>
+                                            </div>
+                                        </td>
+                                        <td class="val-bold">6</td>
+                                        <td>3m 45s</td>
+                                        <td class="text-positive font-bold">99%</td>
+                                        <td><span class="star-rating"><i class="fas fa-star"></i> 5.0</span></td>
+                                        <td><span class="status-badge status-resuelto"><i class="fas fa-circle" style="font-size: 0.5rem; margin-right: 4px;"></i> En línea</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Panel de Reconocimiento y Métricas Clave -->
+                    <div class="dash-card">
+                        <div class="dash-card-header">
+                            <div class="dash-card-title-group">
+                                <h3><i class="fas fa-trophy" style="color: #f59e0b; margin-right: 8px;"></i> Técnico del Mes</h3>
+                            </div>
+                        </div>
+                        <div style="padding: 20px; text-align: center;">
+                            <div class="tech-avatar-mini bg-indigo" style="width: 72px; height: 72px; font-size: 1.8rem; margin: 0 auto 16px; box-shadow: 0 0 25px rgba(97,62,234,0.4);">OG</div>
+                            <h3 style="margin: 0 0 4px 0; font-size: 1.3rem;">Omar Gálvez</h3>
+                            <p style="color: var(--accent-purple); font-weight: 600; margin: 0 0 16px 0; font-size: 0.9rem;">Especialista Senior de Soporte</p>
+                            
+                            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 20px;">
+                                <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-radius: 10px; padding: 12px;">
+                                    <div style="font-size: 1.3rem; font-weight: 700; color: var(--accent-blue);">398</div>
+                                    <div style="font-size: 0.72rem; color: var(--text-secondary); margin-top: 4px;">Tickets Resueltos</div>
+                                </div>
+                                <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-radius: 10px; padding: 12px;">
+                                    <div style="font-size: 1.3rem; font-weight: 700; color: var(--accent-green);">98%</div>
+                                    <div style="font-size: 0.72rem; color: var(--text-secondary); margin-top: 4px;">SLA Cumplido</div>
+                                </div>
+                                <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-radius: 10px; padding: 12px;">
+                                    <div style="font-size: 1.3rem; font-weight: 700; color: #f59e0b;">⭐ 4.9</div>
+                                    <div style="font-size: 0.72rem; color: var(--text-secondary); margin-top: 4px;">Calificación</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============ PÁGINA REPORTES ============ -->
+            <div id="page-reportes" class="page-section">
+                <div class="tickets-page-header" style="margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                    <div class="tickets-page-title">
+                        <h1><i class="fas fa-chart-line" style="color: var(--accent-purple); margin-right: 10px;"></i> Reportes y Analítica</h1>
+                        <p>Informes de gestión ejecutiva, distribución de incidencias y métricas operativas</p>
+                    </div>
+                    <button type="button" class="btn-primary" onclick="alert('Generando exportación de reporte consolidado en formato Excel / CSV...');" style="padding: 10px 18px; border-radius: 8px; font-weight: 600; display: flex; align-items: center; gap: 8px;">
+                        <i class="fas fa-file-excel"></i> Exportar Reporte
+                    </button>
+                </div>
+
+                <div class="dashboard-row-two-cols">
+                    <!-- Resumen por Empresa -->
+                    <div class="dash-card">
+                        <div class="dash-card-header">
+                            <div class="dash-card-title-group">
+                                <h3>Volumen de Casos por Empresa (Año en curso)</h3>
+                            </div>
+                        </div>
+                        <div class="distribution-bars-list" style="padding: 10px 0;">
+                            <div class="distribution-item">
+                                <div class="distrib-label-row">
+                                    <span class="distrib-name font-bold">T-SALES CHILE</span>
+                                    <span class="distrib-val">912 tickets (71%)</span>
+                                </div>
+                                <div class="distrib-progress-bar"><div class="distrib-progress-fill bg-blue" style="width: 71%;"></div></div>
+                            </div>
+                            <div class="distribution-item">
+                                <div class="distrib-label-row">
+                                    <span class="distrib-name font-bold">VPRIME SPA</span>
+                                    <span class="distrib-val">231 tickets (18%)</span>
+                                </div>
+                                <div class="distrib-progress-bar"><div class="distrib-progress-fill bg-purple" style="width: 18%;"></div></div>
+                            </div>
+                            <div class="distribution-item">
+                                <div class="distrib-label-row">
+                                    <span class="distrib-name font-bold">INFINET TELECOM</span>
+                                    <span class="distrib-val">141 tickets (11%)</span>
+                                </div>
+                                <div class="distrib-progress-bar"><div class="distrib-progress-fill bg-green" style="width: 11%;"></div></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Top Categorías Incidentes -->
+                    <div class="dash-card">
+                        <div class="dash-card-header">
+                            <div class="dash-card-title-group">
+                                <h3>Top Categorías de Soporte Más Frecuentes</h3>
+                            </div>
+                        </div>
+                        <div class="distribution-bars-list" style="padding: 10px 0;">
+                            <div class="distribution-item">
+                                <div class="distrib-label-row">
+                                    <span class="distrib-name">1. Redes y VPN GlobalProtect</span>
+                                    <span class="distrib-val">38%</span>
+                                </div>
+                                <div class="distrib-progress-bar"><div class="distrib-progress-fill bg-amber" style="width: 38%;"></div></div>
+                            </div>
+                            <div class="distribution-item">
+                                <div class="distrib-label-row">
+                                    <span class="distrib-name">2. Correo Corporativo / Outlook</span>
+                                    <span class="distrib-val">26%</span>
+                                </div>
+                                <div class="distrib-progress-bar"><div class="distrib-progress-fill bg-purple" style="width: 26%;"></div></div>
+                            </div>
+                            <div class="distribution-item">
+                                <div class="distrib-label-row">
+                                    <span class="distrib-name">3. Cuenta, Contraseñas y Acceso</span>
+                                    <span class="distrib-val">19%</span>
+                                </div>
+                                <div class="distrib-progress-bar"><div class="distrib-progress-fill bg-blue" style="width: 19%;"></div></div>
+                            </div>
+                            <div class="distribution-item">
+                                <div class="distrib-label-row">
+                                    <span class="distrib-name">4. Impresoras y Hardware</span>
+                                    <span class="distrib-val">17%</span>
+                                </div>
+                                <div class="distrib-progress-bar"><div class="distrib-progress-fill bg-green" style="width: 17%;"></div></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============ PÁGINA PREGUNTAS FRECUENTES (FAQ) ============ -->
+            <div id="page-faq" class="page-section">
+                <div class="tickets-page-header" style="margin-bottom: 24px;">
+                    <div class="tickets-page-title">
+                        <h1><i class="fas fa-question-circle" style="color: var(--accent-purple); margin-right: 10px;"></i> Preguntas Frecuentes</h1>
+                        <p>Respuestas rápidas a las consultas más habituales de los usuarios</p>
+                    </div>
+                </div>
+
+                <div class="faq-accordion-list" style="display: flex; flex-direction: column; gap: 14px; max-width: 900px;">
+                    <div class="faq-item" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 18px 22px; cursor: pointer;">
+                        <h4 style="margin: 0 0 8px 0; color: var(--text-primary); font-size: 1rem; display: flex; justify-content: space-between; align-items: center;">
+                            ¿Cómo me conecto a la VPN GlobalProtect desde mi casa?
+                            <i class="fas fa-chevron-down" style="font-size: 0.85rem; color: var(--accent-blue);"></i>
+                        </h4>
+                        <p style="margin: 0; color: var(--text-secondary); font-size: 0.88rem; line-height: 1.5;">
+                            Abre la aplicación GlobalProtect en tu barra de tareas, ingresa el portal asignado a tu empresa (ej: <code>vpn.t-sales.cl</code>), haz clic en 'Conectar' e ingresa tu usuario y contraseña corporativa con autenticación en dos pasos.
+                        </p>
+                    </div>
+
+                    <div class="faq-item" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 18px 22px; cursor: pointer;">
+                        <h4 style="margin: 0 0 8px 0; color: var(--text-primary); font-size: 1rem; display: flex; justify-content: space-between; align-items: center;">
+                            ¿Cómo restablezco mi contraseña si fue bloqueada?
+                            <i class="fas fa-chevron-down" style="font-size: 0.85rem; color: var(--accent-blue);"></i>
+                        </h4>
+                        <p style="margin: 0; color: var(--text-secondary); font-size: 0.88rem; line-height: 1.5;">
+                            Puedes generar un ticket de categoría 'Cuenta y Acceso' o comunicarte directamente con el técnico de turno. El restablecimiento toma menos de 5 minutos mediante verificación de identidad por RUT.
+                        </p>
+                    </div>
+
+                    <div class="faq-item" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 18px 22px; cursor: pointer;">
+                        <h4 style="margin: 0 0 8px 0; color: var(--text-primary); font-size: 1rem; display: flex; justify-content: space-between; align-items: center;">
+                            ¿Cómo solicito acceso a una carpeta compartida en OneDrive / SharePoint?
+                            <i class="fas fa-chevron-down" style="font-size: 0.85rem; color: var(--accent-blue);"></i>
+                        </h4>
+                        <p style="margin: 0; color: var(--text-secondary); font-size: 0.88rem; line-height: 1.5;">
+                            Crea un ticket en la categoría 'Software y Licencias' adjuntando la aprobación de tu jefatura directa o el enlace a la carpeta requerida.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============ PÁGINA CONFIGURACIÓN ============ -->
+            <div id="page-configuracion" class="page-section">
+                <div class="tickets-page-header" style="margin-bottom: 24px;">
+                    <div class="tickets-page-title">
+                        <h1><i class="fas fa-cog" style="color: var(--accent-purple); margin-right: 10px;"></i> Configuración del Centro de Soporte</h1>
+                        <p>Administración de categorías, plantillas predefinidas y parámetros de servicio</p>
+                    </div>
+                </div>
+
+                <div class="dash-card" style="padding: 24px;">
+                    <h3 style="margin-top: 0;">Parámetros del Sistema</h3>
+                    <p style="color: var(--text-secondary); font-size: 0.88rem; margin-bottom: 20px;">Personaliza las alertas, umbrales de SLA y plantillas para agilizar la atención de los técnicos.</p>
+                    <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                        <button class="btn-primary" onclick="alert('Configuración de categorías sincronizada.');" style="padding: 10px 18px; border-radius: 8px; font-weight: 600;"><i class="fas fa-save"></i> Guardar Cambios</button>
                     </div>
                 </div>
             </div>
@@ -1866,110 +2899,244 @@
         </main>
     </div>
 
-    <!-- ============ MODAL DE DETALLES DEL TICKET ============ -->
+    <!-- ============ MODAL DE DETALLES DEL TICKET (REDESISEÑADO ESTILO SERVICE DESK PREMIUM) ============ -->
     <div id="ticket-detail-modal" class="modal-backdrop">
-        <div class="modal-card">
+        <div class="modal-card modal-ticket-detail-card">
+            
+            <!-- Encabezado del Ticket -->
             <div class="modal-header">
                 <div class="modal-title-area">
-                    <span id="modal-ticket-id" class="modal-ticket-id">#TK-2026-0000</span>
-                    <h2 id="modal-ticket-asunto">Asunto del Ticket</h2>
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 4px;">
+                        <span id="modal-ticket-id" class="modal-ticket-id">#TK-2026-0000</span>
+                        <span id="modal-ticket-estado" class="status-badge status-abierto">Abierto</span>
+                        <span id="modal-ticket-prioridad-badge" class="priority-dot-pill priority-alta"><span class="p-dot"></span> Alta</span>
+                    </div>
+                    <h2 id="modal-ticket-asunto" style="margin: 0; font-size: 1.35rem; font-weight: 700; color: var(--text-primary);">Asunto del Ticket</h2>
                 </div>
                 <button class="modal-close-btn" id="modal-close-btn"><i class="fas fa-times"></i></button>
             </div>
             
-            <div class="modal-body">
-                <!-- Metadatos del ticket -->
-                <div class="modal-meta-grid">
-                    <div class="meta-item">
-                        <span class="meta-label">Categoría:</span>
-                        <span id="modal-ticket-categoria" class="meta-val">Cuenta y Acceso</span>
-                    </div>
-                    <div class="meta-item">
-                        <span class="meta-label">Empresa:</span>
-                        <span id="modal-ticket-empresa" class="meta-val">-</span>
-                    </div>
-                    <div class="meta-item">
-                        <span class="meta-label">Estado:</span>
-                        <span id="modal-ticket-estado" class="status-badge status-abierto">Abierto</span>
-                    </div>
-                    <div class="meta-item">
-                        <span class="meta-label">Creado:</span>
-                        <span id="modal-ticket-fecha" class="meta-val">26 May 2026</span>
-                    </div>
-                    <div class="meta-item">
-                        <span class="meta-label">Sede:</span>
-                        <span id="modal-ticket-sede" class="meta-val">-</span>
-                    </div>
-                    <div class="meta-item">
-                        <span class="meta-label">Teléfono:</span>
-                        <span id="modal-ticket-telefono" class="meta-val">-</span>
-                    </div>
-                    <div class="meta-item">
-                        <span class="meta-label">Dispositivo:</span>
-                        <span id="modal-ticket-dispositivo" class="meta-val">-</span>
-                    </div>
-                    <div class="meta-item">
-                        <span class="meta-label">Impacto:</span>
-                        <span id="modal-ticket-impacto" class="meta-val">-</span>
-                    </div>
-                    <div class="meta-item">
-                        <span class="meta-label">Modalidad:</span>
-                        <span id="modal-ticket-modalidad" class="meta-val">-</span>
-                    </div>
-                    <div class="meta-item">
-                        <span class="meta-label">Afectado:</span>
-                        <span id="modal-ticket-cliente-nombre" class="meta-val">-</span>
-                    </div>
-                    <div class="meta-item">
-                        <span class="meta-label">RUT Afectado:</span>
-                        <span id="modal-ticket-cliente-rut" class="meta-val">-</span>
-                    </div>
-                    <div class="meta-item">
-                        <span class="meta-label">Correo Afectado:</span>
-                        <span id="modal-ticket-cliente-email" class="meta-val">-</span>
-                    </div>
-                    <div class="meta-item" style="grid-column: span 2;">
-                        <span class="meta-label">Técnico Asignado:</span>
-                        <span id="modal-ticket-tecnico-badge" class="meta-val" style="font-weight: bold; color: var(--accent-blue);">Sin asignar</span>
+            <!-- TIMELINE HORIZONTAL DE RESOLUCIÓN -->
+            <div class="ticket-status-timeline-bar" id="ticket-modal-timeline">
+                <div class="t-step active">
+                    <div class="t-step-circle"><i class="fas fa-plus"></i></div>
+                    <div class="t-step-info">
+                        <span class="t-step-title">Creado</span>
+                        <span class="t-step-time" id="tl-time-creado">10:32</span>
                     </div>
                 </div>
-
-                <!-- Descripción principal -->
-                <div class="modal-description-box">
-                    <h3>Descripción</h3>
-                    <p id="modal-ticket-descripcion">Detalles de la descripción aquí...</p>
-                </div>
-
-                <!-- Sección de Asignación de Ticket (Sólo visible/controlable para soporte) -->
-                <div id="modal-assignment-box" style="display: none; background-color: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-radius: 12px; padding: 16px; margin-top: 16px; align-items: center; justify-content: space-between; gap: 16px;">
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <i class="fas fa-user-shield" style="color: var(--accent-purple); font-size: 1.2rem;"></i>
-                        <div>
-                            <h4 style="margin: 0; font-size: 0.85rem; font-weight: 700; color: var(--text-primary);">Asignación del Caso</h4>
-                            <p id="modal-assignment-status" style="margin: 4px 0 0 0; font-size: 0.72rem; color: var(--text-secondary);">Este ticket no está asignado a ningún técnico.</p>
-                        </div>
-                    </div>
-                    <div id="modal-assignment-controls">
-                        <!-- Controles inyectados dinámicamente por JS -->
+                <div class="t-step-line active"></div>
+                <div class="t-step active">
+                    <div class="t-step-circle"><i class="fas fa-user-check"></i></div>
+                    <div class="t-step-info">
+                        <span class="t-step-title">Asignado</span>
+                        <span class="t-step-time" id="tl-time-asignado">10:34</span>
                     </div>
                 </div>
-
-                <!-- Respuestas / Conversación -->
-                <div class="modal-replies-section">
-                    <h3>Conversación</h3>
-                    <div id="modal-replies-list" class="replies-list">
-                        <!-- Las respuestas se cargarán aquí dinámicamente -->
-                        <div class="reply-bubble system-message">
-                            No hay respuestas en este ticket todavía.
-                        </div>
+                <div class="t-step-line active"></div>
+                <div class="t-step active">
+                    <div class="t-step-circle"><i class="fas fa-reply"></i></div>
+                    <div class="t-step-info">
+                        <span class="t-step-title">Técnico respondió</span>
+                        <span class="t-step-time" id="tl-time-respondio">10:37</span>
+                    </div>
+                </div>
+                <div class="t-step-line active"></div>
+                <div class="t-step active">
+                    <div class="t-step-circle"><i class="fas fa-wrench"></i></div>
+                    <div class="t-step-info">
+                        <span class="t-step-title">Solución aplicada</span>
+                        <span class="t-step-time" id="tl-time-solucion">10:48</span>
+                    </div>
+                </div>
+                <div class="t-step-line"></div>
+                <div class="t-step">
+                    <div class="t-step-circle"><i class="fas fa-check-double"></i></div>
+                    <div class="t-step-info">
+                        <span class="t-step-title">Resuelto</span>
+                        <span class="t-step-time" id="tl-time-resuelto">--:--</span>
                     </div>
                 </div>
             </div>
 
+            <!-- CUERPO DIVIDIDO EN 2 COLUMNAS (CONTENIDO + PERFIL DE USUARIO) -->
+            <div class="ticket-modal-split-body">
+                
+                <!-- COLUMNA PRINCIPAL (IZQUIERDA) -->
+                <div class="ticket-main-col">
+                    
+                    <!-- 💡 SUGERENCIAS DE SOLUCIÓN POR IA -->
+                    <div class="ai-solution-box" id="ai-solution-box">
+                        <div class="ai-solution-header">
+                            <div class="ai-header-title">
+                                <i class="fas fa-lightbulb" style="color: #f59e0b;"></i>
+                                <h4>Sugerencias de solución asistida por IA</h4>
+                            </div>
+                            <span class="ai-badge-pill"><i class="fas fa-robot"></i> Inteligencia TI</span>
+                        </div>
+                        <div class="ai-solution-content" id="ai-solution-content">
+                            <div class="ai-field-block">
+                                <span class="ai-field-label">Diagnóstico automático:</span>
+                                <p class="ai-field-text" id="ai-diagnostico-text">Falla en la negociación del túnel SSL/IPsec de GlobalProtect. Posible conflicto con credenciales en caché o bloqueo de certificados.</p>
+                            </div>
+                            <div class="ai-field-block">
+                                <span class="ai-field-label">Pasos recomendados:</span>
+                                <ol class="ai-steps-list" id="ai-pasos-list">
+                                    <li>Verificar conectividad de internet básica del usuario.</li>
+                                    <li>Limpiar caché en GlobalProtect: Configuración &gt; General &gt; Cerrar Sesión &gt; Reconectar.</li>
+                                    <li>Reinstalar el certificado raíz corporativo si persiste el error de validación.</li>
+                                </ol>
+                            </div>
+                            <div class="ai-links-row">
+                                <span class="ai-links-label">Artículos y casos vinculados:</span>
+                                <div class="ai-links-pills" id="ai-links-container">
+                                    <a href="#" class="ai-link-pill" onclick="openKbCategory('VPN GlobalProtect'); return false;"><i class="fas fa-book"></i> Guía GlobalProtect</a>
+                                    <a href="#" class="ai-link-pill" onclick="return false;"><i class="fas fa-history"></i> Ticket similar #1021</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Metadatos Rápidos del ticket -->
+                    <div class="modal-meta-grid">
+                        <div class="meta-item">
+                            <span class="meta-label">Categoría:</span>
+                            <span id="modal-ticket-categoria" class="meta-val">Cuenta y Acceso</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">Empresa:</span>
+                            <span id="modal-ticket-empresa" class="meta-val">-</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">Creado:</span>
+                            <span id="modal-ticket-fecha" class="meta-val">26 May 2026</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">Sede:</span>
+                            <span id="modal-ticket-sede" class="meta-val">-</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">Teléfono:</span>
+                            <span id="modal-ticket-telefono" class="meta-val">-</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">Dispositivo:</span>
+                            <span id="modal-ticket-dispositivo" class="meta-val">-</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">Impacto:</span>
+                            <span id="modal-ticket-impacto" class="meta-val">-</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">Modalidad:</span>
+                            <span id="modal-ticket-modalidad" class="meta-val">-</span>
+                        </div>
+                        <div class="meta-item" style="grid-column: span 2;">
+                            <span class="meta-label">Técnico Asignado:</span>
+                            <span id="modal-ticket-tecnico-badge" class="meta-val" style="font-weight: bold; color: var(--accent-blue);">Sin asignar</span>
+                        </div>
+                    </div>
+
+                    <!-- Descripción principal -->
+                    <div class="modal-description-box">
+                        <h3>Descripción</h3>
+                        <p id="modal-ticket-descripcion">Detalles de la descripción aquí...</p>
+                    </div>
+
+                    <!-- Sección de Asignación de Ticket (Sólo visible/controlable para soporte) -->
+                    <div id="modal-assignment-box" style="display: none; background-color: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-radius: 12px; padding: 16px; margin-top: 16px; align-items: center; justify-content: space-between; gap: 16px;">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <i class="fas fa-user-shield" style="color: var(--accent-purple); font-size: 1.2rem;"></i>
+                            <div>
+                                <h4 style="margin: 0; font-size: 0.85rem; font-weight: 700; color: var(--text-primary);">Asignación del Caso</h4>
+                                <p id="modal-assignment-status" style="margin: 4px 0 0 0; font-size: 0.72rem; color: var(--text-secondary);">Este ticket no está asignado a ningún técnico.</p>
+                            </div>
+                        </div>
+                        <div id="modal-assignment-controls">
+                            <!-- Controles inyectados dinámicamente por JS -->
+                        </div>
+                    </div>
+
+                    <!-- Respuestas / Conversación -->
+                    <div class="modal-replies-section">
+                        <h3>Conversación</h3>
+                        <div id="modal-replies-list" class="replies-list">
+                            <div class="reply-bubble system-message">
+                                No hay respuestas en este ticket todavía.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- COLUMNA LATERAL: PERFIL DEL USUARIO & HISTORIAL (DERECHA) -->
+                <div class="ticket-user-sidebar-col">
+                    
+                    <div class="user-context-card">
+                        <div class="user-context-header">
+                            <div class="user-avatar" id="modal-user-ctx-avatar" style="width: 48px; height: 48px; font-size: 1.1rem; background: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-blue) 100%);">
+                                <span>JP</span>
+                            </div>
+                            <div class="user-ctx-info">
+                                <h4 id="modal-ticket-cliente-nombre" style="margin: 0 0 2px 0; font-size: 0.95rem; font-weight: 700; color: var(--text-primary);">-</h4>
+                                <span id="modal-ticket-cliente-rut" style="font-size: 0.75rem; color: var(--text-secondary); display: block;">RUT: -</span>
+                            </div>
+                        </div>
+
+                        <div class="user-ctx-details-list">
+                            <div class="user-ctx-item">
+                                <span class="ctx-item-label"><i class="fas fa-building"></i> Empresa</span>
+                                <span class="ctx-item-val font-bold" id="modal-user-ctx-empresa">T-SALES</span>
+                            </div>
+                            <div class="user-ctx-item">
+                                <span class="ctx-item-label"><i class="fas fa-briefcase"></i> Cargo</span>
+                                <span class="ctx-item-val" id="modal-user-ctx-cargo">Ejecutivo Comercial</span>
+                            </div>
+                            <div class="user-ctx-item">
+                                <span class="ctx-item-label"><i class="fas fa-envelope"></i> Correo</span>
+                                <span class="ctx-item-val" id="modal-ticket-cliente-email">-</span>
+                            </div>
+                            <div class="user-ctx-item">
+                                <span class="ctx-item-label"><i class="fas fa-laptop"></i> Equipo</span>
+                                <span class="ctx-item-val font-bold" id="modal-user-ctx-equipo">Dell Latitude 5420</span>
+                            </div>
+                            <div class="user-ctx-item">
+                                <span class="ctx-item-label"><i class="fab fa-windows"></i> Sistema</span>
+                                <span class="ctx-item-val" id="modal-user-ctx-so">Windows 11 Pro</span>
+                            </div>
+                        </div>
+
+                        <div class="user-ctx-divider"></div>
+
+                        <!-- Historial de tickets anteriores del usuario -->
+                        <div class="user-past-tickets-section">
+                            <h5><i class="fas fa-history" style="color: var(--accent-blue); margin-right: 6px;"></i> Tickets anteriores</h5>
+                            <div class="past-tickets-list" id="modal-user-past-tickets">
+                                <div class="past-ticket-item" onclick="openSampleTicket(1021);">
+                                    <span class="pt-id">#1021</span>
+                                    <span class="pt-title">Configuración VPN GlobalProtect</span>
+                                    <span class="pt-status status-resuelto">Resuelto</span>
+                                </div>
+                                <div class="past-ticket-item" onclick="openSampleTicket(998);">
+                                    <span class="pt-id">#998</span>
+                                    <span class="pt-title">Error al abrir Outlook</span>
+                                    <span class="pt-status status-resuelto">Resuelto</span>
+                                </div>
+                                <div class="past-ticket-item" onclick="openSampleTicket(934);">
+                                    <span class="pt-id">#934</span>
+                                    <span class="pt-title">Falla tóner impresora</span>
+                                    <span class="pt-status status-resuelto">Resuelto</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Footer con Formulario de Respuesta y Cambio de Estado -->
             <div class="modal-footer">
                 <form id="modal-reply-form" class="modal-reply-form">
                     <div class="reply-form-top" style="justify-content: flex-end;">
-                        
                         <!-- Cambiar estado de ticket rápidamente -->
                         <div class="status-updater">
                             <label for="modal-status-select">Cambiar estado:</label>
@@ -1982,10 +3149,31 @@
                         </div>
                     </div>
                     <div class="reply-input-group">
-                        <textarea id="modal-reply-input" placeholder="Escribe un mensaje de respuesta..." required></textarea>
+                        <textarea id="modal-reply-input" placeholder="Escribe un mensaje de respuesta para el usuario..." required></textarea>
                         <button type="submit" class="reply-submit-btn"><i class="fas fa-paper-plane"></i> Enviar</button>
                     </div>
                 </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ COMMAND PALETTE / BUSCADOR GLOBAL (⌘ K) ============ -->
+    <div id="command-palette-modal" class="modal-backdrop">
+        <div class="command-palette-card">
+            <div class="command-palette-input-box">
+                <i class="fas fa-search cp-search-icon"></i>
+                <input type="text" id="command-palette-input" placeholder="Escribe para buscar tickets, equipos, base de conocimientos o acciones..." autocomplete="off">
+                <kbd class="cp-esc-badge" id="cp-close-btn">ESC</kbd>
+            </div>
+            <div class="command-palette-results" id="command-palette-results">
+                <!-- Resultados Dinámicos -->
+            </div>
+            <div class="command-palette-footer">
+                <div class="cp-footer-hints">
+                    <span><kbd>↑</kbd> <kbd>↓</kbd> Navegar</span>
+                    <span><kbd>↵</kbd> Seleccionar</span>
+                    <span><kbd>ESC</kbd> Cerrar</span>
+                </div>
             </div>
         </div>
     </div>
@@ -2321,6 +3509,66 @@
         </div>
     </div>
 
+    <!-- ============ MODAL AGREGAR COLABORADOR AL DIRECTORIO ============ -->
+    <div id="modal-crear-colaborador" class="modal-backdrop" style="display: none; align-items: center; justify-content: center;">
+        <div class="modal-card" style="max-width: 520px; width: 90%;">
+            <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 14px;">
+                <div class="modal-title-area" style="display: flex; align-items: center; gap: 10px;">
+                    <div style="width: 36px; height: 36px; border-radius: 10px; background: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-blue) 100%); display: flex; align-items: center; justify-content: center; color: white;">
+                        <i class="fas fa-user-plus"></i>
+                    </div>
+                    <div>
+                        <h3 style="margin: 0; font-size: 1.1rem; font-weight: 700; color: var(--text-primary);">Nuevo Colaborador</h3>
+                        <p style="margin: 2px 0 0; font-size: 0.78rem; color: var(--text-secondary);">Agregar al directorio para autocompletado en tickets</p>
+                    </div>
+                </div>
+                <button type="button" class="modal-close-btn" id="btn-close-collab-modal" style="background: none; border: none; color: var(--text-muted); font-size: 1.2rem; cursor: pointer;"><i class="fas fa-times"></i></button>
+            </div>
+            <form id="form-crear-colaborador" style="padding: 20px 0 0; display: flex; flex-direction: column; gap: 16px;">
+                <div class="form-group">
+                    <label for="collab-name" style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 6px; display: block;">Nombre Completo *</label>
+                    <input type="text" id="collab-name" required placeholder="Ej: Francisca Morales Castro" style="width: 100%; padding: 10px 12px; background-color: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family); font-size: 0.88rem;">
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+                    <div class="form-group">
+                        <label for="collab-rut" style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 6px; display: block;">RUT *</label>
+                        <input type="text" id="collab-rut" required placeholder="Ej: 19.456.789-0" style="width: 100%; padding: 10px 12px; background-color: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family); font-size: 0.88rem;">
+                    </div>
+                    <div class="form-group">
+                        <label for="collab-company" style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 6px; display: block;">Empresa *</label>
+                        <select id="collab-company" required style="width: 100%; padding: 10px 12px; background-color: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family); font-size: 0.88rem; cursor: pointer;">
+                            <option value="T-Sales" selected>T-Sales</option>
+                            <option value="Infinet">INFINET</option>
+                            <option value="VPrime">V PRIME</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="collab-email" style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 6px; display: block;">Correo Electrónico *</label>
+                    <input type="email" id="collab-email" required placeholder="Ej: francisca.morales@t-sales.cl" style="width: 100%; padding: 10px 12px; background-color: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family); font-size: 0.88rem;">
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+                    <div class="form-group">
+                        <label for="collab-type" style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 6px; display: block;">Tipo de Contrato</label>
+                        <select id="collab-type" style="width: 100%; padding: 10px 12px; background-color: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family); font-size: 0.88rem; cursor: pointer;">
+                            <option value="Ejecutivo" selected>Ejecutivo</option>
+                            <option value="Freelance">Freelance</option>
+                            <option value="Externo">Externo</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="collab-license" style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 6px; display: block;">Licencia M365 (Opcional)</label>
+                        <input type="text" id="collab-license" placeholder="Ej: M365 Empresa Básico" style="width: 100%; padding: 10px 12px; background-color: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family); font-size: 0.88rem;">
+                    </div>
+                </div>
+                <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 12px; padding-top: 14px; border-top: 1px solid var(--border-color); margin-top: 6px;">
+                    <button type="button" id="btn-cancel-collab-modal" style="background-color: transparent; border: 1px solid var(--border-color); color: var(--text-secondary); padding: 10px 18px; border-radius: 8px; cursor: pointer; font-weight: 600; font-family: var(--font-family);">Cancelar</button>
+                    <button type="submit" style="background: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-blue) 100%); color: white; border: none; padding: 10px 24px; border-radius: 8px; cursor: pointer; font-weight: 600; font-family: var(--font-family); box-shadow: 0 4px 15px rgba(97, 62, 234, 0.3);"><i class="fas fa-save" style="margin-right: 6px;"></i> Guardar Colaborador</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- Input oculto para subir archivos -->
     <input type="file" id="equip-file-input" accept=".pdf,.xlsx,.xls,.csv" style="display: none;">
     <input type="file" id="equip-txt-file-input" accept=".txt" style="display: none;">
@@ -2340,37 +3588,243 @@
 
             <!-- Tabs de Login (Técnico / Administrador) -->
             <div style="display: flex; background-color: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-color); border-radius: 8px; margin: 20px 24px 10px; padding: 4px;">
-                <button id="tab-login-user" type="button" style="flex: 1; padding: 8px; border: none; background-color: var(--accent-blue); color: white; font-weight: 600; border-radius: 6px; cursor: pointer; transition: all 0.2s; font-family: var(--font-family);">Técnico</button>
-                <button id="tab-login-admin" type="button" style="flex: 1; padding: 8px; border: none; background-color: transparent; color: var(--text-secondary); font-weight: 600; border-radius: 6px; cursor: pointer; transition: all 0.2s; font-family: var(--font-family);">Administrador</button>
+                <button id="tab-login-user" onclick="switchLoginTab('user')" type="button" style="flex: 1; padding: 10px; border: none; background-color: var(--accent-blue); color: white; font-weight: 700; border-radius: 6px; cursor: pointer; transition: all 0.2s; font-family: var(--font-family);">Técnico</button>
+                <button id="tab-login-admin" onclick="switchLoginTab('admin')" type="button" style="flex: 1; padding: 10px; border: none; background-color: transparent; color: var(--text-secondary); font-weight: 700; border-radius: 6px; cursor: pointer; transition: all 0.2s; font-family: var(--font-family);">Administrador</button>
             </div>
 
             <!-- Formulario Técnico -->
-            <form id="form-login-user" style="padding: 10px 24px 24px;">
+            <form id="form-login-user" onsubmit="event.preventDefault(); if(window.doLogin) window.doLogin('user'); return false;" style="padding: 10px 24px 24px;">
                 <div class="form-group" style="margin-bottom: 16px;">
                     <label for="login-tech-email" style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 6px; display: block; text-align: left;">Correo Electrónico</label>
-                    <input type="email" id="login-tech-email" placeholder="felipe.olivares@t-sales.cl" required style="width: 100%; padding: 10px; background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family);">
+                    <input type="email" id="login-tech-email" placeholder="felipe.olivares@t-sales.cl" style="width: 100%; padding: 10px; background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family);">
                 </div>
                 <div class="form-group" style="margin-bottom: 20px;">
                     <label for="login-tech-pass" style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 6px; display: block; text-align: left;">Contraseña</label>
-                    <input type="password" id="login-tech-pass" placeholder="Contraseña de Técnico" required style="width: 100%; padding: 10px; background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family);">
+                    <input type="password" id="login-tech-pass" placeholder="Contraseña de Técnico" style="width: 100%; padding: 10px; background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family);">
                 </div>
-                <button type="submit" style="width: 100%; background: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-blue) 100%); color: white; border: none; padding: 12px; border-radius: 8px; font-weight: 600; cursor: pointer; font-family: var(--font-family); box-shadow: 0 4px 15px rgba(97, 62, 234, 0.3);">Ingresar como Técnico</button>
+                <button type="button" onclick="if(window.doLogin) window.doLogin('user');" style="width: 100%; background: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-blue) 100%); color: white; border: none; padding: 12px; border-radius: 8px; font-weight: 600; cursor: pointer; font-family: var(--font-family); box-shadow: 0 4px 15px rgba(97, 62, 234, 0.3);">Ingresar como Técnico</button>
             </form>
 
             <!-- Formulario Administrador -->
-            <form id="form-login-admin" style="padding: 10px 24px 24px; display: none;">
+            <form id="form-login-admin" onsubmit="event.preventDefault(); if(window.doLogin) window.doLogin('admin'); return false;" style="padding: 10px 24px 24px; display: none;">
                 <div class="form-group" style="margin-bottom: 16px;">
                     <label for="login-admin-email" style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 6px; display: block; text-align: left;">Correo Electrónico</label>
-                    <input type="email" id="login-admin-email" placeholder="belfor.aburto@t-sales.cl" required style="width: 100%; padding: 10px; background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family);">
+                    <input type="email" id="login-admin-email" placeholder="belfor.aburto@t-sales.cl" value="belfor.aburto@t-sales.cl" style="width: 100%; padding: 10px; background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family);">
                 </div>
                 <div class="form-group" style="margin-bottom: 20px;">
                     <label for="login-admin-pass" style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 6px; display: block; text-align: left;">Contraseña</label>
-                    <input type="password" id="login-admin-pass" placeholder="Contraseña de Administrador" required style="width: 100%; padding: 10px; background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family);">
+                    <input type="password" id="login-admin-pass" placeholder="Contraseña de Administrador" style="width: 100%; padding: 10px; background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family);">
                 </div>
-                <button type="submit" style="width: 100%; background: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-blue) 100%); color: white; border: none; padding: 12px; border-radius: 8px; font-weight: 600; cursor: pointer; font-family: var(--font-family); box-shadow: 0 4px 15px rgba(97, 62, 234, 0.3);">Ingresar como Administrador</button>
+                <button type="button" onclick="if(window.doLogin) window.doLogin('admin');" style="width: 100%; background: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-blue) 100%); color: white; border: none; padding: 12px; border-radius: 8px; font-weight: 600; cursor: pointer; font-family: var(--font-family); box-shadow: 0 4px 15px rgba(97, 62, 234, 0.3);">Ingresar como Administrador</button>
             </form>
         </div>
     </div>
+
+    <script>
+        function switchLoginTab(tab) {
+            var tabUser = document.getElementById('tab-login-user');
+            var tabAdmin = document.getElementById('tab-login-admin');
+            var formUser = document.getElementById('form-login-user');
+            var formAdmin = document.getElementById('form-login-admin');
+            if (tab === 'admin') {
+                if (tabAdmin) {
+                    tabAdmin.style.backgroundColor = 'var(--accent-blue)';
+                    tabAdmin.style.color = 'white';
+                }
+                if (tabUser) {
+                    tabUser.style.backgroundColor = 'transparent';
+                    tabUser.style.color = 'var(--text-secondary)';
+                }
+                if (formAdmin) formAdmin.style.display = 'block';
+                if (formUser) formUser.style.display = 'none';
+                var adminEmail = document.getElementById('login-admin-email');
+                if (adminEmail && !adminEmail.value) adminEmail.value = 'belfor.aburto@t-sales.cl';
+            } else {
+                if (tabUser) {
+                    tabUser.style.backgroundColor = 'var(--accent-blue)';
+                    tabUser.style.color = 'white';
+                }
+                if (tabAdmin) {
+                    tabAdmin.style.backgroundColor = 'transparent';
+                    tabAdmin.style.color = 'var(--text-secondary)';
+                }
+                if (formUser) formUser.style.display = 'block';
+                if (formAdmin) formAdmin.style.display = 'none';
+            }
+        }
+    </script>
+
+    <!-- ============ MODAL DE SEGURIDAD (PIN DE ADMINISTRADOR) ============ -->
+    <div id="modal-security-pin-gate" class="modal-backdrop" style="display: none; align-items: center; justify-content: center; background-color: rgba(6, 8, 14, 0.96); backdrop-filter: blur(16px); z-index: 9999;">
+        <div class="modal-card" style="max-width: 440px; width: 90%; border-color: rgba(97, 62, 234, 0.4); box-shadow: 0 0 50px rgba(97, 62, 234, 0.25); text-align: center;">
+            <div style="margin-bottom: 20px;">
+                <div style="width: 60px; height: 60px; border-radius: 16px; background: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-blue) 100%); display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; box-shadow: 0 0 30px rgba(97, 62, 234, 0.5);">
+                    <i class="fas fa-shield-alt" style="color: white; font-size: 1.8rem;"></i>
+                </div>
+                <h2 style="margin: 0 0 6px 0; font-size: 1.4rem; font-weight: 700; color: var(--text-primary);">Panel Restringido M365</h2>
+                <p style="margin: 0; font-size: 0.85rem; color: var(--text-secondary);">Este panel contiene información confidencial de Microsoft 365.</p>
+            </div>
+
+            <!-- Administrador actual identificado -->
+            <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-color); border-radius: 10px; padding: 12px 16px; margin-bottom: 20px; display: flex; align-items: center; gap: 12px; text-align: left;">
+                <div class="user-avatar" id="pin-admin-avatar" style="width: 36px; height: 36px; background: var(--accent-blue); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 0.85rem;">BA</div>
+                <div>
+                    <span style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; display: block;">Administrador</span>
+                    <strong id="pin-admin-name" style="font-size: 0.9rem; color: var(--text-primary);">Belfor Aburto</strong>
+                </div>
+                <span class="status-badge status-resuelto" style="margin-left: auto; font-size: 0.7rem; padding: 2px 8px;"><i class="fas fa-lock"></i> PIN Requerido</span>
+            </div>
+
+            <!-- Formulario de PIN -->
+            <form id="form-security-pin" onsubmit="event.preventDefault(); window.submitSecurityPin(); return false;">
+                <div class="form-group" style="margin-bottom: 20px; text-align: left;">
+                    <label for="input-security-pin" style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 8px; display: block;">Ingresa tu Código Secreto / Contraseña de Administrador:</label>
+                    <div style="position: relative;">
+                        <input type="password" id="input-security-pin" placeholder="••••••••" required autocomplete="off" style="width: 100%; padding: 14px 44px 14px 16px; background: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: 10px; color: var(--text-primary); font-size: 1.1rem; letter-spacing: 2px; text-align: center; outline: none; transition: all 0.2s;">
+                        <button type="button" id="btn-toggle-pin-visibility" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 1rem;"><i class="fas fa-eye"></i></button>
+                    </div>
+                    <span id="pin-error-msg" style="display: none; color: #ef4444; font-size: 0.78rem; margin-top: 6px; font-weight: 600;"><i class="fas fa-exclamation-circle"></i> Código secreto incorrecto. Intenta de nuevo.</span>
+                </div>
+
+                <div style="display: flex; gap: 12px;">
+                    <button type="button" id="btn-cancel-pin-gate" style="flex: 1; padding: 12px; background: transparent; border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-secondary); font-weight: 600; cursor: pointer; font-family: var(--font-family);">Cancelar</button>
+                    <button type="submit" style="flex: 2; padding: 12px; background: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-blue) 100%); border: none; border-radius: 8px; color: white; font-weight: 700; cursor: pointer; font-family: var(--font-family); box-shadow: 0 4px 15px rgba(97, 62, 234, 0.3); display: flex; align-items: center; justify-content: center; gap: 8px;">
+                        <i class="fas fa-unlock-alt"></i> Desbloquear Panel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ============ MODAL CONFIGURACIÓN MICROSOFT GRAPH API ============ -->
+    <div id="modal-graph-api-config" class="modal-backdrop" style="display: none; align-items: center; justify-content: center;">
+        <div class="modal-card" style="max-width: 560px; width: 90%;">
+            <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 14px;">
+                <div class="modal-title-area" style="display: flex; align-items: center; gap: 10px;">
+                    <div style="width: 38px; height: 38px; border-radius: 10px; background: rgba(0, 164, 239, 0.15); display: flex; align-items: center; justify-content: center; color: #00a4ef; font-size: 1.2rem;">
+                        <i class="fab fa-microsoft"></i>
+                    </div>
+                    <div>
+                        <h3 style="margin: 0; font-size: 1.1rem; font-weight: 700; color: var(--text-primary);">Configuración Microsoft Graph API</h3>
+                        <p style="margin: 2px 0 0; font-size: 0.78rem; color: var(--text-secondary);">Credenciales de Azure AD / Entra ID (Permisos de lectura)</p>
+                    </div>
+                </div>
+                <button type="button" class="modal-close-btn" id="btn-close-graph-modal" style="background: none; border: none; color: var(--text-muted); font-size: 1.2rem; cursor: pointer;"><i class="fas fa-times"></i></button>
+            </div>
+            
+            <form id="form-graph-api-config" style="padding: 20px 0 0; display: flex; flex-direction: column; gap: 16px;">
+                <div style="background: rgba(0, 164, 239, 0.08); border: 1px solid rgba(0, 164, 239, 0.2); border-radius: 8px; padding: 12px 14px; font-size: 0.8rem; color: var(--text-secondary); display: flex; gap: 10px; align-items: flex-start;">
+                    <i class="fas fa-info-circle" style="color: #00a4ef; margin-top: 2px;"></i>
+                    <span>Ingresa las credenciales registradas en <strong>Microsoft Entra ID (Azure Portal)</strong>. Solo se requieren permisos de lectura (<code>User.Read.All</code> / <code>Directory.Read.All</code>).</span>
+                </div>
+
+                <div class="form-group">
+                    <label for="graph-tenant-id" style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 6px; display: block;">Directory (Tenant) ID *</label>
+                    <input type="text" id="graph-tenant-id" placeholder="Ej: 34a56b78-xxxx-xxxx-xxxx-xxxxxxxxxxxx o dominio.onmicrosoft.com" style="width: 100%; padding: 10px 12px; background-color: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family); font-size: 0.85rem;">
+                </div>
+
+                <div class="form-group">
+                    <label for="graph-client-id" style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 6px; display: block;">Application (Client) ID *</label>
+                    <input type="text" id="graph-client-id" placeholder="Ej: 98f76e54-xxxx-xxxx-xxxx-xxxxxxxxxxxx" style="width: 100%; padding: 10px 12px; background-color: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family); font-size: 0.85rem;">
+                </div>
+
+                <div class="form-group">
+                    <label for="graph-client-secret" style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 6px; display: block;">Client Secret (Valor del Secreto de Cliente)</label>
+                    <input type="password" id="graph-client-secret" placeholder="Valor generado en Certificados y Secretos" style="width: 100%; padding: 10px 12px; background-color: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family); font-size: 0.85rem;">
+                </div>
+
+                <div id="graph-test-result" style="display: none; padding: 10px 14px; border-radius: 8px; font-size: 0.8rem;"></div>
+
+                <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 12px; padding-top: 14px; border-top: 1px solid var(--border-color);">
+                    <button type="button" id="btn-cancel-graph-modal" style="background-color: transparent; border: 1px solid var(--border-color); color: var(--text-secondary); padding: 10px 18px; border-radius: 8px; cursor: pointer; font-weight: 600; font-family: var(--font-family);">Cancelar</button>
+                    <button type="submit" style="background: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-blue) 100%); color: white; border: none; padding: 10px 24px; border-radius: 8px; cursor: pointer; font-weight: 600; font-family: var(--font-family); box-shadow: 0 4px 15px rgba(97, 62, 234, 0.3); display: flex; align-items: center; gap: 6px;">
+                        <i class="fas fa-save"></i> Guardar y Conectar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ============ MODAL DETALLE DE USUARIO M365 ============ -->
+    <div id="modal-m365-user-detail" class="modal-backdrop" style="display: none; align-items: center; justify-content: center;">
+        <div class="modal-card" style="max-width: 580px; width: 90%;">
+            <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 14px;">
+                <div class="modal-title-area" style="display: flex; align-items: center; gap: 12px;">
+                    <div id="m365-detail-avatar" class="user-avatar" style="width: 44px; height: 44px; background: var(--accent-blue); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 1rem;">US</div>
+                    <div>
+                        <h3 id="m365-detail-name" style="margin: 0; font-size: 1.15rem; font-weight: 700; color: var(--text-primary);">-</h3>
+                        <span id="m365-detail-email" style="font-size: 0.8rem; color: var(--text-secondary);">-</span>
+                    </div>
+                </div>
+                <button type="button" class="modal-close-btn" id="btn-close-m365-detail-modal" style="background: none; border: none; color: var(--text-muted); font-size: 1.2rem; cursor: pointer;"><i class="fas fa-times"></i></button>
+            </div>
+            
+            <div style="padding: 20px 0 0; display: flex; flex-direction: column; gap: 16px;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                    <div style="background: var(--bg-sidebar); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);">
+                        <span style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; display: block; margin-bottom: 4px;">RUT Asociado</span>
+                        <strong id="m365-detail-rut" style="font-size: 0.9rem; color: var(--text-primary); font-family: monospace;">-</strong>
+                    </div>
+                    <div style="background: var(--bg-sidebar); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);">
+                        <span style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; display: block; margin-bottom: 4px;">Empresa</span>
+                        <strong id="m365-detail-company" style="font-size: 0.9rem; color: var(--text-primary);">-</strong>
+                    </div>
+                </div>
+
+                <div style="background: var(--bg-sidebar); padding: 14px; border-radius: 8px; border: 1px solid var(--border-color);">
+                    <span style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; display: block; margin-bottom: 6px;">Licencias Microsoft 365</span>
+                    <div id="m365-detail-licenses" style="display: flex; gap: 6px; flex-wrap: wrap;">
+                        <!-- badges de licencias -->
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                    <div style="background: var(--bg-sidebar); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);">
+                        <span style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; display: block; margin-bottom: 4px;">Estado de Cuenta M365</span>
+                        <span id="m365-detail-status" class="status-badge status-resuelto"><i class="fas fa-check-circle"></i> Habilitada</span>
+                    </div>
+                    <div style="background: var(--bg-sidebar); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);">
+                        <span style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; display: block; margin-bottom: 4px;">Tipo de Contrato</span>
+                        <span id="m365-detail-type" class="autocomplete-badge badge-tipo">Ejecutivo</span>
+                    </div>
+                </div>
+
+                <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 12px; padding-top: 14px; border-top: 1px solid var(--border-color);">
+                    <button type="button" id="btn-create-ticket-from-m365" style="background: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-blue) 100%); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; font-family: var(--font-family); display: flex; align-items: center; gap: 6px;">
+                        <i class="fas fa-plus"></i> Crear Ticket para este Usuario
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ BOTÓN FLOTANTE CREAR TICKET (MÓVIL) ============ -->
+    <button class="mobile-fab-btn" id="mobile-fab-crear" title="Crear nuevo ticket" onclick="document.querySelector('#nav-crear-ticket a').click();" aria-label="Crear Ticket">
+        <i class="fas fa-plus"></i>
+    </button>
+
+    <!-- ============ BARRA DE NAVEGACIÓN INFERIOR (MÓVIL) ============ -->
+    <nav class="mobile-bottom-nav" id="mobile-bottom-nav">
+        <button class="mob-tab active" data-page="page-inicio">
+            <i class="fas fa-home"></i>
+            <span>Inicio</span>
+        </button>
+        <button class="mob-tab" data-page="page-mis-tickets">
+            <i class="fas fa-ticket-alt"></i>
+            <span>Tickets</span>
+        </button>
+        <button class="mob-tab" data-page="page-estado">
+            <div class="mob-tab-icon-wrap">
+                <i class="fas fa-bell"></i>
+                <span class="mob-notif-dot"></span>
+            </div>
+            <span>Alertas</span>
+        </button>
+        <button class="mob-tab" data-page="page-configuracion" id="mob-tab-perfil">
+            <i class="fas fa-user"></i>
+            <span>Perfil</span>
+        </button>
+    </nav>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
@@ -2381,6 +3835,6 @@
             window['pdfjsLib'].GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
         }
     </script>
-    <script src="script.js?v=2.0"></script>
+    <script src="script.js?v=2.9"></script>
 </body>
 </html>
