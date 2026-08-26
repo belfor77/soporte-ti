@@ -3448,17 +3448,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // ============================================
 
     async function fetchEquipos() {
-        let localEquipos = JSON.parse(localStorage.getItem('local_equipos')) || [];
-        if (localEquipos.length < 30) {
+        let localEquipos = JSON.parse(localStorage.getItem('local_equipos'));
+        if (!localEquipos || !Array.isArray(localEquipos) || localEquipos.length === 0) {
             localEquipos = seedDefaultEquipos();
-            localStorage.setItem('local_equipos', JSON.stringify(localEquipos));
-        }
-
-        // Asegurar que existan notebooks en estado 'disponible' en localEquipos
-        const hasDisponibles = localEquipos.some(e => e.estado === 'disponible');
-        if (!hasDisponibles) {
-            const defaults = seedDefaultEquipos();
-            localEquipos = defaults;
             localStorage.setItem('local_equipos', JSON.stringify(localEquipos));
         }
 
@@ -3467,21 +3459,28 @@ document.addEventListener('DOMContentLoaded', () => {
                 const { data, error } = await supabase
                     .from('equipos')
                     .select('*')
-                    .order('nombre_codigo', { ascending: true });
-                if (error) throw error;
-                
-                const supabaseIds = new Set(data.map(e => e.id));
-                const localOnly = localEquipos.filter(e => !supabaseIds.has(e.id));
-                
-                const merged = [...data, ...localOnly];
-                merged.sort((a, b) => {
-                    const codeA = String(a.nombre_codigo || '');
-                    const codeB = String(b.nombre_codigo || '');
-                    return codeA.localeCompare(codeB, undefined, { numeric: true });
-                });
-                return merged;
+                    .order('created_at', { ascending: false });
+                if (!error && data && data.length > 0) {
+                    const existingMap = new Map();
+                    // First place local data
+                    localEquipos.forEach(eq => {
+                        const key = (eq.serial ? eq.serial.trim().toLowerCase() : '') || eq.id;
+                        if (key) existingMap.set(key, eq);
+                    });
+                    // Merge Supabase records
+                    data.forEach(eq => {
+                        const key = (eq.serial ? eq.serial.trim().toLowerCase() : '') || eq.id;
+                        if (key) {
+                            existingMap.set(key, { ...(existingMap.get(key) || {}), ...eq });
+                        }
+                    });
+                    
+                    const merged = Array.from(existingMap.values());
+                    localStorage.setItem('local_equipos', JSON.stringify(merged));
+                    return merged;
+                }
             } catch (err) {
-                console.error('Error fetching equipos from Supabase, using LocalStorage:', err);
+                console.warn('Error fetching equipos from Supabase, using local cache:', err);
             }
         }
         
@@ -4312,40 +4311,48 @@ document.addEventListener('DOMContentLoaded', () => {
                     created_at: new Date().toISOString()
                 }
             ];
-            localStorage.setItem('local_equipos', JSON.stringify(equipos));
             return equipos;
         }
 
     async function saveEquipo(equipo) {
         if (!equipo.id) {
-            equipo.id = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substr(2, 9);
+            equipo.id = crypto.randomUUID ? crypto.randomUUID() : ('eq-' + Math.random().toString(36).substr(2, 9));
         }
         if (!equipo.created_at) {
             equipo.created_at = new Date().toISOString();
         }
 
-        // Guardar localmente siempre
-        const equipos = JSON.parse(localStorage.getItem('local_equipos')) || [];
-        equipos.push(equipo);
+        // Guardar localmente siempre (evitando duplicados por id o serial)
+        let equipos = JSON.parse(localStorage.getItem('local_equipos')) || [];
+        const existingIdx = equipos.findIndex(e => 
+            (e.id && e.id === equipo.id) || 
+            (e.serial && equipo.serial && e.serial.trim().toLowerCase() === equipo.serial.trim().toLowerCase())
+        );
+
+        if (existingIdx !== -1) {
+            equipos[existingIdx] = { ...equipos[existingIdx], ...equipo };
+        } else {
+            equipos.unshift(equipo);
+        }
         localStorage.setItem('local_equipos', JSON.stringify(equipos));
 
         if (!useLocalFallback && supabase) {
             try {
                 const { data, error } = await supabase
                     .from('equipos')
-                    .insert([equipo])
+                    .upsert([equipo], { onConflict: 'id' })
                     .select();
-                if (error) throw error;
-                return data[0];
+                if (!error && data && data[0]) {
+                    return data[0];
+                }
             } catch (err) {
-                console.error('Error saving equipo in Supabase, using LocalStorage:', err);
+                console.warn('Supabase upsert failed, stored in LocalStorage:', err);
             }
         }
         return equipo;
     }
 
     async function updateEquipo(id, updatedFields) {
-        // Actualizar localmente siempre
         const equipos = JSON.parse(localStorage.getItem('local_equipos')) || [];
         const index = equipos.findIndex(e => e.id === id);
         let updatedLocal = null;
@@ -4362,32 +4369,29 @@ document.addEventListener('DOMContentLoaded', () => {
                     .update(updatedFields)
                     .eq('id', id)
                     .select();
-                if (error) throw error;
-                if (data && data.length > 0) {
+                if (!error && data && data.length > 0) {
                     return data[0];
                 }
             } catch (err) {
-                console.error('Error updating equipo in Supabase, using LocalStorage:', err);
+                console.warn('Supabase update failed, stored in LocalStorage:', err);
             }
         }
         return updatedLocal;
     }
 
     async function deleteEquipo(id) {
-        // Eliminar localmente siempre
         const equipos = JSON.parse(localStorage.getItem('local_equipos')) || [];
         const filtered = equipos.filter(e => e.id !== id);
         localStorage.setItem('local_equipos', JSON.stringify(filtered));
 
         if (!useLocalFallback && supabase) {
             try {
-                const { error } = await supabase
+                await supabase
                     .from('equipos')
                     .delete()
                     .eq('id', id);
-                if (error) throw error;
             } catch (err) {
-                console.error('Error deleting equipo from Supabase, using LocalStorage:', err);
+                console.warn('Supabase delete failed, updated in LocalStorage:', err);
             }
         }
         return true;
@@ -5275,17 +5279,59 @@ document.addEventListener('DOMContentLoaded', () => {
             previewConfirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando Equipos...';
 
             try {
-                let successCount = 0;
-                for (const eq of parsedEquipos) {
-                    await saveEquipo(eq);
-                    successCount++;
+                let localList = JSON.parse(localStorage.getItem('local_equipos')) || [];
+                
+                // Preparar equipos con IDs únicos y fechas
+                const readyEquipos = parsedEquipos.map((eq, idx) => {
+                    const id = eq.id || (crypto.randomUUID ? crypto.randomUUID() : `eq-imp-${Date.now()}-${idx}`);
+                    return {
+                        ...eq,
+                        id,
+                        created_at: eq.created_at || new Date().toISOString()
+                    };
+                });
+
+                // Merge con localList evitando duplicados por serial o ID
+                readyEquipos.forEach(newEq => {
+                    const idx = localList.findIndex(e => 
+                        (e.serial && newEq.serial && e.serial.trim().toLowerCase() === newEq.serial.trim().toLowerCase()) ||
+                        (e.id && e.id === newEq.id)
+                    );
+                    if (idx !== -1) {
+                        localList[idx] = { ...localList[idx], ...newEq };
+                    } else {
+                        localList.unshift(newEq);
+                    }
+                });
+
+                // Guardar en LocalStorage de forma inmediata y persistente
+                localStorage.setItem('local_equipos', JSON.stringify(localList));
+
+                // Guardar en Supabase si está disponible
+                let supabaseSaved = false;
+                if (!useLocalFallback && supabase) {
+                    try {
+                        const { error } = await supabase
+                            .from('equipos')
+                            .upsert(readyEquipos, { onConflict: 'id' });
+                        if (!error) {
+                            supabaseSaved = true;
+                        } else {
+                            console.warn('Error al guardar en tabla equipos de Supabase:', error);
+                        }
+                    } catch (sErr) {
+                        console.warn('Supabase upsert exception:', sErr);
+                    }
                 }
-                alert(`¡Se importaron ${successCount} equipos con éxito a la base de datos de TI!`);
+
+                alert(`¡Se importaron ${readyEquipos.length} equipos con éxito!\n` + 
+                      `Quedaron guardados permanentemente en tu Inventario CMDB ${supabaseSaved ? 'y sincronizados con la nube (Supabase).' : '(almacenamiento persistente).'}`);
+                
                 if (previewModal) previewModal.style.display = 'none';
                 await refreshEquipos();
             } catch (err) {
                 console.error('Error al guardar equipos:', err);
-                alert('Ocurrió un error al guardar los equipos importados.');
+                alert('Ocurrió un error al guardar los equipos importados: ' + err.message);
             } finally {
                 previewConfirmBtn.disabled = false;
                 previewConfirmBtn.innerHTML = 'Confirmar Importación';
