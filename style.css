@@ -7200,21 +7200,33 @@ input:checked + .slider:before {
 }
 
 .badge-tsales {
-    background: rgba(0, 201, 167, 0.12);
+    background: rgba(0, 201, 167, 0.14);
     color: #00c9a7;
-    border: 1px solid rgba(0, 201, 167, 0.25);
+    border: 1px solid rgba(0, 201, 167, 0.35);
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 0.72rem;
 }
 
 .badge-infinet {
-    background: rgba(245, 158, 11, 0.12);
-    color: #f59e0b;
-    border: 1px solid rgba(245, 158, 11, 0.25);
+    background: rgba(16, 185, 129, 0.14);
+    color: #34d399;
+    border: 1px solid rgba(16, 185, 129, 0.35);
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 0.72rem;
 }
 
 .badge-vprime {
-    background: rgba(239, 68, 68, 0.12);
-    color: #ef4444;
-    border: 1px solid rgba(239, 68, 68, 0.25);
+    background: rgba(236, 72, 153, 0.14);
+    color: #f472b6;
+    border: 1px solid rgba(236, 72, 153, 0.35);
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 0.72rem;
 }
 
 .badge-tipo {

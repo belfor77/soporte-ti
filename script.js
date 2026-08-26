@@ -4412,35 +4412,84 @@ document.addEventListener('DOMContentLoaded', () => {
     let itemsPerEquipPage = 6;
 
     function formatCleanSpecs(eq) {
+        // 1. CPU Limpio
         let cpu = eq.cpu || 'Intel i5';
         cpu = cpu.replace(/Intel\(R\)\s*Core\(TM\)/i, 'Intel')
                  .replace(/\s*CPU\s*@\s*[\d\.]+GHz.*/i, '')
+                 .replace(/-\s*[\d\.]+GHz.*/i, '')
                  .replace(/\(.*?\)/g, '')
                  .replace(/\s+/g, ' ')
                  .trim();
         if (!cpu) cpu = 'Intel i5';
 
+        // 2. RAM redondeada a tamaños estándar (8 GB, 16 GB, 32 GB, etc.)
         let ram = eq.ram || '8 GB';
         ram = ram.replace(/\(.*?\)/g, '').replace(/\s+/g, ' ').trim();
-        if (!ram.toLowerCase().includes('gb') && !ram.toLowerCase().includes('mb')) ram += ' GB';
-
-        let disco = eq.disco_duro || '256 GB SSD';
-        disco = disco.replace(/\(.*?\)/g, '')
-                     .replace(/-\s*Fixed hard disk.*/i, '')
-                     .replace(/total/i, '')
-                     .replace(/\s+/g, ' ')
-                     .trim();
-        if (!disco.toLowerCase().includes('ssd') && !disco.toLowerCase().includes('hdd') && !disco.toLowerCase().includes('nvme')) {
-            disco += ' SSD';
+        const ramNumMatch = ram.match(/([\d\.]+)\s*(GB|MB)?/i);
+        if (ramNumMatch) {
+            let val = parseFloat(ramNumMatch[1]);
+            const unit = (ramNumMatch[2] || 'GB').toUpperCase();
+            if (unit === 'MB') {
+                val = Math.round(val / 1024);
+                ram = `${val} GB`;
+            } else {
+                if (val > 6 && val < 9) ram = '8 GB';
+                else if (val > 14 && val < 18) ram = '16 GB';
+                else if (val > 28 && val < 35) ram = '32 GB';
+                else if (val > 3 && val < 5) ram = '4 GB';
+                else if (val > 60 && val < 70) ram = '64 GB';
+                else ram = `${Math.round(val)} GB`;
+            }
+        } else {
+            if (!ram.toLowerCase().includes('gb')) ram += ' GB';
         }
 
+        // 3. DISCO: Eliminar "Removable Media", "Fixed hard disk media" y formatear capacidades estándar
+        let disco = eq.disco_duro || '256 GB SSD';
+        disco = disco.replace(/-\s*Removable\s*Media.*/gi, '')
+                     .replace(/-\s*Fixed\s*hard\s*disk.*/gi, '')
+                     .replace(/Removable\s*Media.*/gi, '')
+                     .replace(/Fixed\s*hard\s*disk.*/gi, '')
+                     .replace(/total/gi, '')
+                     .replace(/\(.*?\)/g, '')
+                     .replace(/\s+/g, ' ')
+                     .trim();
+        
+        const discoNumMatch = disco.match(/([\d\.]+)\s*(GB|TB)?/i);
+        let diskType = 'SSD';
+        if (/nvme/i.test(eq.disco_duro || '')) diskType = 'NVMe';
+        else if (/hdd|mecanico|sata\s*hdd/i.test(eq.disco_duro || '')) diskType = 'HDD';
+
+        if (discoNumMatch) {
+            const dVal = parseFloat(discoNumMatch[1]);
+            const dUnit = (discoNumMatch[2] || 'GB').toUpperCase();
+            if (dUnit === 'TB' || (dVal >= 900 && dVal <= 1100)) {
+                disco = `1 TB ${diskType}`;
+            } else if (dVal >= 100 && dVal <= 140) {
+                disco = `128 GB ${diskType}`;
+            } else if (dVal >= 220 && dVal <= 290) {
+                disco = `256 GB ${diskType}`;
+            } else if (dVal >= 440 && dVal <= 540) {
+                disco = `512 GB ${diskType}`;
+            } else if (dVal >= 1800 && dVal <= 2200) {
+                disco = `2 TB ${diskType}`;
+            } else {
+                disco = `${Math.round(dVal)} GB ${diskType}`;
+            }
+        } else {
+            if (!disco.toLowerCase().includes('ssd') && !disco.toLowerCase().includes('hdd') && !disco.toLowerCase().includes('nvme')) {
+                disco += ` ${diskType}`;
+            }
+        }
+
+        // 4. Sistema Operativo & Build
         let so = eq.sistema_operativo || 'Windows 11 Pro';
         let build = eq.build_windows || '';
         if (!build) {
             const bMatch = so.match(/build\s*(\d+)/i);
             if (bMatch) build = bMatch[1];
         }
-        so = so.replace(/^Microsoft\s+/i, '').replace(/\(Build.*?\)/i, '').trim();
+        so = so.replace(/^Microsoft\s+/i, '').replace(/\(Build.*?\)/i, '').replace(/Build\s*\d+/i, '').trim();
 
         return { cpu, ram, disco, so, build };
     }
@@ -4645,17 +4694,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
             card.innerHTML = `
                 <!-- Fila Superior: Código y Estado -->
-                <div class="equip-card-top">
-                    <div class="equip-card-brand-box">
-                        <div class="equip-card-icon">
+                <div class="equip-card-top" style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px;">
+                    <div class="equip-card-brand-box" style="display: flex; align-items: center; gap: 10px; min-width: 0; flex: 1;">
+                        <div class="equip-card-icon" style="flex-shrink: 0;">
                             <i class="fas ${iconClass}"></i>
                         </div>
-                        <div>
-                            <div class="equip-card-code">${escapeHtml(eq.nombre_codigo || 'EQUIPO')}</div>
-                            <span style="font-size: 0.72rem; color: var(--text-muted); text-transform: capitalize;">${escapeHtml(eq.tipo || 'Laptop')}</span>
+                        <div style="min-width: 0; flex: 1;">
+                            <div class="equip-card-code" title="${escapeHtml(eq.nombre_codigo || 'EQUIPO')}" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 0.95rem; font-weight: 700; color: var(--text-primary); max-width: 170px;">${escapeHtml(eq.nombre_codigo || 'EQUIPO')}</div>
+                            <span style="font-size: 0.72rem; color: var(--text-muted); text-transform: capitalize; display: block;">${escapeHtml(eq.tipo || 'Laptop')}</span>
                         </div>
                     </div>
-                    <span class="status-badge ${stateClass}" style="font-size: 0.75rem;">${stateLabel}</span>
+                    <span class="status-badge ${stateClass}" style="font-size: 0.72rem; flex-shrink: 0; white-space: nowrap;">${stateLabel}</span>
                 </div>
 
                 <!-- Usuario Asignado -->
@@ -5335,6 +5384,46 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
 
+    async function adaptiveUpsertEquipos(records) {
+        if (!supabase || !records || records.length === 0) return { success: false, error: 'Supabase no está disponible' };
+
+        let payload = records.map(cleanEquipoForSupabase);
+        const chunkSize = 25;
+
+        for (let attempt = 0; attempt < 15; attempt++) {
+            try {
+                for (let i = 0; i < payload.length; i += chunkSize) {
+                    const chunk = payload.slice(i, i + chunkSize);
+                    const { error } = await supabase
+                        .from('equipos')
+                        .upsert(chunk, { onConflict: 'id' });
+                    
+                    if (error) {
+                        const errMsg = error.message || JSON.stringify(error);
+                        const match = errMsg.match(/Could not find the '([^']+)' column/i);
+                        if (match && match[1]) {
+                            const missingCol = match[1];
+                            console.warn(`Columna '${missingCol}' no existe en Supabase. Omitiendo y reintentando automáticamente...`);
+                            payload.forEach(item => {
+                                delete item[missingCol];
+                            });
+                            throw { retry: true, missingCol };
+                        } else {
+                            throw error;
+                        }
+                    }
+                }
+                return { success: true, count: payload.length };
+            } catch (err) {
+                if (err && err.retry) {
+                    continue;
+                }
+                return { success: false, error: err.message || JSON.stringify(err) };
+            }
+        }
+        return { success: true, count: payload.length };
+    }
+
     // Confirmar Importación e Insertar al Inventario
     if (previewConfirmBtn) {
         previewConfirmBtn.addEventListener('click', async () => {
@@ -5375,29 +5464,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Guardar en LocalStorage de forma inmediata y persistente
                 localStorage.setItem('local_equipos', JSON.stringify(localList));
 
-                // Guardar en Supabase en bloques seguros
+                // Guardar en Supabase con auto-adaptabilidad
                 let supabaseSaved = false;
                 let supabaseErrDetails = '';
                 if (!useLocalFallback && supabase) {
-                    try {
-                        const chunkSize = 25;
-                        for (let i = 0; i < readyEquipos.length; i += chunkSize) {
-                            const chunk = readyEquipos.slice(i, i + chunkSize);
-                            const { error: sErr } = await supabase
-                                .from('equipos')
-                                .upsert(chunk, { onConflict: 'id' });
-                            if (sErr) throw sErr;
-                        }
+                    const syncRes = await adaptiveUpsertEquipos(readyEquipos);
+                    if (syncRes.success) {
                         supabaseSaved = true;
-                    } catch (sErr) {
-                        console.error('Error al guardar en tabla equipos de Supabase:', sErr);
-                        supabaseErrDetails = sErr.message || JSON.stringify(sErr);
+                    } else {
+                        supabaseErrDetails = syncRes.error;
                     }
                 }
 
                 alert(`🎉 ¡Se importaron ${readyEquipos.length} equipos con éxito!\n\n` + 
                       `✅ Guardados en tu Inventario CMDB.\n` + 
-                      (supabaseSaved ? `☁️ Sincronizados con la nube de Supabase (visibles para todo tu equipo).` : (supabaseErrDetails ? `⚠️ Nota: No se sincronizó en Supabase (${supabaseErrDetails}).` : '')));
+                      (supabaseSaved ? `☁️ Sincronizados con la nube de Supabase (visibles para todo tu equipo).` : (supabaseErrDetails ? `⚠️ Nota: Guardado local OK, pendiente en Supabase (${supabaseErrDetails}).` : '')));
                 
                 if (previewModal) previewModal.style.display = 'none';
                 await refreshEquipos();
@@ -5427,19 +5508,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     return;
                 }
 
-                // 1. Probar consulta a la tabla equipos
-                const { data: testData, error: testErr } = await supabase
-                    .from('equipos')
-                    .select('id')
-                    .limit(1);
-
-                if (testErr) {
-                    console.error('Error al consultar tabla equipos en Supabase:', testErr);
-                    alert(`⚠️ No se pudo conectar con la tabla 'equipos' en Supabase.\n\nDetalle: ${testErr.message || JSON.stringify(testErr)}\n\n💡 Solución: Abre el panel de Supabase -> SQL Editor y ejecuta el script de creación de tabla 'equipos' para habilitar el guardado compartido.`);
-                    return;
-                }
-
-                // 2. Obtener lista local de equipos
+                // 1. Obtener lista local de equipos
                 const localEquipos = JSON.parse(localStorage.getItem('local_equipos')) || [];
                 if (localEquipos.length === 0) {
                     alert('No tienes equipos en la memoria local para sincronizar.');
@@ -5448,24 +5517,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 btnSyncSupabaseEquipos.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Subiendo ${localEquipos.length} equipos...`;
 
-                // 3. Subir en bloques sanitizados
-                const sanitized = localEquipos.map(cleanEquipoForSupabase);
-                const chunkSize = 25;
-                let totalUploaded = 0;
-                for (let i = 0; i < sanitized.length; i += chunkSize) {
-                    const chunk = sanitized.slice(i, i + chunkSize);
-                    const { error: upsertErr } = await supabase
-                        .from('equipos')
-                        .upsert(chunk, { onConflict: 'id' });
-                    
-                    if (upsertErr) {
-                        throw upsertErr;
-                    }
-                    totalUploaded += chunk.length;
-                }
+                // 2. Subir con auto-adaptabilidad
+                const syncRes = await adaptiveUpsertEquipos(localEquipos);
 
-                alert(`🎉 ¡Sincronización Exitosa!\n\nSe subieron ${totalUploaded} equipos a la nube de Supabase.\nAhora cualquier miembro de tu equipo que abra la plataforma en su PC verá los ${totalUploaded} equipos de inmediato.`);
-                await refreshEquipos();
+                if (syncRes.success) {
+                    alert(`🎉 ¡Sincronización Exitosa!\n\nSe subieron ${syncRes.count} equipos a la nube de Supabase.\nAhora cualquier miembro de tu equipo que abra la plataforma en su PC verá los ${syncRes.count} equipos de inmediato.`);
+                    await refreshEquipos();
+                } else {
+                    throw new Error(syncRes.error);
+                }
             } catch (err) {
                 console.error('Error durante la sincronización a Supabase:', err);
                 alert(`❌ Ocurrió un error al subir a Supabase: ${err.message || err}\n\nRevisa la consola del navegador para más detalles.`);
