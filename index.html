@@ -1273,11 +1273,17 @@
                         <h1>💻 Gestión de Equipos & Ciclo de Vida</h1>
                         <p>Inventario CMDB, control de próximos ingresos, bajas y trazabilidad de notebooks</p>
                     </div>
-                    <div class="kb-header-buttons" id="inventario-header-actions" style="display: flex; gap: 12px;">
-                        <button class="btn-importar-equipos" id="btn-importar-equipos" style="background-color: rgba(255, 255, 255, 0.05); border: 1px solid var(--border-color); color: var(--text-primary); padding: 10px 18px; border-radius: 10px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s ease;">
+                    <div class="kb-header-buttons" id="inventario-header-actions" style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <button class="btn-importar-equipos" id="btn-sync-supabase-equipos" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(5, 150, 105, 0.25) 100%); border: 1px solid rgba(16, 185, 129, 0.4); color: #34d399; padding: 10px 16px; border-radius: 10px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s ease;" title="Subir y sincronizar todos los equipos con Supabase para que los vea todo el equipo">
+                            <i class="fas fa-cloud-upload-alt"></i> Sincronizar con la Nube (Supabase)
+                        </button>
+                        <button class="btn-importar-equipos" id="btn-export-json-equipos" style="background-color: rgba(255, 255, 255, 0.05); border: 1px solid var(--border-color); color: var(--text-secondary); padding: 10px 14px; border-radius: 10px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.2s ease;" title="Descargar copia de seguridad en formato JSON">
+                            <i class="fas fa-download"></i> Backup JSON
+                        </button>
+                        <button class="btn-importar-equipos" id="btn-importar-equipos" style="background-color: rgba(255, 255, 255, 0.05); border: 1px solid var(--border-color); color: var(--text-primary); padding: 10px 16px; border-radius: 10px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s ease;">
                             <i class="fas fa-file-import"></i> Importar Equipos
                         </button>
-                        <button class="btn-importar-equipos" id="btn-importar-txt" style="background-color: rgba(97, 62, 234, 0.08); border: 1px solid rgba(97, 62, 234, 0.25); color: #a78bfa; padding: 10px 18px; border-radius: 10px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s ease;" onmouseover="this.style.backgroundColor='rgba(97, 62, 234, 0.15)'" onmouseout="this.style.backgroundColor='rgba(97, 62, 234, 0.08)'">
+                        <button class="btn-importar-equipos" id="btn-importar-txt" style="background-color: rgba(97, 62, 234, 0.08); border: 1px solid rgba(97, 62, 234, 0.25); color: #a78bfa; padding: 10px 16px; border-radius: 10px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s ease;" onmouseover="this.style.backgroundColor='rgba(97, 62, 234, 0.15)'" onmouseout="this.style.backgroundColor='rgba(97, 62, 234, 0.08)'">
                             <i class="fas fa-file-alt"></i> Agregar con TXT
                         </button>
                         <button class="btn-crear-ticket" id="btn-agregar-equipo">

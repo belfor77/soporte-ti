@@ -3461,23 +3461,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     .select('*')
                     .order('created_at', { ascending: false });
                 if (!error && data && data.length > 0) {
-                    const existingMap = new Map();
-                    // First place local data
-                    localEquipos.forEach(eq => {
-                        const key = (eq.serial ? eq.serial.trim().toLowerCase() : '') || eq.id;
-                        if (key) existingMap.set(key, eq);
-                    });
-                    // Merge Supabase records
-                    data.forEach(eq => {
-                        const key = (eq.serial ? eq.serial.trim().toLowerCase() : '') || eq.id;
-                        if (key) {
-                            existingMap.set(key, { ...(existingMap.get(key) || {}), ...eq });
-                        }
-                    });
-                    
-                    const merged = Array.from(existingMap.values());
-                    localStorage.setItem('local_equipos', JSON.stringify(merged));
-                    return merged;
+                    localStorage.setItem('local_equipos', JSON.stringify(data));
+                    return data;
                 }
             } catch (err) {
                 console.warn('Error fetching equipos from Supabase, using local cache:', err);
@@ -5335,6 +5320,105 @@ document.addEventListener('DOMContentLoaded', () => {
             } finally {
                 previewConfirmBtn.disabled = false;
                 previewConfirmBtn.innerHTML = 'Confirmar Importación';
+            }
+        });
+    }
+
+    // ============================================
+    // BOTÓN: SINCRONIZAR TODO A SUPABASE
+    // ============================================
+    const btnSyncSupabaseEquipos = document.getElementById('btn-sync-supabase-equipos');
+    if (btnSyncSupabaseEquipos) {
+        btnSyncSupabaseEquipos.addEventListener('click', async () => {
+            const originalHtml = btnSyncSupabaseEquipos.innerHTML;
+            btnSyncSupabaseEquipos.disabled = true;
+            btnSyncSupabaseEquipos.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Conectando con Supabase...';
+
+            try {
+                if (!supabase) {
+                    alert('⚠️ Supabase no está conectado actualmente. Por favor verifica las credenciales de Supabase.');
+                    return;
+                }
+
+                // 1. Probar consulta a la tabla equipos
+                const { data: testData, error: testErr } = await supabase
+                    .from('equipos')
+                    .select('id')
+                    .limit(1);
+
+                if (testErr) {
+                    console.error('Error al consultar tabla equipos en Supabase:', testErr);
+                    alert(`⚠️ No se pudo conectar con la tabla 'equipos' en Supabase.\n\nDetalle: ${testErr.message || JSON.stringify(testErr)}\n\n💡 Solución: Abre el panel de Supabase -> SQL Editor y ejecuta el script de creación de tabla 'equipos' para habilitar el guardado compartido.`);
+                    return;
+                }
+
+                // 2. Obtener lista local de equipos
+                const localEquipos = JSON.parse(localStorage.getItem('local_equipos')) || [];
+                if (localEquipos.length === 0) {
+                    alert('No tienes equipos en la memoria local para sincronizar.');
+                    return;
+                }
+
+                btnSyncSupabaseEquipos.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Subiendo ${localEquipos.length} equipos...`;
+
+                // 3. Subir en bloques
+                const chunkSize = 50;
+                let totalUploaded = 0;
+                for (let i = 0; i < localEquipos.length; i += chunkSize) {
+                    const chunk = localEquipos.slice(i, i + chunkSize);
+                    const { error: upsertErr } = await supabase
+                        .from('equipos')
+                        .upsert(chunk, { onConflict: 'id' });
+                    
+                    if (upsertErr) {
+                        throw upsertErr;
+                    }
+                    totalUploaded += chunk.length;
+                }
+
+                alert(`🎉 ¡Sincronización Exitosa!\n\nSe subieron ${totalUploaded} equipos a la nube de Supabase.\nAhora cualquier miembro de tu equipo que abra la plataforma en su PC verá los ${totalUploaded} equipos de inmediato.`);
+                await refreshEquipos();
+            } catch (err) {
+                console.error('Error durante la sincronización a Supabase:', err);
+                alert(`❌ Ocurrió un error al subir a Supabase: ${err.message || err}\n\nRevisa la consola del navegador para más detalles.`);
+            } finally {
+                btnSyncSupabaseEquipos.disabled = false;
+                btnSyncSupabaseEquipos.innerHTML = originalHtml;
+            }
+        });
+    }
+
+    // ============================================
+    // BOTÓN: EXPORTAR BACKUP JSON DE EQUIPOS
+    // ============================================
+    const btnExportJsonEquipos = document.getElementById('btn-export-json-equipos');
+    if (btnExportJsonEquipos) {
+        btnExportJsonEquipos.addEventListener('click', () => {
+            const localEquipos = JSON.parse(localStorage.getItem('local_equipos')) || [];
+            if (localEquipos.length === 0) {
+                alert('No hay equipos registrados para exportar.');
+                return;
+            }
+
+            const dataStr = JSON.stringify(localEquipos, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `inventario_equipos_backup_${new Date().toISOString().slice(0, 10)}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(dataStr).then(() => {
+                    alert(`✅ ¡Backup generado!\n- Se descargó el archivo JSON con los ${localEquipos.length} equipos.\n- Los datos también se copiaron a tu portapapeles.`);
+                }).catch(() => {
+                    alert(`✅ Se descargó el archivo JSON con los ${localEquipos.length} equipos.`);
+                });
+            } else {
+                alert(`✅ Se descargó el archivo JSON con los ${localEquipos.length} equipos.`);
             }
         });
     }
