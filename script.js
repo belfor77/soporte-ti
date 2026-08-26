@@ -3448,8 +3448,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // ============================================
 
     async function fetchEquipos() {
-        let localEquipos = JSON.parse(localStorage.getItem('local_equipos'));
-        if (!localEquipos || !Array.isArray(localEquipos) || localEquipos.length === 0) {
+        let localEquipos = JSON.parse(localStorage.getItem('local_equipos')) || [];
+        if (localEquipos.length === 0) {
             localEquipos = seedDefaultEquipos();
             localStorage.setItem('local_equipos', JSON.stringify(localEquipos));
         }
@@ -3460,9 +3460,26 @@ document.addEventListener('DOMContentLoaded', () => {
                     .from('equipos')
                     .select('*')
                     .order('created_at', { ascending: false });
-                if (!error && data && data.length > 0) {
-                    localStorage.setItem('local_equipos', JSON.stringify(data));
-                    return data;
+                
+                if (!error && Array.isArray(data)) {
+                    // Combinar Supabase y Local sin borrar datos del usuario
+                    const map = new Map();
+                    // Primero lo local
+                    localEquipos.forEach(eq => {
+                        const key = (eq.serial ? eq.serial.trim().toLowerCase() : '') || eq.id;
+                        if (key) map.set(key, eq);
+                    });
+                    // Luego lo de Supabase
+                    data.forEach(eq => {
+                        const key = (eq.serial ? eq.serial.trim().toLowerCase() : '') || eq.id;
+                        if (key) {
+                            map.set(key, { ...(map.get(key) || {}), ...eq });
+                        }
+                    });
+
+                    const merged = Array.from(map.values());
+                    localStorage.setItem('local_equipos', JSON.stringify(merged));
+                    return merged;
                 }
             } catch (err) {
                 console.warn('Error fetching equipos from Supabase, using local cache:', err);
@@ -5288,6 +5305,36 @@ document.addEventListener('DOMContentLoaded', () => {
     if (previewCloseBtn) previewCloseBtn.addEventListener('click', () => previewModal.style.display = 'none');
     if (previewCancelBtn) previewCancelBtn.addEventListener('click', () => previewModal.style.display = 'none');
 
+    function cleanEquipoForSupabase(eq) {
+        return {
+            id: String(eq.id || (crypto.randomUUID ? crypto.randomUUID() : ('eq-' + Math.random().toString(36).substr(2, 9)))),
+            nombre_codigo: String(eq.nombre_codigo || 'EQUIPO'),
+            usuario_nombre: String(eq.usuario_nombre || 'Sin Asignar'),
+            usuario_rut: String(eq.usuario_rut || ''),
+            usuario_email: String(eq.usuario_email || ''),
+            empresa: String(eq.empresa || 'T-Sales'),
+            estado: String(eq.estado || 'activo'),
+            serial: String(eq.serial || ''),
+            marca: String(eq.marca || 'Dell'),
+            modelo: String(eq.modelo || ''),
+            cpu: String(eq.cpu || ''),
+            ram: String(eq.ram || ''),
+            disco_duro: String(eq.disco_duro || ''),
+            sistema_operativo: String(eq.sistema_operativo || ''),
+            build_windows: String(eq.build_windows || ''),
+            licencia_usuario: String(eq.licencia_usuario || 'M365'),
+            fecha_asignacion: String(eq.fecha_asignacion || ''),
+            tipo: String(eq.tipo || 'laptop'),
+            direccion: String(eq.direccion || ''),
+            usuario_windows: String(eq.usuario_windows || ''),
+            dominio: String(eq.dominio || ''),
+            ip: String(eq.ip || ''),
+            mac: String(eq.mac || ''),
+            arquitectura: String(eq.arquitectura || '64 bits'),
+            created_at: eq.created_at || new Date().toISOString()
+        };
+    }
+
     // Confirmar Importación e Insertar al Inventario
     if (previewConfirmBtn) {
         previewConfirmBtn.addEventListener('click', async () => {
@@ -5305,11 +5352,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Preparar equipos con IDs únicos y fechas
                 const readyEquipos = parsedEquipos.map((eq, idx) => {
                     const id = eq.id || (crypto.randomUUID ? crypto.randomUUID() : `eq-imp-${Date.now()}-${idx}`);
-                    return {
+                    return cleanEquipoForSupabase({
                         ...eq,
                         id,
                         created_at: eq.created_at || new Date().toISOString()
-                    };
+                    });
                 });
 
                 // Merge con localList evitando duplicados por serial o ID
@@ -5328,25 +5375,29 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Guardar en LocalStorage de forma inmediata y persistente
                 localStorage.setItem('local_equipos', JSON.stringify(localList));
 
-                // Guardar en Supabase si está disponible
+                // Guardar en Supabase en bloques seguros
                 let supabaseSaved = false;
+                let supabaseErrDetails = '';
                 if (!useLocalFallback && supabase) {
                     try {
-                        const { error } = await supabase
-                            .from('equipos')
-                            .upsert(readyEquipos, { onConflict: 'id' });
-                        if (!error) {
-                            supabaseSaved = true;
-                        } else {
-                            console.warn('Error al guardar en tabla equipos de Supabase:', error);
+                        const chunkSize = 25;
+                        for (let i = 0; i < readyEquipos.length; i += chunkSize) {
+                            const chunk = readyEquipos.slice(i, i + chunkSize);
+                            const { error: sErr } = await supabase
+                                .from('equipos')
+                                .upsert(chunk, { onConflict: 'id' });
+                            if (sErr) throw sErr;
                         }
+                        supabaseSaved = true;
                     } catch (sErr) {
-                        console.warn('Supabase upsert exception:', sErr);
+                        console.error('Error al guardar en tabla equipos de Supabase:', sErr);
+                        supabaseErrDetails = sErr.message || JSON.stringify(sErr);
                     }
                 }
 
-                alert(`¡Se importaron ${readyEquipos.length} equipos con éxito!\n` + 
-                      `Quedaron guardados permanentemente en tu Inventario CMDB ${supabaseSaved ? 'y sincronizados con la nube (Supabase).' : '(almacenamiento persistente).'}`);
+                alert(`🎉 ¡Se importaron ${readyEquipos.length} equipos con éxito!\n\n` + 
+                      `✅ Guardados en tu Inventario CMDB.\n` + 
+                      (supabaseSaved ? `☁️ Sincronizados con la nube de Supabase (visibles para todo tu equipo).` : (supabaseErrDetails ? `⚠️ Nota: No se sincronizó en Supabase (${supabaseErrDetails}).` : '')));
                 
                 if (previewModal) previewModal.style.display = 'none';
                 await refreshEquipos();
@@ -5397,11 +5448,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 btnSyncSupabaseEquipos.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Subiendo ${localEquipos.length} equipos...`;
 
-                // 3. Subir en bloques
-                const chunkSize = 50;
+                // 3. Subir en bloques sanitizados
+                const sanitized = localEquipos.map(cleanEquipoForSupabase);
+                const chunkSize = 25;
                 let totalUploaded = 0;
-                for (let i = 0; i < localEquipos.length; i += chunkSize) {
-                    const chunk = localEquipos.slice(i, i + chunkSize);
+                for (let i = 0; i < sanitized.length; i += chunkSize) {
+                    const chunk = sanitized.slice(i, i + chunkSize);
                     const { error: upsertErr } = await supabase
                         .from('equipos')
                         .upsert(chunk, { onConflict: 'id' });
