@@ -4336,20 +4336,25 @@
                 <!-- Panel 1: Subir Archivo -->
                 <div id="import-panel-file" style="display: block;">
                     <div id="import-dropzone" style="border: 2px dashed rgba(59, 130, 246, 0.4); border-radius: 12px; background: rgba(59, 130, 246, 0.04); padding: 30px; text-align: center; cursor: pointer; transition: all 0.2s;">
-                        <i class="fas fa-cloud-upload-alt" style="font-size: 2.4rem; color: var(--accent-blue); margin-bottom: 12px;"></i>
-                        <h4 style="margin: 0 0 6px; font-size: 1rem; color: var(--text-primary);">Haz clic para seleccionar tu archivo Excel o arrástralo aquí</h4>
-                        <p style="margin: 0; font-size: 0.8rem; color: var(--text-secondary);">Soporta formatos <strong>.xlsx</strong>, <strong>.xls</strong> y <strong>.csv</strong></p>
+                        <i class="fas fa-file-excel" style="font-size: 2.6rem; color: #10b981; margin-bottom: 10px; display: block;"></i>
+                        <h4 style="margin: 0 0 6px; font-size: 1.05rem; color: var(--text-primary);">Haz clic para seleccionar tu archivo Excel o arrástralo aquí</h4>
+                        <p style="margin: 0 0 14px; font-size: 0.82rem; color: var(--text-secondary);">Soporta planillas <strong>.xlsx</strong>, <strong>.xls</strong> y <strong>.csv</strong></p>
+                        <button type="button" style="background: var(--accent-blue); color: white; border: none; padding: 9px 20px; border-radius: 8px; font-weight: 600; font-size: 0.85rem; cursor: pointer; pointer-events: none; display: inline-flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-folder-open"></i> Seleccionar Archivo Excel
+                        </button>
                     </div>
                 </div>
 
                 <!-- Panel 2: Copiar y Pegar directo -->
-                <div id="import-panel-paste" style="display: none; flex-direction: column; gap: 10px;">
-                    <p style="margin: 0; font-size: 0.82rem; color: var(--text-secondary);">
-                        Copia las celdas de tu Excel (incluyendo o no la fila de títulos) y pégalas aquí directamente con <code>Ctrl + V</code>:
-                    </p>
-                    <textarea id="import-paste-textarea" rows="6" placeholder="Usuario&#9;RUT&#9;Correo&#9;Empresa&#9;Dirección&#9;Equipo&#9;Modelo&#9;Número de Serie&#9;Marca&#9;Procesador&#9;RAM&#9;Almacenamiento&#9;Windows&#9;Estado..." style="width: 100%; padding: 12px; background: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: monospace; font-size: 0.8rem; resize: vertical;"></textarea>
-                    <div style="display: flex; justify-content: flex-end;">
-                        <button type="button" id="btn-parse-pasted-data" class="btn-primary" style="padding: 8px 18px; border-radius: 8px; font-weight: 600; display: flex; align-items: center; gap: 6px; background: var(--accent-blue); color: white; border: none; cursor: pointer;">
+                <div id="import-panel-paste" style="display: none; flex-direction: column; gap: 12px;">
+                    <div style="background: rgba(59, 130, 246, 0.08); border: 1px solid rgba(59, 130, 246, 0.25); border-radius: 8px; padding: 10px 14px; font-size: 0.82rem; color: #93c5fd; display: flex; align-items: center; gap: 10px;">
+                        <i class="fas fa-info-circle" style="font-size: 1.1rem; color: var(--accent-blue);"></i>
+                        <span><strong>Paso a paso:</strong> Abre tu Excel -> Selecciona las celdas -> Presiona <code>Ctrl + C</code> (Copiar) -> Haz clic en el recuadro abajo y presiona <code>Ctrl + V</code> (Pegar). Se detectará automáticamente.</span>
+                    </div>
+                    <textarea id="import-paste-textarea" rows="6" placeholder="Pega aquí las celdas copiadas desde Excel (Ctrl + V)..." style="width: 100%; padding: 12px; background: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: monospace; font-size: 0.82rem; resize: vertical;"></textarea>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-size: 0.76rem; color: var(--text-muted);">Los datos se detectan automáticamente al pegar</span>
+                        <button type="button" id="btn-parse-pasted-data" class="btn-primary" style="padding: 9px 20px; border-radius: 8px; font-weight: 600; display: flex; align-items: center; gap: 6px; background: var(--accent-blue); color: white; border: none; cursor: pointer;">
                             <i class="fas fa-magic"></i> Procesar Texto Pegado
                         </button>
                     </div>

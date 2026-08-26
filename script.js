@@ -5235,19 +5235,52 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // Función procesar texto pegado
+    function triggerParsePastedText() {
+        if (!pasteTextarea) return;
+        const text = pasteTextarea.value.trim();
+        if (!text) {
+            parsedEquipos = [];
+            renderImportPreview([]);
+            return;
+        }
+        parsedEquipos = parsePastedExcelText(text);
+        if (parsedEquipos.length > 0) {
+            renderImportPreview(parsedEquipos);
+            const previewSec = document.getElementById('import-preview-section');
+            if (previewSec) {
+                previewSec.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+        } else {
+            renderImportPreview([]);
+        }
+    }
+
+    if (pasteTextarea) {
+        pasteTextarea.addEventListener('paste', () => {
+            setTimeout(triggerParsePastedText, 100);
+        });
+        pasteTextarea.addEventListener('input', () => {
+            if (pasteTextarea.value.trim().length > 20) {
+                triggerParsePastedText();
+            }
+        });
+    }
+
     // Botón Procesar Texto Pegado
     if (btnParsePastedData && pasteTextarea) {
         btnParsePastedData.addEventListener('click', () => {
             const text = pasteTextarea.value.trim();
             if (!text) {
-                alert('Por favor pega primero los datos de tu Excel en el cuadro de texto.');
+                alert('⚠️ Por favor primero abre tu Excel, copia las celdas (Ctrl + C) y pégalas en este recuadro (Ctrl + V).');
                 return;
             }
             parsedEquipos = parsePastedExcelText(text);
             if (parsedEquipos.length === 0) {
-                alert('No se pudieron interpretar filas válidas. Asegúrate de copiar las celdas desde Excel.');
+                alert('⚠️ No se pudieron interpretar filas válidas del texto pegado.\n\nAsegúrate de copiar directamente las celdas desde tu archivo Excel.');
             } else {
                 renderImportPreview(parsedEquipos);
+                alert(`✅ ¡Se detectaron ${parsedEquipos.length} equipos en el texto pegado!\n\nRevisa la tabla abajo y haz clic en "Confirmar Importación" para guardarlos.`);
             }
         });
     }
@@ -5258,7 +5291,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // Confirmar Importación e Insertar al Inventario
     if (previewConfirmBtn) {
         previewConfirmBtn.addEventListener('click', async () => {
-            if (!parsedEquipos || parsedEquipos.length === 0) return;
+            if (!parsedEquipos || parsedEquipos.length === 0) {
+                alert('⚠️ No hay equipos listos para importar.\n\nPor favor selecciona un archivo Excel (.xlsx) o pega las filas de tu planilla en el recuadro de texto.');
+                return;
+            }
 
             previewConfirmBtn.disabled = true;
             previewConfirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando Equipos...';
