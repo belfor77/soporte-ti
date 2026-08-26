@@ -55,6 +55,7 @@
                 <ul>
                     <li id="nav-usuarios"><a href="#" data-page="page-usuarios"><i class="fas fa-users"></i> Usuarios</a></li>
                     <li id="nav-equipos"><a href="#" data-page="page-base-conocimientos"><i class="fas fa-desktop"></i> Equipos</a></li>
+                    <li id="nav-compras"><a href="#" data-page="page-compras"><i class="fas fa-shopping-bag"></i> Compras TI <span class="badge new-badge" style="background: var(--accent-blue); color: white; padding: 2px 6px; border-radius: 10px; font-size: 0.7rem; margin-left: 8px;">NUEVO</span></a></li>
                 </ul>
 
                 <!-- ANALÍTICA -->
@@ -766,7 +767,7 @@
                     </div>
                 </div>
 
-                <div class="ticket-creation-layout" style="display: grid; grid-template-columns: 1fr 340px; gap: 20px;">
+                <div class="ticket-creation-layout">
                     <!-- Columna Izquierda: El Formulario con Stepper -->
                     <form id="stepper-ticket-form" style="display: flex; flex-direction: column; gap: 20px;">
                         
@@ -782,7 +783,7 @@
                                 <input type="text" id="ticket-subject" placeholder="Ej: No puedo acceder al sistema ERP" required style="width: 100%; padding: 12px; background-color: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family); font-size: 0.88rem; transition: border-color 0.2s;">
                             </div>
                             
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                            <div class="form-grid-2col">
                                 <div class="form-group">
                                     <label for="ticket-category" style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 6px; display: block;">Categoría *</label>
                                     <select id="ticket-category" required style="width: 100%; padding: 12px; background-color: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family); font-size: 0.88rem; cursor: pointer;">
@@ -819,10 +820,48 @@
                             <div class="form-group" id="ticket-creator-group" style="display: none;">
                                 <label for="ticket-creator-select" style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 6px; display: block;">Miembro del equipo (Creador) *</label>
                                 <select id="ticket-creator-select" style="width: 100%; padding: 12px; background-color: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family); font-size: 0.88rem; cursor: pointer;">
-                                    <option value="Felipe Olivares" selected>Felipe Olivares</option>
+                                    <option value="Belfor Aburto" selected>Belfor Aburto</option>
+                                    <option value="Felipe Olivares">Felipe Olivares</option>
                                     <option value="Omar Gálvez">Omar Gálvez</option>
-                                    <option value="Belfor Aburto">Belfor Aburto</option>
                                 </select>
+                            </div>
+
+                            <!-- Estado Inicial del Ticket & Prioridad -->
+                            <div class="form-grid-2col" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                                <div class="form-group">
+                                    <label for="ticket-status-select" style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center;">
+                                        <span><i class="fas fa-toggle-on" style="color: var(--accent-blue); margin-right: 4px;"></i> Estado del Ticket *</span>
+                                        <span style="font-size: 0.72rem; color: var(--accent-green); font-weight: 700;">¡Puedes marcarlo Resuelto!</span>
+                                    </label>
+                                    <select id="ticket-status-select" required style="width: 100%; padding: 12px; background-color: var(--bg-sidebar); border: 2px solid rgba(50, 102, 235, 0.4); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family); font-size: 0.88rem; cursor: pointer; font-weight: 700;">
+                                        <option value="abierto" selected>🟢 Abierto (Pendiente)</option>
+                                        <option value="en_progreso">🟡 En Progreso (Tomado / En atención)</option>
+                                        <option value="resuelto">🔵 Resuelto (Solucionado inmediatamente)</option>
+                                        <option value="pendiente">🟣 Pendiente (Esperando repuesto/usuario)</option>
+                                        <option value="cerrado">⚫ Cerrado Definitivo</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="ticket-priority-select" style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 6px; display: block;">
+                                        <i class="fas fa-flag" style="color: #f59e0b; margin-right: 4px;"></i> Prioridad del Ticket
+                                    </label>
+                                    <select id="ticket-priority-select" style="width: 100%; padding: 12px; background-color: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family); font-size: 0.88rem; cursor: pointer;">
+                                        <option value="baja">Baja</option>
+                                        <option value="media" selected>Media (Normal)</option>
+                                        <option value="alta">Alta</option>
+                                        <option value="urgente">🚨 Urgente / Crítica</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Campo condicional de Solución / Detalle de Resolución -->
+                            <div class="form-group" id="group-ticket-resolution-note" style="display: none; background: rgba(50, 102, 235, 0.08); border: 1px solid rgba(50, 102, 235, 0.3); border-radius: 10px; padding: 14px 16px; margin-top: 4px;">
+                                <label for="ticket-resolution-note" style="font-size: 0.82rem; color: var(--text-primary); font-weight: 700; margin-bottom: 6px; display: flex; align-items: center; gap: 6px;">
+                                    <i class="fas fa-check-circle" style="color: var(--accent-green); font-size: 1rem;"></i> Solución / Detalle de la Resolución (Cierre Directo)
+                                </label>
+                                <p style="margin: 0 0 8px 0; font-size: 0.75rem; color: var(--text-secondary);">Indica qué solución técnica aplicaste para que quede registrado en el historial del caso:</p>
+                                <textarea id="ticket-resolution-note" placeholder="Ej: Se restableció acceso a Office 365, se reconfiguró perfil de correo y se comprobó funcionamiento correcto." style="width: 100%; padding: 10px 12px; background-color: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-primary); font-family: var(--font-family); font-size: 0.85rem; min-height: 70px; resize: vertical; line-height: 1.4;"></textarea>
                             </div>
                             
                             <div class="form-group">
@@ -908,7 +947,7 @@
                                 </div>
                             </div>
                             
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                            <div class="form-grid-2col">
                                 <div class="form-group">
                                     <label for="ticket-client-rut" style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 6px; display: block;">RUT de la persona *</label>
                                     <input type="text" id="ticket-client-rut" required placeholder="Ej: 12.345.678-9" style="width: 100%; padding: 12px; background-color: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family); font-size: 0.88rem;">
@@ -919,16 +958,19 @@
                                 </div>
                             </div>
                             
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                            <div class="form-grid-2col">
                                 <div class="form-group">
                                     <label for="ticket-phone" style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 6px; display: block;">Teléfono de contacto (Opcional)</label>
                                     <input type="text" id="ticket-phone" placeholder="Ej: +56 9 1234 5678" style="width: 100%; padding: 12px; background-color: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family); font-size: 0.88rem;">
                                 </div>
                                 <div class="form-group">
-                                    <label for="ticket-assigned-tech" style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 6px; display: block;">Técnico / Ejecutivo Asignado *</label>
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                                        <label for="ticket-assigned-tech" style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; margin: 0; display: block;">Técnico / Ejecutivo Asignado *</label>
+                                        <button type="button" id="btn-self-assign-ticket" style="background: rgba(50, 102, 235, 0.12); border: 1px solid rgba(50, 102, 235, 0.25); color: var(--accent-blue); padding: 2px 8px; border-radius: 5px; font-size: 0.72rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 4px;"><i class="fas fa-user-check"></i> Asignarme a mí</button>
+                                    </div>
                                     <select id="ticket-assigned-tech" style="width: 100%; padding: 12px; background-color: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family); font-size: 0.88rem; cursor: pointer;">
                                         <option value="">Sin Asignar (Disponible para el equipo)</option>
-                                        <option value="Belfor Aburto">Belfor Aburto (Administrador TI)</option>
+                                        <option value="Belfor Aburto" selected>Belfor Aburto (Administrador TI)</option>
                                         <option value="Felipe Olivares">Felipe Olivares (Soporte)</option>
                                         <option value="Omar Gálvez">Omar Gálvez (Soporte)</option>
                                     </select>
@@ -981,7 +1023,7 @@
                         </div>
 
                         <!-- Botones de navegación del Stepper -->
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
+                        <div class="stepper-nav-buttons">
                             <button type="button" id="btn-stepper-prev" style="background-color: transparent; border: 1px solid var(--border-color); color: var(--text-secondary); padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: 600; font-family: var(--font-family); transition: all 0.2s;">Cancelar</button>
                             <button type="button" id="btn-stepper-next" style="background: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-blue) 100%); color: white; border: none; padding: 12px 30px; border-radius: 8px; cursor: pointer; font-weight: 600; font-family: var(--font-family); display: flex; align-items: center; gap: 8px; transition: all 0.2s; box-shadow: 0 4px 15px rgba(97, 62, 234, 0.25);">Continuar <i class="fas fa-arrow-right"></i></button>
                         </div>
@@ -1228,10 +1270,10 @@
             <div id="page-base-conocimientos" class="page-section">
                 <div class="tickets-page-header">
                     <div class="tickets-page-title">
-                        <h1>Base de Conocimientos</h1>
-                        <p>Inicio &gt; Base de Conocimientos &gt; Equipos</p>
+                        <h1>💻 Gestión de Equipos & Ciclo de Vida</h1>
+                        <p>Inventario CMDB, control de próximos ingresos, bajas y trazabilidad de notebooks</p>
                     </div>
-                    <div class="kb-header-buttons" style="display: flex; gap: 12px;">
+                    <div class="kb-header-buttons" id="inventario-header-actions" style="display: flex; gap: 12px;">
                         <button class="btn-importar-equipos" id="btn-importar-equipos" style="background-color: rgba(255, 255, 255, 0.05); border: 1px solid var(--border-color); color: var(--text-primary); padding: 10px 18px; border-radius: 10px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s ease;">
                             <i class="fas fa-file-import"></i> Importar Equipos
                         </button>
@@ -1244,133 +1286,435 @@
                     </div>
                 </div>
 
-                <!-- Tabs de Categoría -->
-                <div class="tickets-filter-tabs" id="equip-filter-tabs">
-                    <button class="filter-tab active" data-filter="todos">
-                        Todos los Equipos
+                <!-- Subnavegador de Módulos de Equipos -->
+                <div class="equip-main-tabs" style="display: flex; gap: 8px; margin-bottom: 24px; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; overflow-x: auto; -webkit-overflow-scrolling: touch;">
+                    <button class="equip-main-tab active" id="tab-btn-inventario" type="button">
+                        <i class="fas fa-boxes"></i> 📦 Inventario General
                     </button>
-                    <button class="filter-tab" data-filter="escritorio">
-                        Escritorios
+                    <button class="equip-main-tab" id="tab-btn-ingresos" type="button">
+                        <i class="fas fa-user-plus"></i> 📥 Próximos Ingresos <span class="badge-tab-count" id="badge-count-ingresos" style="background: rgba(97, 62, 234, 0.25); color: #a78bfa; padding: 2px 7px; border-radius: 12px; font-size: 0.72rem; margin-left: 6px; font-weight: 700;">0</span>
                     </button>
-                    <button class="filter-tab" data-filter="laptop">
-                        Portátiles
-                    </button>
-                    <button class="filter-tab" data-filter="servidor">
-                        Servidores
-                    </button>
-                    <button class="filter-tab" data-filter="historial">
-                        Historial
+                    <button class="equip-main-tab" id="tab-btn-bajas" type="button">
+                        <i class="fas fa-user-minus"></i> 📤 Bajas & Devoluciones <span class="badge-tab-count" id="badge-count-bajas" style="background: rgba(245, 158, 11, 0.25); color: #f59e0b; padding: 2px 7px; border-radius: 12px; font-size: 0.72rem; margin-left: 6px; font-weight: 700;">0</span>
                     </button>
                 </div>
 
-                <!-- Tarjetas estadísticas (Métricas) -->
-                <section class="stats-grid" id="equip-stats-grid" style="margin-bottom: 30px;">
-                    <div class="stat-card stat-blue">
-                        <i class="fas fa-laptop stat-icon"></i>
-                        <div class="stat-details">
-                            <span class="stat-number" id="stat-total-equipos">0</span>
-                            <span class="stat-label">Total Equipos</span>
-                            <span class="stat-sublabel">Registrados</span>
-                        </div>
-                    </div>
-                    <div class="stat-card stat-purple">
-                        <i class="fas fa-desktop stat-icon"></i>
-                        <div class="stat-details">
-                            <span class="stat-number" id="stat-total-escritorios">0</span>
-                            <span class="stat-label">Escritorios</span>
-                            <span class="stat-sublabel">Registrados</span>
-                        </div>
-                    </div>
-                    <div class="stat-card stat-red" style="--accent-red: #ef4444;">
-                        <i class="fas fa-laptop-code stat-icon" style="color: #ef4444;"></i>
-                        <div class="stat-details">
-                            <span class="stat-number" id="stat-total-portatiles" style="color: #f87171;">0</span>
-                            <span class="stat-label">Portátiles</span>
-                            <span class="stat-sublabel">Registrados</span>
-                        </div>
-                    </div>
-                    <div class="stat-card stat-green">
-                        <i class="fas fa-check-circle stat-icon"></i>
-                        <div class="stat-details">
-                            <span class="stat-number" id="stat-total-activos">0</span>
-                            <span class="stat-label">Activos</span>
-                            <span class="stat-sublabel">En uso</span>
-                        </div>
-                    </div>
-                    <div class="stat-card stat-yellow">
-                        <i class="fas fa-wrench stat-icon"></i>
-                        <div class="stat-details">
-                            <span class="stat-number" id="stat-total-mantenimiento">0</span>
-                            <span class="stat-label">Mantenimiento</span>
-                            <span class="stat-sublabel">En reparación</span>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- Barra de búsqueda y filtros -->
-                <div class="tickets-toolbar" style="margin-bottom: 20px; display: flex; gap: 12px; align-items: center; width: 100%;">
-                    <div class="tickets-search" style="flex: 1; max-width: none;">
-                        <i class="fas fa-search"></i>
-                        <input type="text" id="equip-search-input" placeholder="Buscar por nombre, usuario, serial, modelo...">
-                    </div>
-                    <div class="equip-selects" style="display: flex; gap: 12px;">
-                        <div class="tickets-sort" style="width: 140px;">
-                            <select id="equip-filter-tipo">
-                                <option value="todos">Tipo</option>
-                                <option value="laptop">Portátil</option>
-                                <option value="escritorio">Escritorio</option>
-                                <option value="servidor">Servidor</option>
-                            </select>
-                        </div>
-                        <div class="tickets-sort" style="width: 140px;">
-                            <select id="equip-filter-marca">
-                                <option value="todos">Marca</option>
-                                <option value="Dell">Dell</option>
-                                <option value="HP">HP</option>
-                                <option value="Lenovo">Lenovo</option>
-                                <option value="Asus">Asus</option>
-                                <option value="Apple">Apple</option>
-                            </select>
-                        </div>
-                        <div class="tickets-sort" style="width: 140px;">
-                            <select id="equip-filter-estado">
-                                <option value="todos">Estado</option>
-                                <option value="activo">Activo</option>
-                                <option value="mantenimiento">Mantenimiento</option>
-                                <option value="baja">Baja</option>
-                            </select>
-                        </div>
-                        <button class="filter-tab" id="btn-equip-more-filters" style="padding: 10px 14px; height: 42px; display: flex; align-items: center; justify-content: center; background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-secondary); cursor: pointer; transition: all 0.2s;">
-                            <i class="fas fa-sliders-h"></i>
+                <!-- ================= SUBTAB 1: INVENTARIO ================= -->
+                <div id="equip-subtab-inventario" class="equip-subtab-content">
+                    <!-- Tabs de Empresa para Inventario de Equipos -->
+                    <div class="tickets-filter-tabs equip-company-filter-tabs" id="equip-company-tabs" style="margin-bottom: 16px; display: flex; gap: 8px; flex-wrap: wrap;">
+                        <button class="filter-tab active" data-company="todas" style="font-weight: 700; display: flex; align-items: center; gap: 6px;">
+                            <i class="fas fa-globe"></i> Todas las Empresas <span class="tab-badge" id="badge-company-count-todas" style="background: rgba(255,255,255,0.12); padding: 2px 8px; border-radius: 10px; font-size: 0.72rem;">0</span>
+                        </button>
+                        <button class="filter-tab" data-company="T-Sales" style="font-weight: 700; display: flex; align-items: center; gap: 6px;">
+                            <i class="fas fa-building" style="color: var(--accent-blue);"></i> T-Sales <span class="tab-badge" id="badge-company-count-tsales" style="background: rgba(59, 130, 246, 0.2); color: #60a5fa; padding: 2px 8px; border-radius: 10px; font-size: 0.72rem;">0</span>
+                        </button>
+                        <button class="filter-tab" data-company="Infinet" style="font-weight: 700; display: flex; align-items: center; gap: 6px;">
+                            <i class="fas fa-network-wired" style="color: #10b981;"></i> Infinet <span class="tab-badge" id="badge-company-count-infinet" style="background: rgba(16, 185, 129, 0.2); color: #10b981; padding: 2px 8px; border-radius: 10px; font-size: 0.72rem;">0</span>
+                        </button>
+                        <button class="filter-tab" data-company="VPrime" style="font-weight: 700; display: flex; align-items: center; gap: 6px;">
+                            <i class="fas fa-gem" style="color: #ec4899;"></i> VPrime <span class="tab-badge" id="badge-company-count-vprime" style="background: rgba(236, 72, 153, 0.2); color: #ec4899; padding: 2px 8px; border-radius: 10px; font-size: 0.72rem;">0</span>
                         </button>
                     </div>
+
+                    <!-- Tabs de Categoría -->
+                    <div class="tickets-filter-tabs" id="equip-filter-tabs">
+                        <button class="filter-tab active" data-filter="todos">
+                            Todos los Equipos
+                        </button>
+                        <button class="filter-tab" data-filter="escritorio">
+                            Escritorios
+                        </button>
+                        <button class="filter-tab" data-filter="laptop">
+                            Portátiles
+                        </button>
+                        <button class="filter-tab" data-filter="servidor">
+                            Servidores
+                        </button>
+                        <button class="filter-tab" data-filter="historial">
+                            Historial
+                        </button>
+                    </div>
+
+                    <!-- Tarjetas estadísticas (6 KPIs Modernos) -->
+                    <section class="stats-grid" id="equip-stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 14px; margin-bottom: 24px;">
+                        <div class="stat-card stat-blue">
+                            <i class="fas fa-laptop stat-icon"></i>
+                            <div class="stat-details">
+                                <span class="stat-number" id="stat-total-equipos">0</span>
+                                <span class="stat-label">Total Equipos</span>
+                                <span class="stat-sublabel">Registrados</span>
+                            </div>
+                        </div>
+                        <div class="stat-card stat-green">
+                            <i class="fas fa-check-circle stat-icon"></i>
+                            <div class="stat-details">
+                                <span class="stat-number" id="stat-total-activos">0</span>
+                                <span class="stat-label">Activos</span>
+                                <span class="stat-sublabel">En uso</span>
+                            </div>
+                        </div>
+                        <div class="stat-card stat-yellow">
+                            <i class="fas fa-wrench stat-icon"></i>
+                            <div class="stat-details">
+                                <span class="stat-number" id="stat-total-mantenimiento">0</span>
+                                <span class="stat-label">Mantenimiento</span>
+                                <span class="stat-sublabel">En reparación</span>
+                            </div>
+                        </div>
+                        <div class="stat-card stat-purple">
+                            <i class="fas fa-box-open stat-icon"></i>
+                            <div class="stat-details">
+                                <span class="stat-number" id="stat-total-disponibles">0</span>
+                                <span class="stat-label">Disponibles</span>
+                                <span class="stat-sublabel">Listos para asignar</span>
+                            </div>
+                        </div>
+                        <div class="stat-card stat-amber" style="--accent-amber: #f59e0b;">
+                            <i class="fas fa-calendar-alt stat-icon" style="color: #f59e0b;"></i>
+                            <div class="stat-details">
+                                <span class="stat-number" id="stat-total-ingresos-kpi" style="color: #fbbf24;">0</span>
+                                <span class="stat-label">Próximos ingresos</span>
+                                <span class="stat-sublabel">Programados</span>
+                            </div>
+                        </div>
+                        <div class="stat-card stat-red" style="--accent-red: #ef4444;">
+                            <i class="fas fa-trash-alt stat-icon" style="color: #ef4444;"></i>
+                            <div class="stat-details">
+                                <span class="stat-number" id="stat-total-bajas-kpi" style="color: #f87171;">0</span>
+                                <span class="stat-label">De baja</span>
+                                <span class="stat-sublabel">No utilizados</span>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Barra de herramientas: Búsqueda, Filtros y Switch de Vistas (Tarjeta / Tabla) -->
+                    <div class="tickets-toolbar" style="margin-bottom: 20px; display: flex; gap: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap; width: 100%;">
+                        <div style="display: flex; gap: 10px; align-items: center; flex: 1; min-width: 300px; flex-wrap: wrap;">
+                            <div class="tickets-search" style="flex: 1; min-width: 220px; max-width: none;">
+                                <i class="fas fa-search"></i>
+                                <input type="text" id="equip-search-input" placeholder="Buscar por nombre, usuario, serial, modelo, SO...">
+                            </div>
+                            <div class="equip-selects" style="display: flex; gap: 8px; flex-wrap: wrap;">
+                                <div class="tickets-sort" style="width: 125px;">
+                                    <select id="equip-filter-tipo">
+                                        <option value="todos">Tipo: Todos</option>
+                                        <option value="laptop">Portátil</option>
+                                        <option value="escritorio">Escritorio</option>
+                                        <option value="servidor">Servidor</option>
+                                    </select>
+                                </div>
+                                <div class="tickets-sort" style="width: 125px;">
+                                    <select id="equip-filter-marca">
+                                        <option value="todos">Marca: Todas</option>
+                                        <option value="Dell">Dell</option>
+                                        <option value="HP">HP</option>
+                                        <option value="Lenovo">Lenovo</option>
+                                        <option value="Asus">Asus</option>
+                                        <option value="Apple">Apple</option>
+                                    </select>
+                                </div>
+                                <div class="tickets-sort" style="width: 150px;">
+                                    <select id="equip-filter-estado">
+                                        <option value="todos">Todos los estados</option>
+                                        <option value="disponible">🟢 Disponible</option>
+                                        <option value="reservado">🟣 Reservado</option>
+                                        <option value="en_preparacion">🔵 En preparación</option>
+                                        <option value="activo">🟢 Asignado / Activo</option>
+                                        <option value="pendiente_devolucion">🟠 Pend. Devolución</option>
+                                        <option value="mantenimiento">🔴 Mantenimiento</option>
+                                        <option value="baja">⚫ Baja Definitiva</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                            <!-- Botones Switch de Vistas: Tarjeta / Tabla -->
+                            <div class="view-toggle-group" style="display: inline-flex; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; padding: 3px; gap: 3px;">
+                                <button type="button" id="btn-view-cards" class="view-toggle-btn active" style="padding: 7px 13px; border: none; border-radius: 6px; font-weight: 600; font-size: 0.82rem; cursor: pointer; display: flex; align-items: center; gap: 6px; background: var(--accent-blue); color: white; transition: all 0.2s;">
+                                    <i class="fas fa-th-large"></i> Vista tarjeta
+                                </button>
+                                <button type="button" id="btn-view-table" class="view-toggle-btn" style="padding: 7px 13px; border: none; border-radius: 6px; font-weight: 600; font-size: 0.82rem; cursor: pointer; display: flex; align-items: center; gap: 6px; background: transparent; color: var(--text-secondary); transition: all 0.2s;">
+                                    <i class="fas fa-list"></i> Vista tabla
+                                </button>
+                            </div>
+
+                            <!-- Selector de Ordenamiento -->
+                            <div class="tickets-sort" style="width: 175px;">
+                                <select id="equip-sort-by">
+                                    <option value="recent">Ordenar: Más reciente</option>
+                                    <option value="user_asc">Usuario: A → Z</option>
+                                    <option value="brand_asc">Marca / Modelo</option>
+                                    <option value="company">Empresa</option>
+                                    <option value="serial">Serial / S/N</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 1. VISTA DE TARJETAS (Cards Grid) -->
+                    <div id="equip-cards-container" class="equip-cards-grid">
+                        <!-- Inyectado por JS -->
+                    </div>
+
+                    <!-- 2. VISTA DE TABLA (Table View) -->
+                    <div id="equip-table-container" class="equip-table-container" style="display: none;">
+                        <table class="tickets-table equip-table" id="equip-table">
+                            <thead>
+                                <tr>
+                                    <th>EQUIPO</th>
+                                    <th>USUARIO ASIGNADO</th>
+                                    <th>MARCA / MODELO</th>
+                                    <th>SO / SERIAL</th>
+                                    <th>ESPECIFICACIONES</th>
+                                    <th>ESTADO CICLO</th>
+                                    <th style="text-align: right; padding-right: 24px;">ACCIONES</th>
+                                </tr>
+                            </thead>
+                            <tbody id="equip-table-body">
+                                <!-- Carga dinámica -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Paginación -->
+                    <div class="tickets-pagination" style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; flex-wrap: wrap; gap: 12px;">
+                        <span class="pagination-info" id="equip-pagination-info">Mostrando 0 a 0 de 0 equipos</span>
+                        <div style="display: flex; align-items: center; gap: 14px;">
+                            <div class="pagination-controls" id="equip-pagination-controls">
+                                <!-- Paginación dinámica -->
+                            </div>
+                            <div class="tickets-sort" style="width: 125px;">
+                                <select id="equip-page-size">
+                                    <option value="6">6 por página</option>
+                                    <option value="12">12 por página</option>
+                                    <option value="24">24 por página</option>
+                                    <option value="48">48 por página</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                <!-- Tabla de equipos -->
-                <div class="tickets-table-container">
-                    <table class="tickets-table equip-table" id="equip-table">
-                        <thead>
-                            <tr>
-                                <th>EQUIPO</th>
-                                <th>USUARIO</th>
-                                <th>MARCA / MODELO</th>
-                                <th>SO / SERIAL</th>
-                                <th>ESPECIFICACIONES</th>
-                                <th>ESTADO</th>
-                                <th style="text-align: right; padding-right: 24px;">ACCIONES</th>
-                            </tr>
-                        </thead>
-                        <tbody id="equip-table-body">
-                            <!-- Carga dinámica -->
-                        </tbody>
-                    </table>
+                <!-- ================= SUBTAB 2: INGRESOS (ONBOARDING) ================= -->
+                <div id="equip-subtab-ingresos" class="equip-subtab-content" style="display: none;">
+                    <div class="subtab-header-card" style="background: linear-gradient(135deg, rgba(97, 62, 234, 0.08) 0%, rgba(50, 102, 235, 0.05) 100%); border: 1px solid rgba(97, 62, 234, 0.2); border-radius: 14px; padding: 20px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+                        <div>
+                            <h3 style="margin: 0 0 6px 0; font-size: 1.15rem; color: var(--text-primary); display: flex; align-items: center; gap: 8px;">
+                                <i class="fas fa-user-plus" style="color: var(--accent-purple);"></i> Planificación de Ingresos & Asignación de Notebooks
+                            </h3>
+                            <p style="margin: 0; font-size: 0.84rem; color: var(--text-secondary);">
+                                Anexa notebooks disponibles de nuestro inventario al personal que ingresará a la empresa (lunes u otros días) para preparar sus accesos y entregárselo.
+                            </p>
+                        </div>
+                        <button type="button" class="btn-primary" id="btn-open-modal-ingreso" style="padding: 10px 20px; border-radius: 8px; font-weight: 700; display: flex; align-items: center; gap: 8px; cursor: pointer; background: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-blue) 100%); color: white; border: none; box-shadow: 0 4px 15px rgba(97, 62, 234, 0.3);">
+                            <i class="fas fa-plus"></i> Anexar Notebook a Nuevo Ingreso
+                        </button>
+                    </div>
+
+                    <!-- Métricas de Ingresos y Disponibilidad -->
+                    <section class="stats-grid" style="margin-bottom: 24px;">
+                        <div class="stat-card stat-green">
+                            <i class="fas fa-laptop-code stat-icon" style="color: #10b981;"></i>
+                            <div class="stat-details">
+                                <span class="stat-number" id="stat-ingresos-disponibles">0</span>
+                                <span class="stat-label">Notebooks Disponibles</span>
+                                <span class="stat-sublabel">Libres para anexar</span>
+                            </div>
+                        </div>
+                        <div class="stat-card stat-yellow">
+                            <i class="fas fa-bookmark stat-icon" style="color: #c084fc;"></i>
+                            <div class="stat-details">
+                                <span class="stat-number" id="stat-ingresos-reservados">0</span>
+                                <span class="stat-label">Notebooks Reservados</span>
+                                <span class="stat-sublabel">Apartados para ingresos</span>
+                            </div>
+                        </div>
+                        <div class="stat-card stat-blue">
+                            <i class="fas fa-tools stat-icon"></i>
+                            <div class="stat-details">
+                                <span class="stat-number" id="stat-ingresos-preparacion">0</span>
+                                <span class="stat-label">En Preparación TI</span>
+                                <span class="stat-sublabel">Instalando perfiles y SO</span>
+                            </div>
+                        </div>
+                        <div class="stat-card stat-purple">
+                            <i class="fas fa-check-double stat-icon"></i>
+                            <div class="stat-details">
+                                <span class="stat-number" id="stat-ingresos-completados">0</span>
+                                <span class="stat-label">Entregados & Activos</span>
+                                <span class="stat-sublabel">Sincronizados en CMDB</span>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- SECCIÓN: NOTEBOOKS NUESTROS DISPONIBLES PARA ASIGNAR -->
+                    <div id="ingresos-disponibles-section" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 14px; padding: 20px; margin-bottom: 26px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
+                            <div>
+                                <h4 style="margin: 0 0 4px 0; font-size: 1.05rem; color: var(--text-primary); display: flex; align-items: center; gap: 8px;">
+                                    <i class="fas fa-laptop" style="color: #10b981;"></i> Notebooks Propios Disponibles para Anexar
+                                    <span id="badge-disponibles-count" class="status-badge status-disponible" style="font-size: 0.76rem; padding: 2px 10px;">0 Disponibles</span>
+                                </h4>
+                                <p style="margin: 0; font-size: 0.82rem; color: var(--text-secondary);">
+                                    Haz clic en <strong>Anexar a Nuevo Ingreso</strong> en cualquiera de los notebooks libres para asignarlo a un colaborador que ingresa.
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Grid de tarjetas de notebooks disponibles -->
+                        <div id="ingresos-notebooks-disponibles-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px;">
+                            <!-- Inyectado dinámicamente -->
+                        </div>
+                    </div>
+
+                    <!-- Encabezado de Planificación de Ingresos -->
+                    <div style="margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
+                        <h4 style="margin: 0; font-size: 1.05rem; color: var(--text-primary); display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-clipboard-list" style="color: var(--accent-blue);"></i> Seguimiento de Ingresos & Asignaciones
+                        </h4>
+                    </div>
+
+                    <!-- Barra de Búsqueda y Filtros de Ingresos -->
+                    <div class="tickets-toolbar" style="margin-bottom: 20px; display: flex; gap: 12px; align-items: center; width: 100%;">
+                        <div class="tickets-search" style="flex: 1;">
+                            <i class="fas fa-search"></i>
+                            <input type="text" id="ingresos-search-input" placeholder="Buscar por colaborador, RUT, correo, supervisor o serial...">
+                        </div>
+                        <div style="display: flex; gap: 10px;">
+                            <select id="ingresos-filter-empresa" style="padding: 10px 14px; border-radius: 8px; background: var(--bg-sidebar); border: 1px solid var(--border-color); color: var(--text-primary); font-family: var(--font-family); font-size: 0.85rem; cursor: pointer;">
+                                <option value="todas">Todas las Empresas</option>
+                                <option value="T-Sales">T-Sales</option>
+                                <option value="Infinet">INFINET</option>
+                                <option value="VPrime">V PRIME</option>
+                            </select>
+                            <select id="ingresos-filter-estado" style="padding: 10px 14px; border-radius: 8px; background: var(--bg-sidebar); border: 1px solid var(--border-color); color: var(--text-primary); font-family: var(--font-family); font-size: 0.85rem; cursor: pointer;">
+                                <option value="todos">Todos los Estados</option>
+                                <option value="reservado">🟣 Reservado</option>
+                                <option value="en_preparacion">🔵 En preparación</option>
+                                <option value="asignado">🟢 Entregado / Asignado</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Tabla de Ingresos (Desktop) -->
+                    <div class="ingresos-table-container">
+                        <table class="tickets-table" id="table-ingresos">
+                            <thead>
+                                <tr>
+                                    <th>COLABORADOR A INGRESAR</th>
+                                    <th>EMPRESA / CARGO</th>
+                                    <th>FECHA DE INGRESO</th>
+                                    <th>SUPERVISOR / JEFATURA</th>
+                                    <th>NOTEBOOK ASIGNADO</th>
+                                    <th>ESTADO DEL EQUIPO</th>
+                                    <th style="text-align: right; padding-right: 20px;">ACCIONES</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ingresos-table-body">
+                                <!-- Filas dinámicas -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Tarjetas Móviles de Ingresos -->
+                    <div id="mobile-ingresos-cards-container" class="mobile-tickets-container" style="display: none;">
+                        <!-- Cards móviles de ingresos inyectadas por JS -->
+                    </div>
                 </div>
 
-                <!-- Paginación -->
-                <div class="tickets-pagination" style="margin-top: 20px;">
-                    <span class="pagination-info" id="equip-pagination-info">Mostrando 0 a 0 de 0 equipos</span>
-                    <div class="pagination-controls" id="equip-pagination-controls">
-                        <!-- Paginación dinámica -->
+                <!-- ================= SUBTAB 3: BAJAS (OFFBOARDING) ================= -->
+                <div id="equip-subtab-bajas" class="equip-subtab-content" style="display: none;">
+                    <div class="subtab-header-card" style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(239, 68, 68, 0.05) 100%); border: 1px solid rgba(245, 158, 11, 0.25); border-radius: 14px; padding: 20px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+                        <div>
+                            <h3 style="margin: 0 0 6px 0; font-size: 1.15rem; color: var(--text-primary); display: flex; align-items: center; gap: 8px;">
+                                <i class="fas fa-user-minus" style="color: #f59e0b;"></i> Control de Bajas & Devolución de Notebooks (Offboarding TI)
+                            </h3>
+                            <p style="margin: 0; font-size: 0.84rem; color: var(--text-secondary);">
+                                Registra cuando un colaborador deja la empresa para rastrear el notebook asignado, exigir su devolución física y reincorporarlo al stock disponible.
+                            </p>
+                        </div>
+                        <button type="button" class="btn-primary" id="btn-open-modal-baja" style="padding: 10px 20px; border-radius: 8px; font-weight: 700; display: flex; align-items: center; gap: 8px; cursor: pointer; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; border: none; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);">
+                            <i class="fas fa-plus"></i> Registrar Baja de Colaborador
+                        </button>
+                    </div>
+
+                    <!-- Métricas de Bajas -->
+                    <section class="stats-grid" style="margin-bottom: 24px;">
+                        <div class="stat-card stat-amber" style="border-color: rgba(245, 158, 11, 0.3);">
+                            <i class="fas fa-truck-loading stat-icon" style="color: #f59e0b;"></i>
+                            <div class="stat-details">
+                                <span class="stat-number" id="stat-bajas-pendientes" style="color: #f59e0b;">0</span>
+                                <span class="stat-label">Pendientes de Devolución</span>
+                                <span class="stat-sublabel">Aún no llegan a bodega TI</span>
+                            </div>
+                        </div>
+                        <div class="stat-card stat-blue">
+                            <i class="fas fa-clipboard-check stat-icon"></i>
+                            <div class="stat-details">
+                                <span class="stat-number" id="stat-bajas-revision">0</span>
+                                <span class="stat-label">Recibidos en TI</span>
+                                <span class="stat-sublabel">En revisión / Formateo</span>
+                            </div>
+                        </div>
+                        <div class="stat-card stat-green">
+                            <i class="fas fa-recycle stat-icon"></i>
+                            <div class="stat-details">
+                                <span class="stat-number" id="stat-bajas-disponibles">0</span>
+                                <span class="stat-label">Recuperados y Disponibles</span>
+                                <span class="stat-sublabel">Listos para nuevo uso</span>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Barra de Búsqueda y Filtros de Bajas -->
+                    <div class="tickets-toolbar" style="margin-bottom: 20px; display: flex; gap: 12px; align-items: center; width: 100%;">
+                        <div class="tickets-search" style="flex: 1;">
+                            <i class="fas fa-search"></i>
+                            <input type="text" id="bajas-search-input" placeholder="Buscar por colaborador desvinculado, RUT, supervisor, serial o modelo...">
+                        </div>
+                        <div style="display: flex; gap: 10px;">
+                            <select id="bajas-filter-empresa" style="padding: 10px 14px; border-radius: 8px; background: var(--bg-sidebar); border: 1px solid var(--border-color); color: var(--text-primary); font-family: var(--font-family); font-size: 0.85rem; cursor: pointer;">
+                                <option value="todas">Todas las Empresas</option>
+                                <option value="T-Sales">T-Sales</option>
+                                <option value="Infinet">INFINET</option>
+                                <option value="VPrime">V PRIME</option>
+                            </select>
+                            <select id="bajas-filter-estado" style="padding: 10px 14px; border-radius: 8px; background: var(--bg-sidebar); border: 1px solid var(--border-color); color: var(--text-primary); font-family: var(--font-family); font-size: 0.85rem; cursor: pointer;">
+                                <option value="todos">Todos los Estados</option>
+                                <option value="pendiente_devolucion">🟠 Pendiente Devolución</option>
+                                <option value="recibido_preparacion">🔵 Recibido en TI / Revisión</option>
+                                <option value="disponible">🟢 Reintegrado / Disponible</option>
+                                <option value="mantenimiento">🔴 Mantenimiento</option>
+                                <option value="baja">⚫ Baja Definitiva</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Tabla de Bajas (Desktop) -->
+                    <div class="bajas-table-container">
+                        <table class="tickets-table" id="table-bajas">
+                            <thead>
+                                <tr>
+                                    <th>COLABORADOR QUE DEJA LA EMPRESA</th>
+                                    <th>EMPRESA</th>
+                                    <th>FECHA DE SALIDA</th>
+                                    <th>SUPERVISOR REPORTANTE</th>
+                                    <th>NOTEBOOK ASOCIADO (SERIAL)</th>
+                                    <th>ESTADO DE LA DEVOLUCIÓN</th>
+                                    <th style="text-align: right; padding-right: 20px;">ACCIONES</th>
+                                </tr>
+                            </thead>
+                            <tbody id="bajas-table-body">
+                                <!-- Filas dinámicas -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Tarjetas Móviles de Bajas -->
+                    <div id="mobile-bajas-cards-container" class="mobile-tickets-container" style="display: none;">
+                        <!-- Cards móviles de bajas inyectadas por JS -->
                     </div>
                 </div>
             </div>
@@ -1392,7 +1736,7 @@
                 <!-- Tabs de Navegación de Usuarios -->
                 <div style="display: flex; gap: 8px; border-bottom: 1px solid var(--border-color); margin-bottom: 24px;">
                     <button type="button" class="directory-tab-btn active" id="tab-btn-directorio">
-                        <i class="fas fa-address-book" style="margin-right: 6px;"></i> Directorio de Colaboradores (<span id="directory-total-badge">249</span>)
+                        <i class="fas fa-address-book" style="margin-right: 6px;"></i> Directorio de Colaboradores (<span id="directory-total-badge">381</span>)
                     </button>
                     <button type="button" class="directory-tab-btn" id="tab-btn-roles">
                         <i class="fas fa-user-shield" style="margin-right: 6px;"></i> Equipo TI & Roles
@@ -1423,9 +1767,9 @@
                         </div>
                     </div>
 
-                    <!-- Tabla del Directorio -->
+                    <!-- Tabla del Directorio (Desktop) -->
                     <div class="tickets-list-card" style="background-color: var(--bg-card); border-radius: 12px; padding: 20px; border: 1px solid rgba(255,255,255,0.03); box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);">
-                        <div style="overflow-x: auto;">
+                        <div class="directory-table-container" style="overflow-x: auto;">
                             <table class="tickets-table" style="width: 100%; border-collapse: collapse;">
                                 <thead>
                                     <tr style="border-bottom: 1px solid var(--border-color); text-align: left;">
@@ -1441,6 +1785,11 @@
                                     <!-- Poblado dinámicamente -->
                                 </tbody>
                             </table>
+                        </div>
+
+                        <!-- Tarjetas Móviles del Directorio -->
+                        <div id="mobile-directory-cards-container" class="mobile-directory-container" style="display: none;">
+                            <!-- Cards móviles inyectadas por JS -->
                         </div>
 
                         <!-- Paginación del Directorio -->
@@ -1488,7 +1837,7 @@
 
                     <!-- Tabla de usuarios TI -->
                     <div class="tickets-list-card" style="background-color: var(--bg-card); border-radius: 12px; padding: 24px; border: 1px solid rgba(255,255,255,0.03); box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);">
-                        <div style="overflow-x: auto;">
+                        <div class="users-roles-table-container" style="overflow-x: auto;">
                             <table class="tickets-table" style="width: 100%; border-collapse: collapse;">
                                 <thead>
                                     <tr style="border-bottom: 1px solid var(--border-color); text-align: left;">
@@ -1505,6 +1854,11 @@
                                     <!-- Poblado dinámicamente -->
                                 </tbody>
                             </table>
+                        </div>
+
+                        <!-- Tarjetas Móviles de Roles TI -->
+                        <div id="mobile-users-roles-cards-container" class="mobile-users-roles-container" style="display: none;">
+                            <!-- Cards móviles inyectadas por JS -->
                         </div>
                     </div>
                 </div>
@@ -2455,6 +2809,201 @@
                             <!-- items dinámicos -->
                         </div>
                     </div>
+                </div>
+            </div>
+
+            <!-- ============ PÁGINA COMPRAS TI ============ -->
+            <div id="page-compras" class="page-section">
+                <!-- Header con Título y Acciones -->
+                <div class="tickets-page-header" style="margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+                    <div class="tickets-page-title">
+                        <h1 style="display: flex; align-items: center; gap: 12px;">
+                            <div style="width: 44px; height: 44px; border-radius: 12px; background: linear-gradient(135deg, rgba(50, 102, 235, 0.2) 0%, rgba(97, 62, 234, 0.2) 100%); border: 1px solid rgba(50, 102, 235, 0.3); display: flex; align-items: center; justify-content: center; color: var(--accent-blue);">
+                                <i class="fas fa-shopping-bag" style="font-size: 1.3rem;"></i>
+                            </div>
+                            <span>Compras & Adquisiciones TI</span>
+                        </h1>
+                        <p style="margin-top: 4px; color: var(--text-secondary);">Registro y control de compras de hardware, periféricos y accesorios por empresa y solicitante</p>
+                    </div>
+                    <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                        <button type="button" id="btn-export-compras-csv" class="btn-secondary" style="padding: 10px 16px; border-radius: 8px; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; background: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-primary); cursor: pointer; transition: all 0.2s;">
+                            <i class="fas fa-file-excel" style="color: #10b981;"></i> Exportar CSV
+                        </button>
+                        <button type="button" id="btn-abrir-modal-nueva-compra" class="btn-primary" style="padding: 10px 20px; border-radius: 8px; font-weight: 700; display: inline-flex; align-items: center; gap: 8px; background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-purple) 100%); color: white; border: none; cursor: pointer; box-shadow: 0 4px 15px rgba(50, 102, 235, 0.3); transition: all 0.2s;">
+                            <i class="fas fa-plus"></i> Registrar Nueva Compra
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 4 Tarjetas KPI de Resumen Financiero e Inventario -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-bottom: 24px;">
+                    <!-- KPI 1: Inversión Total -->
+                    <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; position: relative; overflow: hidden;">
+                        <div style="position: absolute; right: -10px; top: -10px; width: 70px; height: 70px; border-radius: 50%; background: rgba(50, 102, 235, 0.08); display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-dollar-sign" style="font-size: 2rem; color: var(--accent-blue); opacity: 0.3;"></i>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                            <div style="width: 40px; height: 40px; border-radius: 10px; background: rgba(50, 102, 235, 0.15); color: var(--accent-blue); display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
+                                <i class="fas fa-coins"></i>
+                            </div>
+                            <div>
+                                <span style="font-size: 0.78rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; display: block;">Total Invertido</span>
+                                <strong id="kpi-compras-total-monto" style="font-size: 1.45rem; color: var(--text-primary);">$ 0 CLP</strong>
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 8px; font-size: 0.72rem; color: var(--text-secondary); border-top: 1px solid rgba(255,255,255,0.04); padding-top: 8px;">
+                            <span id="kpi-compras-count-total">0 compras registradas</span>
+                        </div>
+                    </div>
+
+                    <!-- KPI 2: Compras del Mes -->
+                    <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; position: relative; overflow: hidden;">
+                        <div style="position: absolute; right: -10px; top: -10px; width: 70px; height: 70px; border-radius: 50%; background: rgba(16, 185, 129, 0.08); display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-calendar-alt" style="font-size: 2rem; color: #10b981; opacity: 0.3;"></i>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                            <div style="width: 40px; height: 40px; border-radius: 10px; background: rgba(16, 185, 129, 0.15); color: #10b981; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
+                                <i class="fas fa-calendar-check"></i>
+                            </div>
+                            <div>
+                                <span style="font-size: 0.78rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; display: block;">Compras este Mes</span>
+                                <strong id="kpi-compras-mes-monto" style="font-size: 1.45rem; color: #10b981;">$ 0 CLP</strong>
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 8px; font-size: 0.72rem; color: var(--text-secondary); border-top: 1px solid rgba(255,255,255,0.04); padding-top: 8px;">
+                            <span id="kpi-compras-mes-count">0 ítems adquiridos este mes</span>
+                        </div>
+                    </div>
+
+                    <!-- KPI 3: Desglose por Empresa -->
+                    <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; position: relative; overflow: hidden;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <span style="font-size: 0.78rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600;">Gasto por Empresa</span>
+                            <i class="fas fa-building" style="color: var(--accent-purple); opacity: 0.7;"></i>
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 6px; font-size: 0.78rem;">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span style="color: #00c9a7; font-weight: 600;">• T-Sales:</span>
+                                <strong id="kpi-compras-emp-tsales" style="color: var(--text-primary);">$ 0</strong>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span style="color: #f59e0b; font-weight: 600;">• Infinet:</span>
+                                <strong id="kpi-compras-emp-infinet" style="color: var(--text-primary);">$ 0</strong>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span style="color: #ef4444; font-weight: 600;">• VPrime:</span>
+                                <strong id="kpi-compras-emp-vprime" style="color: var(--text-primary);">$ 0</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- KPI 4: Ítem Más Adquirido -->
+                    <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; position: relative; overflow: hidden;">
+                        <div style="position: absolute; right: -10px; top: -10px; width: 70px; height: 70px; border-radius: 50%; background: rgba(245, 158, 11, 0.08); display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-chart-bar" style="font-size: 2rem; color: #f59e0b; opacity: 0.3;"></i>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                            <div style="width: 40px; height: 40px; border-radius: 10px; background: rgba(245, 158, 11, 0.15); color: #f59e0b; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
+                                <i class="fas fa-boxes"></i>
+                            </div>
+                            <div>
+                                <span style="font-size: 0.78rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; display: block;">Top Categorías</span>
+                                <strong id="kpi-compras-top-categoria" style="font-size: 1.1rem; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; max-width: 170px;">Memoria RAM</strong>
+                            </div>
+                        </div>
+                        <div style="font-size: 0.72rem; color: var(--text-secondary); border-top: 1px solid rgba(255,255,255,0.04); padding-top: 8px;">
+                            <span id="kpi-compras-top-detalle">Monitores • Cargadores • Laptops</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tabs de Filtro por Empresa -->
+                <div class="tickets-filter-tabs" id="compras-company-tabs" style="margin-bottom: 16px;">
+                    <button class="filter-tab active" data-empresa="todas">
+                        <i class="fas fa-th-large"></i> <span>Todas las Empresas</span> <span class="filter-count" id="badge-count-compras-todas">0</span>
+                    </button>
+                    <button class="filter-tab" data-empresa="T-Sales">
+                        <i class="fas fa-building" style="color: #00c9a7;"></i> <span>T-Sales</span> <span class="filter-count" id="badge-count-compras-tsales">0</span>
+                    </button>
+                    <button class="filter-tab" data-empresa="Infinet">
+                        <i class="fas fa-building" style="color: #f59e0b;"></i> <span>Infinet</span> <span class="filter-count" id="badge-count-compras-infinet">0</span>
+                    </button>
+                    <button class="filter-tab" data-empresa="VPrime">
+                        <i class="fas fa-building" style="color: #ef4444;"></i> <span>VPrime</span> <span class="filter-count" id="badge-count-compras-vprime">0</span>
+                    </button>
+                </div>
+
+                <!-- Pills de Filtro Rápido por Categoría (Iconos) -->
+                <div id="compras-category-pills" style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px;">
+                    <button type="button" class="compra-cat-pill active" data-cat="todas" style="padding: 6px 14px; border-radius: 20px; font-size: 0.78rem; font-weight: 600; background: var(--accent-blue); color: white; border: 1px solid var(--accent-blue); cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s;">
+                        <i class="fas fa-layer-group"></i> Todos los Ítems
+                    </button>
+                    <button type="button" class="compra-cat-pill" data-cat="ram" style="padding: 6px 14px; border-radius: 20px; font-size: 0.78rem; font-weight: 600; background: var(--bg-card); color: var(--text-secondary); border: 1px solid var(--border-color); cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s;">
+                        <i class="fas fa-memory" style="color: #3266eb;"></i> Memoria RAM
+                    </button>
+                    <button type="button" class="compra-cat-pill" data-cat="monitor" style="padding: 6px 14px; border-radius: 20px; font-size: 0.78rem; font-weight: 600; background: var(--bg-card); color: var(--text-secondary); border: 1px solid var(--border-color); cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s;">
+                        <i class="fas fa-desktop" style="color: #8b5cf6;"></i> Monitor / Pantalla
+                    </button>
+                    <button type="button" class="compra-cat-pill" data-cat="cargador" style="padding: 6px 14px; border-radius: 20px; font-size: 0.78rem; font-weight: 600; background: var(--bg-card); color: var(--text-secondary); border: 1px solid var(--border-color); cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s;">
+                        <i class="fas fa-plug" style="color: #f59e0b;"></i> Cargador
+                    </button>
+                    <button type="button" class="compra-cat-pill" data-cat="notebook" style="padding: 6px 14px; border-radius: 20px; font-size: 0.78rem; font-weight: 600; background: var(--bg-card); color: var(--text-secondary); border: 1px solid var(--border-color); cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s;">
+                        <i class="fas fa-laptop" style="color: #10b981;"></i> Notebook
+                    </button>
+                    <button type="button" class="compra-cat-pill" data-cat="ssd" style="padding: 6px 14px; border-radius: 20px; font-size: 0.78rem; font-weight: 600; background: var(--bg-card); color: var(--text-secondary); border: 1px solid var(--border-color); cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s;">
+                        <i class="fas fa-hdd" style="color: #ec4899;"></i> Disco SSD
+                    </button>
+                    <button type="button" class="compra-cat-pill" data-cat="perifericos" style="padding: 6px 14px; border-radius: 20px; font-size: 0.78rem; font-weight: 600; background: var(--bg-card); color: var(--text-secondary); border: 1px solid var(--border-color); cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s;">
+                        <i class="fas fa-keyboard" style="color: #06b6d4;"></i> Teclado/Mouse
+                    </button>
+                    <button type="button" class="compra-cat-pill" data-cat="headset" style="padding: 6px 14px; border-radius: 20px; font-size: 0.78rem; font-weight: 600; background: var(--bg-card); color: var(--text-secondary); border: 1px solid var(--border-color); cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s;">
+                        <i class="fas fa-headphones" style="color: #6366f1;"></i> Headset
+                    </button>
+                    <button type="button" class="compra-cat-pill" data-cat="otro" style="padding: 6px 14px; border-radius: 20px; font-size: 0.78rem; font-weight: 600; background: var(--bg-card); color: var(--text-secondary); border: 1px solid var(--border-color); cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s;">
+                        <i class="fas fa-box-open" style="color: #94a3b8;"></i> Otros
+                    </button>
+                </div>
+
+                <!-- Barra de búsqueda y orden -->
+                <div class="tickets-toolbar" style="margin-bottom: 20px;">
+                    <div class="tickets-search" style="flex: 1;">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="compras-search-input" placeholder="Buscar por producto, persona que lo pidió, RUT, factura o proveedor...">
+                    </div>
+                    <div style="display: flex; gap: 10px;">
+                        <select id="compras-sort-select" style="padding: 10px 14px; border-radius: 8px; background: var(--bg-sidebar); border: 1px solid var(--border-color); color: var(--text-primary); font-family: var(--font-family); font-size: 0.85rem; cursor: pointer;">
+                            <option value="fecha-desc">Más recientes primero</option>
+                            <option value="fecha-asc">Más antiguas primero</option>
+                            <option value="precio-desc">Mayor valor ($ CLP)</option>
+                            <option value="precio-asc">Menor valor ($ CLP)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Tabla Principal de Compras (Desktop) -->
+                <div class="compras-table-container">
+                    <table class="tickets-table" id="table-compras">
+                        <thead>
+                            <tr>
+                                <th>FECHA</th>
+                                <th>ÍTEM / PRODUCTO</th>
+                                <th>EMPRESA</th>
+                                <th>SOLICITANTE / PARA QUIÉN</th>
+                                <th>GESTIONADO POR</th>
+                                <th>VALOR (CLP)</th>
+                                <th>ESTADO</th>
+                                <th style="text-align: right;">ACCIONES</th>
+                            </tr>
+                        </thead>
+                        <tbody id="compras-table-body">
+                            <!-- Items inyectados dinámicamente -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Tarjetas Responsivas para Móvil -->
+                <div id="mobile-compras-cards-container" class="mobile-tickets-container" style="display: none;">
+                    <!-- Cards móviles -->
                 </div>
             </div>
 
@@ -3508,10 +4057,15 @@
                 </div>
             </div>
             
-            <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center;">
-                <button type="button" id="btn-eliminar-equipo" style="background-color: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); color: #f87171; padding: 10px 18px; border-radius: 8px; cursor: pointer; font-weight: 600; font-family: var(--font-family); transition: all 0.2s;">
-                    <i class="fas fa-trash-alt"></i> Eliminar Registro
-                </button>
+            <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                <div style="display: flex; gap: 10px;">
+                    <button type="button" id="btn-eliminar-equipo" style="background-color: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); color: #f87171; padding: 10px 18px; border-radius: 8px; cursor: pointer; font-weight: 600; font-family: var(--font-family); transition: all 0.2s;">
+                        <i class="fas fa-trash-alt"></i> Eliminar Registro
+                    </button>
+                    <button type="button" id="btn-ver-historial-desde-detalle" style="background-color: rgba(97, 62, 234, 0.15); border: 1px solid rgba(97, 62, 234, 0.35); color: #a78bfa; padding: 10px 18px; border-radius: 8px; cursor: pointer; font-weight: 600; font-family: var(--font-family); transition: all 0.2s; display: inline-flex; align-items: center; gap: 6px;">
+                        <i class="fas fa-history"></i> Historial y Trazabilidad
+                    </button>
+                </div>
                 <div style="display: flex; gap: 12px;">
                     <button type="button" id="btn-cerrar-detalle-equipo" style="background-color: transparent; border: 1px solid var(--border-color); color: var(--text-secondary); padding: 10px 18px; border-radius: 8px; cursor: pointer; font-weight: 600; font-family: var(--font-family);">Cerrar</button>
                     <button type="button" id="btn-editar-equipo" style="background: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-blue) 100%); color: white; border: none; padding: 10px 24px; border-radius: 8px; cursor: pointer; font-weight: 600; font-family: var(--font-family);">
@@ -3522,42 +4076,313 @@
         </div>
     </div>
 
-    <!-- ============ MODAL DE PREVISUALIZACIÓN DE IMPORTACIÓN ============ -->
-    <div id="equipo-import-preview-modal" class="modal-backdrop">
-        <div class="modal-card" style="max-width: 950px; width: 90%; display: flex; flex-direction: column;">
+    <!-- ============ MODAL REGISTRAR NUEVO INGRESO (ONBOARDING) ============ -->
+    <div id="modal-nuevo-ingreso" class="modal-backdrop" style="display: none; align-items: center; justify-content: center;">
+        <div class="modal-card" style="max-width: 650px; width: 92%; max-height: 90vh; display: flex; flex-direction: column;">
             <div class="modal-header">
                 <div class="modal-title-area">
-                    <span class="modal-ticket-id" id="import-stats-badge">0 NUEVOS REGISTROS</span>
-                    <h2>Vista Previa de Importación</h2>
+                    <span class="modal-ticket-id" style="background: rgba(97, 62, 234, 0.15); color: #a78bfa; border: 1px solid rgba(97, 62, 234, 0.3);">ONBOARDING TI</span>
+                    <h2>📥 Anexar Notebook Disponible a Nuevo Ingreso</h2>
                 </div>
-                <button class="modal-close-btn" id="equipo-import-close-btn"><i class="fas fa-times"></i></button>
+                <button type="button" class="modal-close-btn" id="btn-close-modal-ingreso"><i class="fas fa-times"></i></button>
             </div>
-            <div class="modal-body" style="overflow-y: auto; max-height: 55vh; padding: 24px;">
-                <p style="color: var(--text-secondary); margin-bottom: 16px; font-size: 0.9rem;">
-                    Hemos interpretado los siguientes equipos desde tu archivo. Revisa los datos y haz clic en "Confirmar Importación" para agregarlos al inventario.
+            <div class="modal-body" style="overflow-y: auto; padding: 20px 24px;">
+                <p style="color: var(--text-secondary); margin-top: 0; margin-bottom: 16px; font-size: 0.85rem;">
+                    Completa los datos del nuevo colaborador informado por su jefatura y anexa un notebook de nuestro inventario que tengamos disponible.
                 </p>
-                <div class="tickets-table-container" style="border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; max-height: 40vh; overflow-y: auto;">
-                    <table class="tickets-table" style="width: 100%;">
-                        <thead>
-                            <tr>
-                                <th>CÓDIGO</th>
-                                <th>USUARIO / CORREO</th>
-                                <th>EMPRESA</th>
-                                <th>MARCA / MODELO</th>
-                                <th>ESPECIFICACIONES (CPU/RAM/DISCO)</th>
-                                <th>S.O. / LICENCIA</th>
-                                <th>ESTADO</th>
-                            </tr>
-                        </thead>
-                        <tbody id="import-preview-table-body">
-                            <!-- Filas dinámicas -->
-                        </tbody>
-                    </table>
+                <form id="form-nuevo-ingreso" style="display: flex; flex-direction: column; gap: 14px;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                        <div class="form-group">
+                            <label style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 6px; display: block;">Nombre Completo *</label>
+                            <input type="text" id="ingreso-nombre" required placeholder="Ej: Pedro González" style="width: 100%; padding: 10px 12px; background: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family); font-size: 0.85rem;">
+                        </div>
+                        <div class="form-group">
+                            <label style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 6px; display: block;">RUT Colaborador *</label>
+                            <input type="text" id="ingreso-rut" required placeholder="Ej: 19.876.543-2" style="width: 100%; padding: 10px 12px; background: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family); font-size: 0.85rem;">
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                        <div class="form-group">
+                            <label style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 6px; display: block;">Correo Corporativo *</label>
+                            <input type="email" id="ingreso-email" required placeholder="ej: pedro.gonzalez@t-sales.cl" style="width: 100%; padding: 10px 12px; background: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family); font-size: 0.85rem;">
+                        </div>
+                        <div class="form-group">
+                            <label style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 6px; display: block;">Empresa *</label>
+                            <select id="ingreso-empresa" required style="width: 100%; padding: 10px 12px; background: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family); font-size: 0.85rem;">
+                                <option value="T-Sales">T-Sales</option>
+                                <option value="Infinet">INFINET</option>
+                                <option value="VPrime">V PRIME</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                        <div class="form-group">
+                            <label style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 6px; display: block;">Supervisor / Jefatura *</label>
+                            <input type="text" id="ingreso-supervisor" required placeholder="Ej: Felipe Galleguillos / Omar" style="width: 100%; padding: 10px 12px; background: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family); font-size: 0.85rem;">
+                        </div>
+                        <div class="form-group">
+                            <label style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 6px; display: block;">Cargo / Función *</label>
+                            <input type="text" id="ingreso-cargo" required placeholder="Ej: Ejecutivo Comercial" style="width: 100%; padding: 10px 12px; background: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family); font-size: 0.85rem;">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 6px; display: block;">Fecha Estimada de Ingreso *</label>
+                        <input type="date" id="ingreso-fecha" required style="width: 100%; padding: 10px 12px; background: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family); font-size: 0.85rem;">
+                    </div>
+
+                    <!-- Selector Inteligente de Notebook Disponible -->
+                    <div style="background: rgba(97, 62, 234, 0.05); border: 1px solid rgba(97, 62, 234, 0.25); border-radius: 10px; padding: 14px;">
+                        <label style="font-size: 0.82rem; color: #a78bfa; font-weight: 700; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+                            <i class="fas fa-laptop"></i> Seleccionar Notebook Disponible de Nuestro Inventario *
+                        </label>
+                        <select id="ingreso-notebook-select" required style="width: 100%; padding: 10px 12px; background: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family); font-size: 0.85rem;">
+                            <!-- Opciones inyectadas por JS con notebooks disponibles -->
+                        </select>
+                        <span style="display: block; margin-top: 6px; font-size: 0.74rem; color: var(--text-muted);">
+                            💡 Solo se listan notebooks con estado 🟢 <strong>Disponible</strong> listos para preparación y asignación.
+                        </span>
+                    </div>
+
+                    <div class="form-group">
+                        <label style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 6px; display: block;">Notas / Requerimientos Adicionales (Opcional)</label>
+                        <textarea id="ingreso-notas" rows="2" placeholder="Ej: Requiere software de ventas, mouse y bolso..." style="width: 100%; padding: 10px 12px; background: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family); font-size: 0.85rem; resize: vertical;"></textarea>
+                    </div>
+
+                    <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 10px;">
+                        <button type="button" id="btn-cancel-ingreso" style="background: transparent; border: 1px solid var(--border-color); color: var(--text-secondary); padding: 10px 18px; border-radius: 8px; cursor: pointer; font-weight: 600;">Cancelar</button>
+                        <button type="submit" style="background: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-blue) 100%); color: white; border: none; padding: 10px 24px; border-radius: 8px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-bookmark"></i> Anexar Notebook y Registrar Ingreso
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ MODAL REGISTRAR BAJA DE COLABORADOR (OFFBOARDING) ============ -->
+    <div id="modal-nueva-baja" class="modal-backdrop" style="display: none; align-items: center; justify-content: center;">
+        <div class="modal-card" style="max-width: 650px; width: 92%; max-height: 90vh; display: flex; flex-direction: column;">
+            <div class="modal-header">
+                <div class="modal-title-area">
+                    <span class="modal-ticket-id" style="background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3);">OFFBOARDING TI</span>
+                    <h2>📤 Registrar Baja de Colaborador & Devolución</h2>
+                </div>
+                <button type="button" class="modal-close-btn" id="btn-close-modal-baja"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body" style="overflow-y: auto; padding: 20px 24px;">
+                <p style="color: var(--text-secondary); margin-top: 0; margin-bottom: 16px; font-size: 0.85rem;">
+                    Busca al colaborador que deja la empresa. El sistema detectará automáticamente su notebook asignado para cambiar su estado a <strong>🟠 Pendiente de Devolución</strong> hasta que llegue físicamente a TI.
+                </p>
+                <form id="form-nueva-baja" style="display: flex; flex-direction: column; gap: 14px;">
+                    <!-- Buscador en vivo de colaborador -->
+                    <div class="form-group">
+                        <label style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 6px; display: block;">Buscar Colaborador en Directorio / Inventario *</label>
+                        <div style="position: relative; width: 100%;">
+                            <input type="text" id="baja-search-user" placeholder="Escribe el nombre, RUT o correo del colaborador..." autocomplete="off" style="width: 100%; padding: 12px 40px 12px 14px; background: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family); font-size: 0.9rem;">
+                            <i class="fas fa-search" style="position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: var(--text-muted); pointer-events: none;"></i>
+                            <div id="baja-user-autocomplete-results" class="autocomplete-suggestions-dropdown" style="display: none; max-height: 220px; z-index: 9999;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Datos cargados del colaborador -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                        <div class="form-group">
+                            <label style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 6px; display: block;">Nombre Colaborador</label>
+                            <input type="text" id="baja-user-nombre" required readonly style="width: 100%; padding: 10px 12px; background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-size: 0.85rem;">
+                        </div>
+                        <div class="form-group">
+                            <label style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 6px; display: block;">RUT</label>
+                            <input type="text" id="baja-user-rut" required readonly style="width: 100%; padding: 10px 12px; background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-size: 0.85rem; font-family: monospace;">
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                        <div class="form-group">
+                            <label style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 6px; display: block;">Correo</label>
+                            <input type="email" id="baja-user-email" readonly style="width: 100%; padding: 10px 12px; background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-size: 0.85rem;">
+                        </div>
+                        <div class="form-group">
+                            <label style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 6px; display: block;">Empresa</label>
+                            <input type="text" id="baja-user-empresa" readonly style="width: 100%; padding: 10px 12px; background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-size: 0.85rem;">
+                        </div>
+                    </div>
+
+                    <!-- Tarjeta de Notebook Asignado Detectado -->
+                    <div id="baja-detected-notebook-card" style="background: rgba(245, 158, 11, 0.06); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 10px; padding: 14px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <label style="font-size: 0.82rem; color: #f59e0b; font-weight: 700; display: flex; align-items: center; gap: 6px; margin: 0;">
+                                <i class="fas fa-laptop"></i> Notebook Asignado Detectado
+                            </label>
+                            <span id="baja-notebook-status-badge" class="status-badge" style="font-size: 0.72rem; padding: 2px 8px; background: rgba(29, 200, 109, 0.15); color: #1dc86d; border: 1px solid rgba(29, 200, 109, 0.3);">Asignado</span>
+                        </div>
+                        <div id="baja-notebook-info-body" style="font-size: 0.84rem; color: var(--text-primary);">
+                            <div style="display: flex; gap: 16px; flex-wrap: wrap;">
+                                <div><span style="color: var(--text-muted); font-size: 0.72rem; display: block;">SERIAL</span><strong id="baja-notebook-serial" style="font-family: monospace; color: var(--accent-blue);">S/A</strong></div>
+                                <div><span style="color: var(--text-muted); font-size: 0.72rem; display: block;">MODELO</span><span id="baja-notebook-modelo">-</span></div>
+                                <div><span style="color: var(--text-muted); font-size: 0.72rem; display: block;">ESPECIFICACIONES</span><span id="baja-notebook-specs">-</span></div>
+                            </div>
+                        </div>
+                        <div id="baja-manual-serial-wrapper" style="display: none; margin-top: 10px;">
+                            <label style="font-size: 0.75rem; color: var(--text-secondary); display: block; margin-bottom: 4px;">Seleccionar serial manualmente si no se autodetectó:</label>
+                            <select id="baja-manual-serial-select" style="width: 100%; padding: 8px 10px; background: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-primary); font-size: 0.82rem;">
+                                <!-- Llenado dinámico -->
+                            </select>
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                        <div class="form-group">
+                            <label style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 6px; display: block;">Supervisor que Informa *</label>
+                            <input type="text" id="baja-supervisor" required placeholder="Ej: Felipe Galleguillos" style="width: 100%; padding: 10px 12px; background: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family); font-size: 0.85rem;">
+                        </div>
+                        <div class="form-group">
+                            <label style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 6px; display: block;">Fecha de Salida *</label>
+                            <input type="date" id="baja-fecha" required style="width: 100%; padding: 10px 12px; background: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family); font-size: 0.85rem;">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 6px; display: block;">Observaciones / Estado Reportado del Equipo</label>
+                        <textarea id="baja-notas" rows="2" placeholder="Ej: Deja el notebook en sucursal con supervisor, cargador incluido..." style="width: 100%; padding: 10px 12px; background: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family); font-size: 0.85rem; resize: vertical;"></textarea>
+                    </div>
+
+                    <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 10px;">
+                        <button type="button" id="btn-cancel-baja" style="background: transparent; border: 1px solid var(--border-color); color: var(--text-secondary); padding: 10px 18px; border-radius: 8px; cursor: pointer; font-weight: 600;">Cancelar</button>
+                        <button type="submit" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; border: none; padding: 10px 24px; border-radius: 8px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-user-minus"></i> Registrar Baja y Exigir Devolución
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ MODAL HISTORIAL & TRAZABILIDAD POR SERIAL ============ -->
+    <div id="modal-historial-serial" class="modal-backdrop" style="display: none; align-items: center; justify-content: center;">
+        <div class="modal-card" style="max-width: 680px; width: 92%; max-height: 85vh; display: flex; flex-direction: column;">
+            <div class="modal-header">
+                <div class="modal-title-area">
+                    <span class="modal-ticket-id" id="historial-serial-badge">SERIAL: ABC123456</span>
+                    <h2 id="historial-modal-title">📜 Trazabilidad & Ciclo de Vida del Notebook</h2>
+                </div>
+                <button type="button" class="modal-close-btn" id="btn-close-modal-historial"><i class="fas fa-times"></i></button>
+            </div>
+            
+            <div class="modal-body" style="overflow-y: auto; padding: 20px 24px;">
+                <!-- Tarjeta Resumen del Equipo -->
+                <div style="background: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: 12px; padding: 14px 18px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+                    <div>
+                        <strong id="historial-equipo-nombre" style="font-size: 1.05rem; color: var(--text-primary); display: block;">Dell Latitude 5420</strong>
+                        <span id="historial-equipo-specs" style="font-size: 0.78rem; color: var(--text-secondary);">16GB RAM · 256GB SSD · Windows 11 Pro</span>
+                    </div>
+                    <div style="text-align: right;">
+                        <span style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; display: block;">Estado Actual</span>
+                        <span id="historial-equipo-estado-badge" class="status-badge status-disponible">Disponible</span>
+                    </div>
+                </div>
+
+                <h4 style="margin: 0 0 14px 0; font-size: 0.92rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; gap: 6px;">
+                    <i class="fas fa-stream" style="color: var(--accent-blue);"></i> Línea de Tiempo de Movimientos
+                </h4>
+
+                <!-- Línea de Tiempo (Timeline) -->
+                <div class="equip-timeline-container" id="equip-serial-timeline-list">
+                    <!-- Eventos de línea de tiempo inyectados por JS -->
                 </div>
             </div>
-            <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 12px;">
-                <button type="button" id="btn-import-cancel" style="background-color: transparent; border: 1px solid var(--border-color); color: var(--text-secondary); padding: 10px 18px; border-radius: 8px; cursor: pointer; font-weight: 600; font-family: var(--font-family);">Cancelar</button>
-                <button type="button" id="btn-import-confirm" style="background: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-blue) 100%); color: white; border: none; padding: 10px 24px; border-radius: 8px; cursor: pointer; font-weight: 600; font-family: var(--font-family);">Confirmar Importación</button>
+
+            <div class="modal-footer" style="display: flex; justify-content: flex-end;">
+                <button type="button" id="btn-cerrar-historial" style="background: transparent; border: 1px solid var(--border-color); color: var(--text-secondary); padding: 10px 20px; border-radius: 8px; font-weight: 600; cursor: pointer;">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ MODAL DE IMPORTACIÓN DE EQUIPOS (EXCEL / CSV / PEGAR) ============ -->
+    <div id="equipo-import-preview-modal" class="modal-backdrop" style="display: none; align-items: center; justify-content: center;">
+        <div class="modal-card" style="max-width: 1000px; width: 92%; max-height: 90vh; display: flex; flex-direction: column;">
+            <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 14px;">
+                <div class="modal-title-area" style="display: flex; align-items: center; gap: 12px;">
+                    <div style="width: 40px; height: 40px; border-radius: 10px; background: linear-gradient(135deg, #10b981 0%, #3b82f6 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 1.2rem;">
+                        <i class="fas fa-file-excel"></i>
+                    </div>
+                    <div>
+                        <h2 style="margin: 0; font-size: 1.2rem; font-weight: 700; color: var(--text-primary);">Importador Masivo de Equipos</h2>
+                        <p style="margin: 2px 0 0; font-size: 0.8rem; color: var(--text-secondary);">Carga inventario de T-Sales, Infinet o VPrime desde Excel, CSV o pegando filas</p>
+                    </div>
+                </div>
+                <button type="button" class="modal-close-btn" id="equipo-import-close-btn" style="background: none; border: none; color: var(--text-muted); font-size: 1.3rem; cursor: pointer;"><i class="fas fa-times"></i></button>
+            </div>
+            
+            <div class="modal-body" style="overflow-y: auto; max-height: 65vh; padding: 20px; display: flex; flex-direction: column; gap: 16px;">
+                <!-- Pestañas de Método de Importación -->
+                <div style="display: flex; gap: 10px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">
+                    <button type="button" id="tab-import-btn-file" class="filter-tab active" style="font-weight: 600; display: flex; align-items: center; gap: 6px;">
+                        <i class="fas fa-file-upload"></i> Subir Archivo Excel / CSV
+                    </button>
+                    <button type="button" id="tab-import-btn-paste" class="filter-tab" style="font-weight: 600; display: flex; align-items: center; gap: 6px;">
+                        <i class="fas fa-paste"></i> Copiar y Pegar desde Excel
+                    </button>
+                </div>
+
+                <!-- Panel 1: Subir Archivo -->
+                <div id="import-panel-file" style="display: block;">
+                    <div id="import-dropzone" style="border: 2px dashed rgba(59, 130, 246, 0.4); border-radius: 12px; background: rgba(59, 130, 246, 0.04); padding: 30px; text-align: center; cursor: pointer; transition: all 0.2s;">
+                        <i class="fas fa-cloud-upload-alt" style="font-size: 2.4rem; color: var(--accent-blue); margin-bottom: 12px;"></i>
+                        <h4 style="margin: 0 0 6px; font-size: 1rem; color: var(--text-primary);">Haz clic para seleccionar tu archivo Excel o arrástralo aquí</h4>
+                        <p style="margin: 0; font-size: 0.8rem; color: var(--text-secondary);">Soporta formatos <strong>.xlsx</strong>, <strong>.xls</strong> y <strong>.csv</strong></p>
+                    </div>
+                </div>
+
+                <!-- Panel 2: Copiar y Pegar directo -->
+                <div id="import-panel-paste" style="display: none; flex-direction: column; gap: 10px;">
+                    <p style="margin: 0; font-size: 0.82rem; color: var(--text-secondary);">
+                        Copia las celdas de tu Excel (incluyendo o no la fila de títulos) y pégalas aquí directamente con <code>Ctrl + V</code>:
+                    </p>
+                    <textarea id="import-paste-textarea" rows="6" placeholder="Usuario&#9;RUT&#9;Correo&#9;Empresa&#9;Dirección&#9;Equipo&#9;Modelo&#9;Número de Serie&#9;Marca&#9;Procesador&#9;RAM&#9;Almacenamiento&#9;Windows&#9;Estado..." style="width: 100%; padding: 12px; background: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: monospace; font-size: 0.8rem; resize: vertical;"></textarea>
+                    <div style="display: flex; justify-content: flex-end;">
+                        <button type="button" id="btn-parse-pasted-data" class="btn-primary" style="padding: 8px 18px; border-radius: 8px; font-weight: 600; display: flex; align-items: center; gap: 6px; background: var(--accent-blue); color: white; border: none; cursor: pointer;">
+                            <i class="fas fa-magic"></i> Procesar Texto Pegado
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Vista Previa de Registros Detectados -->
+                <div id="import-preview-section" style="display: none; flex-direction: column; gap: 10px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; background: var(--bg-card); padding: 12px 16px; border-radius: 8px; border: 1px solid var(--border-color);">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <span class="modal-ticket-id" id="import-stats-badge" style="background: rgba(16, 185, 129, 0.2); color: #10b981; font-weight: 700; padding: 4px 10px; border-radius: 6px; font-size: 0.8rem;">0 EQUIPOS DETECTADOS</span>
+                            <span id="import-company-breakdown" style="font-size: 0.8rem; color: var(--text-secondary);"></span>
+                        </div>
+                        <span style="font-size: 0.78rem; color: var(--text-muted);"><i class="fas fa-info-circle"></i> Verifica que los datos coincidan antes de confirmar</span>
+                    </div>
+
+                    <div class="tickets-table-container" style="border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; max-height: 35vh; overflow-y: auto;">
+                        <table class="tickets-table" style="width: 100%; font-size: 0.82rem;">
+                            <thead>
+                                <tr>
+                                    <th>CÓDIGO / TIPO</th>
+                                    <th>USUARIO / RUT / CORREO</th>
+                                    <th>EMPRESA</th>
+                                    <th>MARCA / MODELO / SERIAL</th>
+                                    <th>HARDWARE (CPU / RAM / DISCO)</th>
+                                    <th>S.O. / RED (IP / MAC)</th>
+                                    <th>ESTADO</th>
+                                </tr>
+                            </thead>
+                            <tbody id="import-preview-table-body">
+                                <!-- Filas dinámicas -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 12px; border-top: 1px solid var(--border-color); padding: 16px 20px;">
+                <button type="button" id="btn-import-cancel" style="background-color: transparent; border: 1px solid var(--border-color); color: var(--text-secondary); padding: 10px 18px; border-radius: 8px; cursor: pointer; font-weight: 600;">Cancelar</button>
+                <button type="button" id="btn-import-confirm" disabled style="background: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-blue) 100%); color: white; border: none; padding: 10px 24px; border-radius: 8px; cursor: pointer; font-weight: 600; opacity: 0.6;">Confirmar Importación</button>
             </div>
         </div>
     </div>
@@ -3843,6 +4668,274 @@
                 <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 12px; padding-top: 14px; border-top: 1px solid var(--border-color);">
                     <button type="button" id="btn-create-ticket-from-m365" style="background: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-blue) 100%); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; font-family: var(--font-family); display: flex; align-items: center; gap: 6px;">
                         <i class="fas fa-plus"></i> Crear Ticket para este Usuario
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ MODAL REGISTRAR NUEVA COMPRA TI ============ -->
+    <div id="modal-nueva-compra" class="modal-backdrop" style="display: none; align-items: center; justify-content: center; z-index: 10000; padding: 20px;">
+        <div class="modal-card" style="max-width: 720px; width: 100%; max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; box-shadow: 0 20px 50px rgba(0,0,0,0.6);">
+            <!-- Modal Header -->
+            <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding: 18px 24px; flex-shrink: 0;">
+                <div class="modal-title-area" style="display: flex; align-items: center; gap: 12px;">
+                    <div style="width: 42px; height: 42px; border-radius: 10px; background: linear-gradient(135deg, rgba(50, 102, 235, 0.2) 0%, rgba(97, 62, 234, 0.2) 100%); border: 1px solid rgba(50, 102, 235, 0.3); display: flex; align-items: center; justify-content: center; color: var(--accent-blue); font-size: 1.2rem;">
+                        <i class="fas fa-cart-plus"></i>
+                    </div>
+                    <div>
+                        <h3 id="modal-compra-title" style="margin: 0; font-size: 1.2rem; font-weight: 700; color: var(--text-primary);">Registrar Nueva Compra TI</h3>
+                        <p style="margin: 2px 0 0; font-size: 0.78rem; color: var(--text-secondary);">Selecciona la categoría del ítem e ingresa el solicitante y monto</p>
+                    </div>
+                </div>
+                <button type="button" class="modal-close-btn" id="btn-close-compra-modal" style="background: none; border: none; color: var(--text-muted); font-size: 1.2rem; cursor: pointer;"><i class="fas fa-times"></i></button>
+            </div>
+            
+            <!-- Modal Body con Scroll -->
+            <form id="form-nueva-compra" style="padding: 20px 24px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px;">
+                <input type="hidden" id="compra-edit-id" value="">
+                
+                <!-- 1. Selector Visual de Categoría (Grid de Iconos) -->
+                <div>
+                    <label style="font-size: 0.82rem; color: var(--text-secondary); font-weight: 700; margin-bottom: 8px; display: block;">
+                        1. Selecciona la Categoría del Ítem / Hardware *
+                    </label>
+                    <div id="compra-category-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(115px, 1fr)); gap: 10px;">
+                        <div class="compra-cat-option active" data-category="ram" data-cat-name="Memoria RAM" data-icon="fas fa-memory" data-color="#3266eb" style="border: 2px solid var(--accent-blue); background: rgba(50, 102, 235, 0.1); border-radius: 10px; padding: 12px 8px; text-align: center; cursor: pointer; transition: all 0.2s;">
+                            <i class="fas fa-memory" style="font-size: 1.6rem; color: #3266eb; margin-bottom: 6px; display: block;"></i>
+                            <span style="font-size: 0.76rem; font-weight: 700; color: var(--text-primary); display: block;">Memoria RAM</span>
+                        </div>
+                        <div class="compra-cat-option" data-category="monitor" data-cat-name="Monitor / Pantalla" data-icon="fas fa-desktop" data-color="#8b5cf6" style="border: 1px solid var(--border-color); background: var(--bg-sidebar); border-radius: 10px; padding: 12px 8px; text-align: center; cursor: pointer; transition: all 0.2s;">
+                            <i class="fas fa-desktop" style="font-size: 1.6rem; color: #8b5cf6; margin-bottom: 6px; display: block;"></i>
+                            <span style="font-size: 0.76rem; font-weight: 700; color: var(--text-primary); display: block;">Monitor</span>
+                        </div>
+                        <div class="compra-cat-option" data-category="cargador" data-cat-name="Cargador / Fuente" data-icon="fas fa-plug" data-color="#f59e0b" style="border: 1px solid var(--border-color); background: var(--bg-sidebar); border-radius: 10px; padding: 12px 8px; text-align: center; cursor: pointer; transition: all 0.2s;">
+                            <i class="fas fa-plug" style="font-size: 1.6rem; color: #f59e0b; margin-bottom: 6px; display: block;"></i>
+                            <span style="font-size: 0.76rem; font-weight: 700; color: var(--text-primary); display: block;">Cargador</span>
+                        </div>
+                        <div class="compra-cat-option" data-category="notebook" data-cat-name="Notebook / Laptop" data-icon="fas fa-laptop" data-color="#10b981" style="border: 1px solid var(--border-color); background: var(--bg-sidebar); border-radius: 10px; padding: 12px 8px; text-align: center; cursor: pointer; transition: all 0.2s;">
+                            <i class="fas fa-laptop" style="font-size: 1.6rem; color: #10b981; margin-bottom: 6px; display: block;"></i>
+                            <span style="font-size: 0.76rem; font-weight: 700; color: var(--text-primary); display: block;">Notebook</span>
+                        </div>
+                        <div class="compra-cat-option" data-category="ssd" data-cat-name="Disco SSD / NVMe" data-icon="fas fa-hdd" data-color="#ec4899" style="border: 1px solid var(--border-color); background: var(--bg-sidebar); border-radius: 10px; padding: 12px 8px; text-align: center; cursor: pointer; transition: all 0.2s;">
+                            <i class="fas fa-hdd" style="font-size: 1.6rem; color: #ec4899; margin-bottom: 6px; display: block;"></i>
+                            <span style="font-size: 0.76rem; font-weight: 700; color: var(--text-primary); display: block;">Disco SSD</span>
+                        </div>
+                        <div class="compra-cat-option" data-category="perifericos" data-cat-name="Teclado / Mouse" data-icon="fas fa-keyboard" data-color="#06b6d4" style="border: 1px solid var(--border-color); background: var(--bg-sidebar); border-radius: 10px; padding: 12px 8px; text-align: center; cursor: pointer; transition: all 0.2s;">
+                            <i class="fas fa-keyboard" style="font-size: 1.6rem; color: #06b6d4; margin-bottom: 6px; display: block;"></i>
+                            <span style="font-size: 0.76rem; font-weight: 700; color: var(--text-primary); display: block;">Teclado/Mouse</span>
+                        </div>
+                        <div class="compra-cat-option" data-category="headset" data-cat-name="Audífonos / Headset" data-icon="fas fa-headphones" data-color="#6366f1" style="border: 1px solid var(--border-color); background: var(--bg-sidebar); border-radius: 10px; padding: 12px 8px; text-align: center; cursor: pointer; transition: all 0.2s;">
+                            <i class="fas fa-headphones" style="font-size: 1.6rem; color: #6366f1; margin-bottom: 6px; display: block;"></i>
+                            <span style="font-size: 0.76rem; font-weight: 700; color: var(--text-primary); display: block;">Headset</span>
+                        </div>
+                        <div class="compra-cat-option" data-category="impresora" data-cat-name="Impresora / Tóner" data-icon="fas fa-print" data-color="#eab308" style="border: 1px solid var(--border-color); background: var(--bg-sidebar); border-radius: 10px; padding: 12px 8px; text-align: center; cursor: pointer; transition: all 0.2s;">
+                            <i class="fas fa-print" style="font-size: 1.6rem; color: #eab308; margin-bottom: 6px; display: block;"></i>
+                            <span style="font-size: 0.76rem; font-weight: 700; color: var(--text-primary); display: block;">Impresora</span>
+                        </div>
+                        <div class="compra-cat-option" data-category="red" data-cat-name="Redes / Conectividad" data-icon="fas fa-network-wired" data-color="#14b8a6" style="border: 1px solid var(--border-color); background: var(--bg-sidebar); border-radius: 10px; padding: 12px 8px; text-align: center; cursor: pointer; transition: all 0.2s;">
+                            <i class="fas fa-network-wired" style="font-size: 1.6rem; color: #14b8a6; margin-bottom: 6px; display: block;"></i>
+                            <span style="font-size: 0.76rem; font-weight: 700; color: var(--text-primary); display: block;">Red / Switch</span>
+                        </div>
+                        <div class="compra-cat-option" data-category="otro" data-cat-name="Otro / Accesorio" data-icon="fas fa-box-open" data-color="#94a3b8" style="border: 1px solid var(--border-color); background: var(--bg-sidebar); border-radius: 10px; padding: 12px 8px; text-align: center; cursor: pointer; transition: all 0.2s;">
+                            <i class="fas fa-box-open" style="font-size: 1.6rem; color: #94a3b8; margin-bottom: 6px; display: block;"></i>
+                            <span style="font-size: 0.76rem; font-weight: 700; color: var(--text-primary); display: block;">Otro</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. Detalle del Producto y Marca -->
+                <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 14px;">
+                    <div class="form-group">
+                        <label for="compra-producto-input" style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 6px; display: block;">Nombre del Producto / Modelo Exacto *</label>
+                        <input type="text" id="compra-producto-input" required placeholder="Ej: Memoria RAM Kingston Fury 16GB DDR4 3200MHz Sodimm" style="width: 100%; padding: 11px 14px; background-color: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family); font-size: 0.88rem;">
+                    </div>
+                    <div class="form-group">
+                        <label for="compra-marca-input" style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 6px; display: block;">Marca</label>
+                        <input type="text" id="compra-marca-input" placeholder="Ej: Kingston, Dell, LG, HP" style="width: 100%; padding: 11px 14px; background-color: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family); font-size: 0.88rem;">
+                    </div>
+                </div>
+
+                <!-- 3. Cantidad, Monto y Fecha -->
+                <div style="display: grid; grid-template-columns: 1fr 2fr 2fr; gap: 14px;">
+                    <div class="form-group">
+                        <label for="compra-cantidad-input" style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 6px; display: block;">Cantidad</label>
+                        <input type="number" id="compra-cantidad-input" min="1" value="1" style="width: 100%; padding: 11px 14px; background-color: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family); font-size: 0.88rem;">
+                    </div>
+                    <div class="form-group">
+                        <label for="compra-valor-input" style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 6px; display: flex; justify-content: space-between;">
+                            <span>Valor Total ($ CLP) *</span>
+                            <span id="compra-valor-preview" style="color: #10b981; font-weight: 700;">$ 0</span>
+                        </label>
+                        <input type="number" id="compra-valor-input" required placeholder="Ej: 85990" style="width: 100%; padding: 11px 14px; background-color: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family); font-size: 0.88rem;">
+                    </div>
+                    <div class="form-group">
+                        <label for="compra-fecha-input" style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 6px; display: block;">Fecha de Compra *</label>
+                        <input type="date" id="compra-fecha-input" required style="width: 100%; padding: 11px 14px; background-color: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family); font-size: 0.88rem;">
+                    </div>
+                </div>
+
+                <!-- 4. Empresa Destinataria -->
+                <div>
+                    <label style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 8px; display: block;">Empresa a la que pertenece la compra *</label>
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+                        <div class="compra-empresa-card active" data-empresa="T-Sales" style="border: 2px solid #00c9a7; background: rgba(0, 201, 167, 0.1); border-radius: 8px; padding: 10px; text-align: center; cursor: pointer; font-weight: 700; font-size: 0.85rem; color: #00c9a7; transition: all 0.2s;">
+                            <i class="fas fa-building" style="margin-right: 6px;"></i> T-Sales
+                        </div>
+                        <div class="compra-empresa-card" data-empresa="Infinet" style="border: 1px solid var(--border-color); background: var(--bg-sidebar); border-radius: 8px; padding: 10px; text-align: center; cursor: pointer; font-weight: 700; font-size: 0.85rem; color: #f59e0b; transition: all 0.2s;">
+                            <i class="fas fa-building" style="margin-right: 6px;"></i> Infinet
+                        </div>
+                        <div class="compra-empresa-card" data-empresa="VPrime" style="border: 1px solid var(--border-color); background: var(--bg-sidebar); border-radius: 8px; padding: 10px; text-align: center; cursor: pointer; font-weight: 700; font-size: 0.85rem; color: #ef4444; transition: all 0.2s;">
+                            <i class="fas fa-building" style="margin-right: 6px;"></i> VPrime
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 5. ¿Quién lo pidió? (Buscador con Directorio de Colaboradores) -->
+                <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-color); border-radius: 10px; padding: 14px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <label for="compra-solicitante-search" style="font-size: 0.82rem; color: var(--text-secondary); font-weight: 700; margin: 0;">
+                            <i class="fas fa-user-tag" style="color: var(--accent-blue); margin-right: 4px;"></i> ¿Quién lo pidió / Para quién fue? *
+                        </label>
+                        <span style="font-size: 0.72rem; color: var(--accent-blue); font-weight: 600;"><i class="fas fa-bolt" style="color: #f59e0b;"></i> Autocompletado del Directorio</span>
+                    </div>
+                    <div style="position: relative; margin-bottom: 10px;">
+                        <input type="text" id="compra-solicitante-search" autocomplete="off" required placeholder="Escribe el nombre o RUT del colaborador (Ej: Francisca, Anthony, Aaron...)" style="width: 100%; padding: 11px 38px 11px 14px; background-color: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family); font-size: 0.88rem;">
+                        <i class="fas fa-search" style="position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 0.9rem; pointer-events: none;"></i>
+                        <div id="compra-solicitante-dropdown" class="autocomplete-suggestions-dropdown" style="display: none; max-height: 200px; overflow-y: auto;"></div>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <div>
+                            <span style="font-size: 0.72rem; color: var(--text-muted); display: block; margin-bottom: 2px;">RUT Solicitante</span>
+                            <input type="text" id="compra-solicitante-rut" placeholder="RUT automático" style="width: 100%; padding: 8px 10px; background-color: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-primary); font-family: var(--font-family); font-size: 0.8rem;">
+                        </div>
+                        <div>
+                            <span style="font-size: 0.72rem; color: var(--text-muted); display: block; margin-bottom: 2px;">Correo Solicitante</span>
+                            <input type="email" id="compra-solicitante-email" placeholder="Correo automático" style="width: 100%; padding: 8px 10px; background-color: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-primary); font-family: var(--font-family); font-size: 0.8rem;">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 6. Técnico Responsable, Proveedor y N° Factura -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px;">
+                    <div class="form-group">
+                        <label for="compra-tecnico-select" style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 6px; display: block;">Gestionado / Comprado por</label>
+                        <select id="compra-tecnico-select" style="width: 100%; padding: 11px 12px; background-color: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family); font-size: 0.85rem; cursor: pointer;">
+                            <option value="Belfor Aburto">Belfor Aburto (Administrador TI)</option>
+                            <option value="Felipe Olivares">Felipe Olivares (Soporte)</option>
+                            <option value="Omar Gálvez">Omar Gálvez (Soporte)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="compra-proveedor-input" style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 6px; display: block;">Proveedor / Tienda</label>
+                        <input type="text" id="compra-proveedor-input" placeholder="Ej: PC Factory, SP Digital, Dell" style="width: 100%; padding: 11px 14px; background-color: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family); font-size: 0.85rem;">
+                    </div>
+                    <div class="form-group">
+                        <label for="compra-factura-input" style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 6px; display: block;">N° Factura / Boleta</label>
+                        <input type="text" id="compra-factura-input" placeholder="Ej: FAC-89421 o BOL-1290" style="width: 100%; padding: 11px 14px; background-color: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family); font-size: 0.85rem;">
+                    </div>
+                </div>
+
+                <!-- 7. Estado de la Compra y Observaciones -->
+                <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 14px;">
+                    <div class="form-group">
+                        <label for="compra-estado-select" style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 6px; display: block;">Estado de Entrega</label>
+                        <select id="compra-estado-select" style="width: 100%; padding: 11px 12px; background-color: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family); font-size: 0.85rem; cursor: pointer;">
+                            <option value="entregado">🟢 Entregado e Instalado</option>
+                            <option value="en_transito">🟡 En Tránsito / Pendiente</option>
+                            <option value="stock">🔵 En Bodega / Stock TI</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="compra-notas-input" style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 6px; display: block;">Notas / Justificación</label>
+                        <input type="text" id="compra-notas-input" placeholder="Ej: Upgrade de memoria por lentitud en equipo comercial" style="width: 100%; padding: 11px 14px; background-color: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family); font-size: 0.85rem;">
+                    </div>
+                </div>
+
+                <!-- Modal Footer -->
+                <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 12px; padding-top: 16px; border-top: 1px solid var(--border-color); flex-shrink: 0;">
+                    <button type="button" id="btn-cancel-compra-modal" style="background-color: transparent; border: 1px solid var(--border-color); color: var(--text-secondary); padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; font-family: var(--font-family);">Cancelar</button>
+                    <button type="submit" id="btn-save-compra-submit" style="background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-purple) 100%); color: white; border: none; padding: 10px 24px; border-radius: 8px; cursor: pointer; font-weight: 700; font-family: var(--font-family); box-shadow: 0 4px 15px rgba(50, 102, 235, 0.3); display: flex; align-items: center; gap: 8px;">
+                        <i class="fas fa-save"></i> Guardar Registro de Compra
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ============ MODAL DETALLE DE COMPRA ============ -->
+    <div id="modal-detalle-compra" class="modal-backdrop" style="display: none; align-items: center; justify-content: center; z-index: 10000; padding: 20px;">
+        <div class="modal-card" style="max-width: 600px; width: 100%; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; box-shadow: 0 20px 50px rgba(0,0,0,0.6); overflow: hidden;">
+            <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding: 18px 24px;">
+                <div class="modal-title-area" style="display: flex; align-items: center; gap: 12px;">
+                    <div id="modal-detalle-compra-icon-wrap" style="width: 44px; height: 44px; border-radius: 12px; background: rgba(50, 102, 235, 0.15); display: flex; align-items: center; justify-content: center; color: var(--accent-blue); font-size: 1.3rem;">
+                        <i id="modal-detalle-compra-icon" class="fas fa-memory"></i>
+                    </div>
+                    <div>
+                        <span id="modal-detalle-compra-cat" style="font-size: 0.72rem; color: var(--accent-blue); text-transform: uppercase; font-weight: 700;">MEMORIA RAM</span>
+                        <h3 id="modal-detalle-compra-producto" style="margin: 2px 0 0; font-size: 1.15rem; font-weight: 700; color: var(--text-primary);">-</h3>
+                    </div>
+                </div>
+                <button type="button" class="modal-close-btn" id="btn-close-detalle-compra-modal" style="background: none; border: none; color: var(--text-muted); font-size: 1.2rem; cursor: pointer;"><i class="fas fa-times"></i></button>
+            </div>
+
+            <div style="padding: 20px 24px; display: flex; flex-direction: column; gap: 16px;">
+                <!-- Grid de Valores Principales -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                    <div style="background: var(--bg-sidebar); padding: 14px; border-radius: 10px; border: 1px solid var(--border-color);">
+                        <span style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; display: block; margin-bottom: 4px;">Valor Total Compra</span>
+                        <strong id="modal-detalle-compra-monto" style="font-size: 1.3rem; color: #10b981;">$ 0 CLP</strong>
+                    </div>
+                    <div style="background: var(--bg-sidebar); padding: 14px; border-radius: 10px; border: 1px solid var(--border-color);">
+                        <span style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; display: block; margin-bottom: 4px;">Fecha de Adquisición</span>
+                        <strong id="modal-detalle-compra-fecha" style="font-size: 1.05rem; color: var(--text-primary);">-</strong>
+                    </div>
+                </div>
+
+                <!-- Solicitante & Destino -->
+                <div style="background: var(--bg-sidebar); padding: 16px; border-radius: 10px; border: 1px solid var(--border-color);">
+                    <span style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; display: block; margin-bottom: 8px;">Persona que lo solicitó / Para quién fue</span>
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <div id="modal-detalle-compra-avatar" class="user-avatar" style="width: 40px; height: 40px; border-radius: 50%; background: var(--accent-blue); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.9rem;">U</div>
+                        <div>
+                            <strong id="modal-detalle-compra-solicitante" style="font-size: 0.95rem; color: var(--text-primary); display: block;">-</strong>
+                            <div style="font-size: 0.78rem; color: var(--text-secondary); display: flex; gap: 10px; margin-top: 2px;">
+                                <span id="modal-detalle-compra-rut"><i class="fas fa-id-card"></i> -</span>
+                                <span id="modal-detalle-compra-email"><i class="fas fa-envelope"></i> -</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Detalles Técnicos y Logística -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                    <div style="background: var(--bg-sidebar); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);">
+                        <span style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; display: block; margin-bottom: 4px;">Empresa</span>
+                        <span id="modal-detalle-compra-empresa" class="company-badge badge-tsales">T-Sales</span>
+                    </div>
+                    <div style="background: var(--bg-sidebar); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);">
+                        <span style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; display: block; margin-bottom: 4px;">Estado</span>
+                        <span id="modal-detalle-compra-estado" class="status-badge status-resuelto">🟢 Entregado</span>
+                    </div>
+                    <div style="background: var(--bg-sidebar); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);">
+                        <span style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; display: block; margin-bottom: 4px;">Gestionado por</span>
+                        <strong id="modal-detalle-compra-tecnico" style="font-size: 0.85rem; color: var(--text-primary);">-</strong>
+                    </div>
+                    <div style="background: var(--bg-sidebar); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);">
+                        <span style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; display: block; margin-bottom: 4px;">Proveedor & Factura</span>
+                        <strong id="modal-detalle-compra-proveedor" style="font-size: 0.85rem; color: var(--text-primary);">-</strong>
+                    </div>
+                </div>
+
+                <!-- Observaciones -->
+                <div style="background: var(--bg-sidebar); padding: 14px; border-radius: 8px; border: 1px solid var(--border-color);">
+                    <span style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; display: block; margin-bottom: 4px;">Notas / Justificación de la Compra</span>
+                    <p id="modal-detalle-compra-notas" style="margin: 0; font-size: 0.85rem; color: var(--text-secondary); line-height: 1.4;">-</p>
+                </div>
+
+                <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 12px; padding-top: 14px; border-top: 1px solid var(--border-color);">
+                    <button type="button" id="btn-editar-desde-detalle" style="background: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-primary); padding: 8px 16px; border-radius: 8px; cursor: pointer; font-weight: 600; font-family: var(--font-family); display: flex; align-items: center; gap: 6px;">
+                        <i class="fas fa-edit" style="color: var(--accent-blue);"></i> Editar Compra
                     </button>
                 </div>
             </div>

@@ -3238,6 +3238,203 @@ input:checked + .slider:before {
    INVENTARIO DE EQUIPOS (CMDB)
    ============================================ */
 
+/* ========================================================
+   VISTA DE TARJETAS (CARDS GRID) PARA EQUIPOS
+   ======================================================== */
+.equip-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.equip-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    padding: 16px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+    position: relative;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+.equip-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35);
+    border-color: rgba(99, 102, 241, 0.4);
+}
+
+.equip-card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+}
+
+.equip-card-brand-box {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.equip-card-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: rgba(59, 130, 246, 0.12);
+    border: 1px solid rgba(59, 130, 246, 0.25);
+    color: var(--accent-blue);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+
+.equip-card-code {
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: var(--text-primary);
+}
+
+.equip-card-user {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--border-subtle);
+    border-radius: 9px;
+}
+
+.equip-card-avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-blue) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.8rem;
+    color: white;
+    flex-shrink: 0;
+}
+
+.equip-card-avatar.unassigned {
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text-muted);
+    font-size: 1rem;
+}
+
+.equip-card-user-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.equip-card-user-name {
+    font-weight: 600;
+    font-size: 0.88rem;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+}
+
+.equip-card-user-email {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+}
+
+.equip-card-device-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 0.85rem;
+}
+
+.equip-card-model {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.equip-card-model-sub {
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+}
+
+.equip-card-serial-box {
+    text-align: right;
+}
+
+.equip-card-serial {
+    font-family: monospace;
+    font-weight: 700;
+    font-size: 0.82rem;
+    color: var(--accent-blue, #60a5fa);
+    background: rgba(59, 130, 246, 0.1);
+    padding: 2px 6px;
+    border-radius: 4px;
+    border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+.equip-card-specs-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 6px;
+    background: var(--bg-sidebar);
+    padding: 8px 10px;
+    border-radius: 8px;
+    border: 1px solid var(--border-subtle);
+}
+
+.equip-spec-pill {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+
+.equip-spec-pill-label {
+    font-size: 0.68rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    font-weight: 600;
+}
+
+.equip-spec-pill-val {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.equip-card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid var(--border-subtle);
+    padding-top: 10px;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.view-toggle-btn.active {
+    background: var(--accent-blue) !important;
+    color: white !important;
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.35);
+}
+
 /* Miniatura de PC */
 .equip-thumbnail {
     width: 44px;
@@ -4023,16 +4220,162 @@ input:checked + .slider:before {
     font-weight: 600 !important;
 }
 
-/* Layout de dos columnas */
+/* Layout de dos columnas y Formularios */
 .ticket-creation-layout {
     display: grid;
     grid-template-columns: 1fr 340px;
     gap: 24px;
+    width: 100%;
+}
+
+.form-grid-2col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    width: 100%;
+}
+
+.stepper-nav-buttons {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+    width: 100%;
 }
 
 @media (max-width: 992px) {
     .ticket-creation-layout {
-        grid-template-columns: 1fr;
+        display: flex !important;
+        flex-direction: column !important;
+        grid-template-columns: 1fr !important;
+        gap: 20px !important;
+        width: 100% !important;
+    }
+    .ticket-creation-layout > form {
+        width: 100% !important;
+    }
+    .ticket-creation-layout > div:last-child {
+        width: 100% !important;
+    }
+}
+
+@media (max-width: 768px) {
+    #page-crear-ticket {
+        padding: 0 !important;
+        width: 100% !important;
+    }
+
+    #page-crear-ticket .tickets-page-header {
+        margin-bottom: 16px !important;
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 8px !important;
+    }
+
+    #page-crear-ticket .tickets-page-title h1 {
+        font-size: 1.35rem !important;
+    }
+
+    #page-crear-ticket .tickets-page-title p {
+        font-size: 0.8rem !important;
+    }
+
+    .company-selector-container {
+        padding: 16px 14px !important;
+        border-radius: 14px !important;
+        margin-bottom: 20px !important;
+    }
+
+    .company-cards-grid {
+        gap: 10px !important;
+    }
+
+    .company-card {
+        min-height: 85px !important;
+        padding: 10px 8px !important;
+        border-radius: 12px !important;
+    }
+
+    .company-card img {
+        max-height: 48px !important;
+        max-width: 95% !important;
+    }
+
+    .company-check-badge {
+        width: 18px !important;
+        height: 18px !important;
+        font-size: 0.65rem !important;
+        top: 6px !important;
+        right: 6px !important;
+    }
+
+    .ticket-stepper {
+        max-width: 100% !important;
+        margin: 0 0 22px 0 !important;
+        padding: 0 4px !important;
+    }
+
+    .stepper-step .step-circle {
+        width: 32px !important;
+        height: 32px !important;
+        font-size: 0.82rem !important;
+    }
+
+    .stepper-step .step-label {
+        font-size: 0.68rem !important;
+        text-align: center !important;
+        line-height: 1.2 !important;
+        white-space: normal !important;
+    }
+
+    #stepper-line {
+        top: 16px !important;
+        left: 14% !important;
+        right: 14% !important;
+    }
+
+    .stepper-form-card {
+        padding: 18px 14px !important;
+        border-radius: 14px !important;
+        gap: 14px !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    .form-grid-2col {
+        grid-template-columns: 1fr !important;
+        gap: 14px !important;
+    }
+
+    .wysiwyg-toolbar {
+        gap: 10px !important;
+        padding: 8px 10px !important;
+        overflow-x: auto !important;
+        flex-wrap: nowrap !important;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .file-upload-zone {
+        padding: 18px 12px !important;
+    }
+
+    .btn-user-type-tab {
+        padding: 9px 6px !important;
+        font-size: 0.76rem !important;
+    }
+
+    .stepper-nav-buttons {
+        display: flex !important;
+        gap: 10px !important;
+        width: 100% !important;
+    }
+
+    .stepper-nav-buttons button {
+        flex: 1 !important;
+        padding: 12px 14px !important;
+        font-size: 0.86rem !important;
+        justify-content: center !important;
+        text-align: center !important;
     }
 }
 
@@ -6622,12 +6965,69 @@ input:checked + .slider:before {
         display: none !important;
     }
 
-    .tickets-table-container {
+    /* Ocultar tablas desktop y mostrar tarjetas en móviles */
+    #page-mis-tickets .tickets-table-container {
         display: none !important;
     }
-
     .mobile-tickets-card-list {
         display: flex !important;
+    }
+
+    /* Directorio de Colaboradores */
+    .directory-table-container {
+        display: none !important;
+    }
+    #mobile-directory-cards-container {
+        display: flex !important;
+        flex-direction: column !important;
+        width: 100% !important;
+        gap: 10px !important;
+    }
+
+    /* Roles del Equipo TI */
+    .users-roles-table-container {
+        display: none !important;
+    }
+    #mobile-users-roles-cards-container {
+        display: flex !important;
+        flex-direction: column !important;
+        width: 100% !important;
+        gap: 12px !important;
+    }
+
+    /* Equipos / Inventario Hardware */
+    .equip-table-container {
+        display: none !important;
+    }
+    #mobile-equip-cards-container {
+        display: flex !important;
+        flex-direction: column !important;
+        width: 100% !important;
+        gap: 12px !important;
+    }
+
+    /* Compras TI */
+    .compras-table-container {
+        display: none !important;
+    }
+    #mobile-compras-cards-container {
+        display: flex !important;
+        flex-direction: column !important;
+        width: 100% !important;
+        gap: 12px !important;
+    }
+
+    /* Ingresos y Bajas TI */
+    .ingresos-table-container,
+    .bajas-table-container {
+        display: none !important;
+    }
+    #mobile-ingresos-cards-container,
+    #mobile-bajas-cards-container {
+        display: flex !important;
+        flex-direction: column !important;
+        width: 100% !important;
+        gap: 12px !important;
     }
 
     .mobile-fab-btn {
@@ -6640,6 +7040,53 @@ input:checked + .slider:before {
 
     .main-content {
         padding-bottom: 86px !important;
+    }
+}
+
+/* ========================================================
+   RESPONSIVE TOOLBARS & FILTROS MÓVIL (< 768px)
+   ======================================================== */
+@media (max-width: 768px) {
+    #user-tab-directorio-content .tickets-toolbar,
+    #page-compras-ti .tickets-toolbar {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 10px !important;
+    }
+
+    #user-tab-directorio-content .tickets-toolbar > div,
+    #page-compras-ti .tickets-toolbar > div {
+        display: flex !important;
+        width: 100% !important;
+        gap: 8px !important;
+    }
+
+    #user-tab-directorio-content .tickets-toolbar select,
+    #page-compras-ti .tickets-toolbar select {
+        flex: 1 !important;
+        width: 100% !important;
+    }
+
+    .tickets-filter-tabs {
+        display: flex !important;
+        overflow-x: auto !important;
+        flex-wrap: nowrap !important;
+        padding-bottom: 6px !important;
+        -webkit-overflow-scrolling: touch;
+        gap: 8px !important;
+    }
+
+    .tickets-filter-tabs .filter-tab {
+        white-space: nowrap !important;
+        flex-shrink: 0 !important;
+    }
+
+    .directory-mobile-card {
+        transition: transform 0.15s ease, border-color 0.15s ease;
+    }
+
+    .directory-mobile-card:active {
+        transform: scale(0.99);
     }
 }
 
@@ -6880,5 +7327,303 @@ input:checked + .slider:before {
     30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
     40%, 60% { transform: translate3d(4px, 0, 0); }
 }
+
+/* ========================================================
+   COMPRAS TI MODULE STYLES
+   ======================================================== */
+.compra-cat-option {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    user-select: none;
+}
+
+.compra-cat-option:hover {
+    transform: translateY(-2px);
+    border-color: var(--accent-blue) !important;
+    background: rgba(50, 102, 235, 0.08) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.compra-cat-option.active {
+    border-color: var(--accent-blue) !important;
+    background: rgba(50, 102, 235, 0.15) !important;
+    box-shadow: 0 0 0 1px var(--accent-blue), 0 4px 15px rgba(50, 102, 235, 0.3) !important;
+}
+
+.compra-cat-pill {
+    transition: all 0.2s ease;
+    user-select: none;
+}
+
+.compra-cat-pill:hover {
+    background: var(--bg-sidebar) !important;
+    color: var(--text-primary) !important;
+    border-color: var(--accent-blue) !important;
+}
+
+.compra-cat-pill.active {
+    background: var(--accent-blue) !important;
+    color: white !important;
+    border-color: var(--accent-blue) !important;
+    box-shadow: 0 2px 8px rgba(50, 102, 235, 0.4);
+}
+
+.compra-empresa-card {
+    transition: all 0.2s ease;
+    user-select: none;
+}
+
+.compra-empresa-card:hover {
+    transform: translateY(-2px);
+}
+
+.compra-empresa-card.active[data-empresa="T-Sales"] {
+    border-color: #00c9a7 !important;
+    background: rgba(0, 201, 167, 0.15) !important;
+    box-shadow: 0 0 0 1px #00c9a7;
+}
+
+.compra-empresa-card.active[data-empresa="Infinet"] {
+    border-color: #f59e0b !important;
+    background: rgba(245, 158, 11, 0.15) !important;
+    box-shadow: 0 0 0 1px #f59e0b;
+}
+
+.compra-empresa-card.active[data-empresa="VPrime"] {
+    border-color: #ef4444 !important;
+    background: rgba(239, 68, 68, 0.15) !important;
+    box-shadow: 0 0 0 1px #ef4444;
+}
+
+.compra-table-row {
+    transition: background-color 0.15s ease;
+}
+
+.compra-table-row:hover {
+    background-color: rgba(255, 255, 255, 0.025);
+}
+
+.status-badge-entregado {
+    background: rgba(16, 185, 129, 0.12);
+    color: #10b981;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.status-badge-transito {
+    background: rgba(245, 158, 11, 0.12);
+    color: #f59e0b;
+    border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.status-badge-stock {
+    background: rgba(50, 102, 235, 0.12);
+    color: var(--accent-blue);
+    border: 1px solid rgba(50, 102, 235, 0.3);
+}
+
+/* ========================================================
+   GESTIÓN DE EQUIPOS: SUBPESTAÑAS, ESTADOS Y TRAZABILIDAD
+   ======================================================== */
+.equip-main-tabs {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.equip-main-tab {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    padding: 10px 18px;
+    border-radius: 10px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--font-family);
+    white-space: nowrap;
+}
+
+.equip-main-tab:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text-primary);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.equip-main-tab.active {
+    background: linear-gradient(135deg, rgba(97, 62, 234, 0.25) 0%, rgba(50, 102, 235, 0.2) 100%);
+    border-color: var(--accent-blue);
+    color: white;
+    box-shadow: 0 4px 14px rgba(50, 102, 235, 0.25);
+}
+
+/* Badges de Estados del Ciclo de Vida */
+.status-disponible {
+    background: rgba(29, 200, 109, 0.14) !important;
+    color: #1dc86d !important;
+    border: 1px solid rgba(29, 200, 109, 0.35) !important;
+}
+
+.status-reservado {
+    background: rgba(168, 85, 247, 0.14) !important;
+    color: #c084fc !important;
+    border: 1px solid rgba(168, 85, 247, 0.35) !important;
+}
+
+.status-en_preparacion,
+.status-preparacion,
+.status-recibido_preparacion {
+    background: rgba(59, 130, 246, 0.14) !important;
+    color: #60a5fa !important;
+    border: 1px solid rgba(59, 130, 246, 0.35) !important;
+}
+
+.status-asignado,
+.status-activo {
+    background: rgba(16, 185, 129, 0.14) !important;
+    color: #34d399 !important;
+    border: 1px solid rgba(16, 185, 129, 0.35) !important;
+}
+
+.status-pendiente_devolucion,
+.status-pendiente-devolucion {
+    background: rgba(245, 158, 11, 0.16) !important;
+    color: #fbbf24 !important;
+    border: 1px solid rgba(245, 158, 11, 0.4) !important;
+    animation: pulseGlow 2.5s infinite ease-in-out;
+}
+
+.status-mantenimiento {
+    background: rgba(239, 68, 68, 0.14) !important;
+    color: #f87171 !important;
+    border: 1px solid rgba(239, 68, 68, 0.35) !important;
+}
+
+.status-baja {
+    background: rgba(148, 163, 184, 0.14) !important;
+    color: #94a3b8 !important;
+    border: 1px solid rgba(148, 163, 184, 0.3) !important;
+}
+
+@keyframes pulseGlow {
+    0%, 100% {
+        box-shadow: 0 0 0 0 rgba(245, 158, 11, 0);
+    }
+    50% {
+        box-shadow: 0 0 8px 1px rgba(245, 158, 11, 0.3);
+    }
+}
+
+/* ========================================================
+   TIMELINE / LÍNEA DE TIEMPO DE TRAZABILIDAD
+   ======================================================== */
+.equip-timeline-container {
+    position: relative;
+    padding-left: 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.equip-timeline-container::before {
+    content: '';
+    position: absolute;
+    top: 12px;
+    bottom: 12px;
+    left: 13px;
+    width: 2px;
+    background: linear-gradient(180deg, var(--accent-purple) 0%, var(--accent-blue) 50%, rgba(255, 255, 255, 0.08) 100%);
+    border-radius: 2px;
+}
+
+.equip-timeline-item {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 12px 16px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+    transition: transform 0.15s ease, border-color 0.15s ease;
+}
+
+.equip-timeline-item:hover {
+    border-color: rgba(50, 102, 235, 0.4);
+    transform: translateX(3px);
+}
+
+.equip-timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -25px;
+    top: 16px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--accent-blue);
+    border: 2px solid var(--bg-primary);
+    box-shadow: 0 0 6px var(--accent-blue);
+}
+
+.equip-timeline-item.dot-green::before {
+    background: #1dc86d;
+    box-shadow: 0 0 6px #1dc86d;
+}
+.equip-timeline-item.dot-amber::before {
+    background: #f59e0b;
+    box-shadow: 0 0 6px #f59e0b;
+}
+.equip-timeline-item.dot-purple::before {
+    background: var(--accent-purple);
+    box-shadow: 0 0 6px var(--accent-purple);
+}
+.equip-timeline-item.dot-red::before {
+    background: #ef4444;
+    box-shadow: 0 0 6px #ef4444;
+}
+
+.equip-timeline-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.equip-timeline-action {
+    font-weight: 700;
+    font-size: 0.88rem;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.equip-timeline-date {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    font-family: monospace;
+}
+
+.equip-timeline-details {
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    line-height: 1.4;
+}
+
+.equip-timeline-tech {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    margin-top: 4px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
 
 
