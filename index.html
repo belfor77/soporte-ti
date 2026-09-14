@@ -55,6 +55,7 @@
                 <ul>
                     <li id="nav-usuarios"><a href="#" data-page="page-usuarios"><i class="fas fa-users"></i> Usuarios</a></li>
                     <li id="nav-equipos"><a href="#" data-page="page-base-conocimientos"><i class="fas fa-desktop"></i> Equipos</a></li>
+                    <li id="nav-kiosk-pc"><a href="#" id="btn-open-kiosk-from-nav" style="color: #34d399;"><i class="fas fa-laptop-code" style="color: #34d399;"></i> ⚡ Kiosko Diagnóstico <span class="badge" style="background: rgba(16, 185, 129, 0.15); color: #34d399; padding: 2px 6px; border-radius: 4px; font-size: 0.65rem; font-weight: 700;">PIN</span></a></li>
                     <li id="nav-compras"><a href="#" data-page="page-compras"><i class="fas fa-shopping-bag"></i> Compras TI <span class="badge new-badge" style="background: var(--accent-blue); color: white; padding: 2px 6px; border-radius: 10px; font-size: 0.7rem; margin-left: 8px;">NUEVO</span></a></li>
                 </ul>
 
@@ -820,7 +821,7 @@
                             <div class="form-group" id="ticket-creator-group" style="display: none;">
                                 <label for="ticket-creator-select" style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 6px; display: block;">Miembro del equipo (Creador) *</label>
                                 <select id="ticket-creator-select" style="width: 100%; padding: 12px; background-color: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family); font-size: 0.88rem; cursor: pointer;">
-                                    <option value="Belfor Aburto" selected>Belfor Aburto</option>
+                                    <option value="Belfor Aburto">Belfor Aburto</option>
                                     <option value="Felipe Olivares">Felipe Olivares</option>
                                     <option value="Omar Gálvez">Omar Gálvez</option>
                                 </select>
@@ -970,7 +971,7 @@
                                     </div>
                                     <select id="ticket-assigned-tech" style="width: 100%; padding: 12px; background-color: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family); font-size: 0.88rem; cursor: pointer;">
                                         <option value="">Sin Asignar (Disponible para el equipo)</option>
-                                        <option value="Belfor Aburto" selected>Belfor Aburto (Administrador TI)</option>
+                                        <option value="Belfor Aburto">Belfor Aburto (Administrador TI)</option>
                                         <option value="Felipe Olivares">Felipe Olivares (Soporte)</option>
                                         <option value="Omar Gálvez">Omar Gálvez (Soporte)</option>
                                     </select>
@@ -1274,6 +1275,9 @@
                         <p>Inventario CMDB, control de próximos ingresos, bajas y trazabilidad de notebooks</p>
                     </div>
                     <div class="kb-header-buttons" id="inventario-header-actions" style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <button class="btn-importar-equipos" id="btn-open-kiosk-from-inventario" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.18) 0%, rgba(59, 130, 246, 0.22) 100%); border: 1px solid rgba(16, 185, 129, 0.5); color: #34d399; padding: 10px 16px; border-radius: 10px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s ease;" title="Abrir Kiosko de Auto-Diagnóstico de hardware y reasignación rápida de este notebook">
+                            <i class="fas fa-laptop-code"></i> ⚡ Kiosko Diagnóstico (PIN)
+                        </button>
                         <button class="btn-importar-equipos" id="btn-sync-supabase-equipos" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(5, 150, 105, 0.25) 100%); border: 1px solid rgba(16, 185, 129, 0.4); color: #34d399; padding: 10px 16px; border-radius: 10px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s ease;" title="Subir y sincronizar todos los equipos con Supabase para que los vea todo el equipo">
                             <i class="fas fa-cloud-upload-alt"></i> Sincronizar con la Nube (Supabase)
                         </button>
@@ -1751,6 +1755,24 @@
 
                 <!-- CONTENIDO PESTAÑA 1: DIRECTORIO DE COLABORADORES -->
                 <div id="user-tab-directorio-content">
+                    <!-- Banner de advertencia de Supabase si la tabla no existe -->
+                    <div id="directorio-supabase-warning" style="display: none; background-color: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); color: #f59e0b; padding: 15px; border-radius: 10px; margin-bottom: 20px; font-family: var(--font-family); font-size: 0.88rem; align-items: center; gap: 10px;">
+                        <i class="fas fa-exclamation-triangle" style="font-size: 1.2rem; flex-shrink: 0; color: #f59e0b;"></i>
+                        <div>
+                            <strong>⚠️ Tabla 'directorio_usuarios' ausente en Supabase:</strong> Los colaboradores nuevos o eliminados solo se guardarán en tu navegador. Para que todo el equipo los vea, ejecuta la siguiente consulta en el Editor SQL de Supabase:
+                            <pre style="background: rgba(0,0,0,0.2); padding: 8px; margin-top: 8px; border-radius: 4px; overflow-x: auto; font-size: 0.8rem; user-select: all;">CREATE TABLE directorio_usuarios (
+  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  nombre text NOT NULL,
+  rut text,
+  email text UNIQUE NOT NULL,
+  empresa text,
+  tipo text,
+  licencia text,
+  created_at timestamp with time zone DEFAULT now()
+);</pre>
+                        </div>
+                    </div>
+
                     <!-- Barra de Búsqueda y Filtros del Directorio -->
                     <div class="tickets-toolbar" style="margin-bottom: 20px; display: flex; gap: 14px; flex-wrap: wrap; align-items: center;">
                         <div class="tickets-search" style="flex: 1; min-width: 250px;">
@@ -4506,6 +4528,135 @@
                 </div>
                 <button type="button" onclick="if(window.doLogin) window.doLogin('admin');" style="width: 100%; background: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-blue) 100%); color: white; border: none; padding: 12px; border-radius: 8px; font-weight: 600; cursor: pointer; font-family: var(--font-family); box-shadow: 0 4px 15px rgba(97, 62, 234, 0.3);">Ingresar como Administrador</button>
             </form>
+
+            <!-- Acceso Rápido Kiosko Onboarding con PIN -->
+            <div style="padding: 0 24px 20px; text-align: center; border-top: 1px solid var(--border-color); margin-top: 4px; padding-top: 14px;">
+                <button type="button" id="btn-open-kiosk-from-login" style="width: 100%; background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.4); color: #34d399; padding: 11px; border-radius: 8px; font-weight: 700; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s; font-family: var(--font-family);" onmouseover="this.style.background='rgba(16, 185, 129, 0.2)'" onmouseout="this.style.background='rgba(16, 185, 129, 0.12)'">
+                    <i class="fas fa-laptop-code" style="font-size: 1.1rem;"></i> ⚡ Registrar / Diagnosticar este PC (PIN)
+                </button>
+                <span style="font-size: 0.72rem; color: var(--text-muted); display: block; margin-top: 6px;">Acceso técnico directo para reasignación y auditoría rápida</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ MODAL DE PIN RÁPIDO PARA KIOSKO ============ -->
+    <div id="modal-kiosk-pin-gate" class="modal-backdrop" style="display: none; align-items: center; justify-content: center; background-color: rgba(6, 8, 14, 0.96); backdrop-filter: blur(16px); z-index: 9999;">
+        <div class="modal-card" style="max-width: 400px; width: 90%; border-color: rgba(16, 185, 129, 0.4); box-shadow: 0 0 50px rgba(16, 185, 129, 0.2); text-align: center;">
+            <div style="margin-bottom: 16px;">
+                <div style="width: 56px; height: 56px; border-radius: 14px; background: linear-gradient(135deg, #10b981 0%, #3b82f6 100%); display: flex; align-items: center; justify-content: center; margin: 0 auto 14px; box-shadow: 0 0 25px rgba(16, 185, 129, 0.5);">
+                    <i class="fas fa-laptop-code" style="color: white; font-size: 1.6rem;"></i>
+                </div>
+                <h3 style="margin: 0 0 4px 0; font-size: 1.25rem; font-weight: 700; color: var(--text-primary);">Kiosko de Diagnóstico TI</h3>
+                <p style="margin: 0; font-size: 0.82rem; color: var(--text-secondary);">Ingresa el PIN de seguridad técnico para auditar este equipo</p>
+            </div>
+
+            <form id="form-kiosk-pin" onsubmit="event.preventDefault(); window.submitKioskPin(); return false;">
+                <div class="form-group" style="margin-bottom: 16px;">
+                    <div style="position: relative;">
+                        <input type="password" id="input-kiosk-pin" placeholder="••••" maxlength="8" required autocomplete="off" style="width: 100%; padding: 14px 16px; background: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: 10px; color: var(--text-primary); font-size: 1.3rem; letter-spacing: 4px; text-align: center; outline: none;">
+                    </div>
+                    <span id="kiosk-pin-error-msg" style="display: none; color: #ef4444; font-size: 0.78rem; margin-top: 6px; font-weight: 600;"><i class="fas fa-exclamation-circle"></i> PIN incorrecto. Intenta con tu PIN técnico (Ej: 2024).</span>
+                </div>
+
+                <div style="display: flex; gap: 10px;">
+                    <button type="button" id="btn-cancel-kiosk-pin" style="flex: 1; padding: 11px; background: transparent; border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-secondary); font-weight: 600; cursor: pointer; font-family: var(--font-family);">Cancelar</button>
+                    <button type="submit" style="flex: 2; padding: 11px; background: linear-gradient(135deg, #10b981 0%, #3b82f6 100%); border: none; border-radius: 8px; color: white; font-weight: 700; cursor: pointer; font-family: var(--font-family); box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3); display: flex; align-items: center; justify-content: center; gap: 6px;">
+                        <i class="fas fa-unlock"></i> Ingresar al Kiosko
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ============ MODAL KIOSKO DE ONBOARDING & DIAGNÓSTICO DE NOTEBOOK ============ -->
+    <div id="modal-kiosk-pc-onboarding" class="modal-backdrop" style="display: none; align-items: center; justify-content: center; background-color: rgba(6, 8, 14, 0.96); backdrop-filter: blur(14px); z-index: 9998;">
+        <div class="modal-card" style="max-width: 960px; width: 94%; max-height: 92vh; display: flex; flex-direction: column; border-color: rgba(16, 185, 129, 0.35); box-shadow: 0 0 50px rgba(16, 185, 129, 0.15);">
+            <!-- Header -->
+            <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 14px;">
+                <div class="modal-title-area" style="display: flex; align-items: center; gap: 12px;">
+                    <div style="width: 44px; height: 44px; border-radius: 12px; background: linear-gradient(135deg, #10b981 0%, #3b82f6 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 1.3rem; box-shadow: 0 0 20px rgba(16, 185, 129, 0.4);">
+                        <i class="fas fa-laptop-code"></i>
+                    </div>
+                    <div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <h2 style="margin: 0; font-size: 1.25rem; font-weight: 700; color: var(--text-primary);">Kiosko de Diagnóstico & Onboarding TI</h2>
+                            <span class="status-badge" style="background: rgba(16, 185, 129, 0.2); color: #34d399; font-size: 0.72rem; padding: 2px 8px; border-radius: 6px;"><i class="fas fa-bolt"></i> Acceso Rápido</span>
+                        </div>
+                        <p style="margin: 2px 0 0; font-size: 0.8rem; color: var(--text-secondary);">Detección en tiempo real de hardware, consulta de usuario anterior y reasignación de flota</p>
+                    </div>
+                </div>
+                <button type="button" class="modal-close-btn" id="btn-close-kiosk-modal" style="background: none; border: none; color: var(--text-muted); font-size: 1.4rem; cursor: pointer;"><i class="fas fa-times"></i></button>
+            </div>
+
+            <!-- Body -->
+            <div class="modal-body" style="overflow-y: auto; max-height: 75vh; padding: 20px; display: flex; flex-direction: column; gap: 18px;">
+                
+                <!-- 1. Telemetría de Hardware en Tiempo Real (Auto-Detección del Navegador) -->
+                <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 16px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                        <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-primary); text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; gap: 6px;">
+                            <i class="fas fa-microchip" style="color: var(--accent-blue);"></i> Hardware Detectado en este PC
+                        </span>
+                        <span class="status-badge status-resuelto" style="font-size: 0.7rem;"><i class="fas fa-wifi"></i> Diagnóstico en Vivo</span>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px;" id="kiosk-live-telemetry-grid">
+                        <div style="background: var(--bg-sidebar); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 10px 12px;">
+                            <span style="font-size: 0.68rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; display: block;"><i class="fab fa-windows" style="color: #60a5fa;"></i> Sistema Operativo</span>
+                            <strong id="kiosk-os-detected" style="font-size: 0.85rem; color: var(--text-primary); display: block; margin-top: 2px;">Windows (64-bit)</strong>
+                        </div>
+                        <div style="background: var(--bg-sidebar); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 10px 12px;">
+                            <span style="font-size: 0.68rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; display: block;"><i class="fas fa-brain" style="color: #a78bfa;"></i> Procesador (CPU)</span>
+                            <strong id="kiosk-cpu-detected" style="font-size: 0.85rem; color: var(--text-primary); display: block; margin-top: 2px;">8 Núcleos Lógicos</strong>
+                        </div>
+                        <div style="background: var(--bg-sidebar); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 10px 12px;">
+                            <span style="font-size: 0.68rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; display: block;"><i class="fas fa-memory" style="color: #34d399;"></i> Memoria RAM</span>
+                            <strong id="kiosk-ram-detected" style="font-size: 0.85rem; color: var(--text-primary); display: block; margin-top: 2px;">~8 GB / 16 GB</strong>
+                        </div>
+                        <div style="background: var(--bg-sidebar); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 10px 12px;">
+                            <span style="font-size: 0.68rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; display: block;"><i class="fas fa-desktop" style="color: #f59e0b;"></i> Pantalla / GPU</span>
+                            <strong id="kiosk-screen-detected" style="font-size: 0.85rem; color: var(--text-primary); display: block; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">1920x1080 FHD</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. Captura de Serial BIOS / Script PowerShell de 1-Clic -->
+                <div style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.06) 0%, rgba(97, 62, 234, 0.06) 100%); border: 1px solid rgba(59, 130, 246, 0.25); border-radius: 12px; padding: 16px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 12px;">
+                        <div>
+                            <h4 style="margin: 0; font-size: 0.95rem; color: var(--text-primary); display: flex; align-items: center; gap: 8px;">
+                                <i class="fas fa-terminal" style="color: var(--accent-blue);"></i> Identificación Exacta de Serial (BIOS)
+                            </h4>
+                            <p style="margin: 2px 0 0; font-size: 0.78rem; color: var(--text-secondary);">Para extraer el Serial exacto de placa, Marca, Modelo y Disco SSD en 1 segundo:</p>
+                        </div>
+                        <button type="button" id="btn-copy-kiosk-powershell" style="background: var(--accent-blue); color: white; border: none; padding: 8px 16px; border-radius: 8px; font-weight: 700; font-size: 0.82rem; cursor: pointer; display: flex; align-items: center; gap: 6px; box-shadow: 0 2px 10px rgba(59, 130, 246, 0.3);">
+                            <i class="fas fa-copy"></i> Copiar Comando PowerShell
+                        </button>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;" class="kiosk-capture-grid">
+                        <div>
+                            <label style="font-size: 0.76rem; color: var(--text-secondary); font-weight: 600; display: block; margin-bottom: 4px;">📥 Pegar Resultado de PowerShell o Archivo TXT:</label>
+                            <input type="text" id="kiosk-powershell-input" placeholder='Pega aquí el resultado (Ctrl + V)...' style="width: 100%; padding: 10px 12px; background: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: monospace; font-size: 0.82rem;">
+                        </div>
+                        <div>
+                            <label style="font-size: 0.76rem; color: var(--text-secondary); font-weight: 600; display: block; margin-bottom: 4px;">🔍 O Buscar directamente por Serial o Código:</label>
+                            <div style="display: flex; gap: 8px;">
+                                <input type="text" id="kiosk-manual-search-input" placeholder="Ej: 78F12Z2 o LENOVO-01" style="flex: 1; padding: 10px 12px; background: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: monospace; font-size: 0.85rem;">
+                                <button type="button" id="btn-kiosk-search-db" style="background: var(--accent-blue); border: none; color: white; padding: 0 16px; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. Resultado de Búsqueda y Panel de Reasignación -->
+                <div id="kiosk-result-container" style="display: none;">
+                    <!-- Contenido dinámico inyectado por script.js -->
+                </div>
+
+            </div>
         </div>
     </div>
 

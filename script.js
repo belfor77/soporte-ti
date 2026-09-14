@@ -65,6 +65,79 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    let supabaseDirectorioTableOk = true;
+
+    async function fetchDirectoryUsersFromSupabase() {
+        if (!useLocalFallback && typeof supabase !== 'undefined' && supabase) {
+            try {
+                const { data, error } = await supabase
+                    .from('directorio_usuarios')
+                    .select('*');
+                
+                if (error) {
+                    if (error.code === '42P01' || (error.message && error.message.includes('does not exist'))) {
+                        supabaseDirectorioTableOk = false;
+                        const warnBanner = document.getElementById('directorio-supabase-warning');
+                        if (warnBanner) warnBanner.style.display = 'flex';
+                    }
+                    return;
+                }
+                
+                if (data && Array.isArray(data)) {
+                    supabaseDirectorioTableOk = true;
+                    const warnBanner = document.getElementById('directorio-supabase-warning');
+                    if (warnBanner) warnBanner.style.display = 'none';
+
+                    // Mapear y mezclar
+                    const map = new Map();
+                    const localUsers = JSON.parse(localStorage.getItem('company_directory_users')) || DEFAULT_DIRECTORY_USERS;
+                    const supabaseEmails = new Set(data.map(u => (u.email || '').toLowerCase()));
+                    
+                    const usersToUpload = [];
+
+                    // Agregar los locales primero y detectar cuáles faltan en Supabase
+                    localUsers.forEach(u => {
+                        if (u.email) {
+                            const emailLower = u.email.toLowerCase();
+                            map.set(emailLower, u);
+                            if (!supabaseEmails.has(emailLower)) {
+                                usersToUpload.push(u);
+                            }
+                        }
+                    });
+                    
+                    // Sobrescribir con lo que ya está en Supabase
+                    data.forEach(u => {
+                        if (u.email) map.set(u.email.toLowerCase(), u);
+                    });
+                    
+                    const merged = Array.from(map.values());
+                    
+                    try {
+                        localStorage.setItem('company_directory_users', JSON.stringify(merged));
+                    } catch(e) {}
+                    
+                    if (typeof renderDirectoryPage === 'function') {
+                        renderDirectoryPage();
+                    }
+
+                    // Subir a Supabase los usuarios locales que no existían allí (Sincronización inicial)
+                    if (usersToUpload.length > 0) {
+                        try {
+                            // Supabase upsert tiene límite, pero para ~100-200 está bien.
+                            await supabase.from('directorio_usuarios').upsert(usersToUpload, { onConflict: 'email' });
+                            console.log(`Sincronizados ${usersToUpload.length} usuarios locales a Supabase.`);
+                        } catch(err) {
+                            console.warn('Error subiendo usuarios faltantes a Supabase:', err);
+                        }
+                    }
+                }
+            } catch (err) {
+                console.warn('Error en fetchDirectoryUsersFromSupabase:', err);
+            }
+        }
+    }
+
     function selectCompanyCard(companyName) {
         if (!companyName) return;
         const norm = companyName.toLowerCase().replace(/[^a-z0-9]/g, '');
@@ -2217,7 +2290,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (resolutionGroup) resolutionGroup.style.display = 'block';
                 const techSelect = document.getElementById('ticket-assigned-tech');
                 if (techSelect && (!techSelect.value || techSelect.value === '')) {
-                    techSelect.value = (currentSession && currentSession.nombre) ? currentSession.nombre : 'Belfor Aburto';
+                    prefillAssignedTech();
                 }
             } else {
                 if (resolutionGroup) resolutionGroup.style.display = 'none';
@@ -2230,25 +2303,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnSelfAssign = document.getElementById('btn-self-assign-ticket');
     if (btnSelfAssign) {
         btnSelfAssign.addEventListener('click', () => {
-            const techSelect = document.getElementById('ticket-assigned-tech');
-            if (techSelect) {
-                const myName = (currentSession && currentSession.nombre) ? currentSession.nombre : 'Belfor Aburto';
-                let found = false;
-                for (let i = 0; i < techSelect.options.length; i++) {
-                    if (techSelect.options[i].value === myName || techSelect.options[i].text.includes(myName)) {
-                        techSelect.selectedIndex = i;
-                        found = true;
-                        break;
-                    }
-                }
-                if (!found) {
-                    techSelect.value = myName;
-                }
-                btnSelfAssign.innerHTML = '<i class="fas fa-check"></i> Asignado';
-                setTimeout(() => {
-                    btnSelfAssign.innerHTML = '<i class="fas fa-user-check"></i> Asignarme a mí';
-                }, 1500);
-            }
+            prefillAssignedTech();
+            btnSelfAssign.innerHTML = '<i class="fas fa-check"></i> Asignado';
+            setTimeout(() => {
+                btnSelfAssign.innerHTML = '<i class="fas fa-user-check"></i> Asignarme a mí';
+            }, 1500);
         });
     }
 
@@ -3449,6 +3508,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function fetchEquipos() {
         let localEquipos = JSON.parse(localStorage.getItem('local_equipos')) || [];
+
+        // Limpieza de inventario de prueba de T-Sales (40 notebooks que no existen aún)
+        if (localEquipos.length > 0) {
+            const cleanEquipos = localEquipos.filter(eq => {
+                if (eq.id && (eq.id.startsWith('eq-ts-') || /^eq-\d+$/.test(eq.id))) return false;
+                if (eq.empresa === 'T-Sales' && (eq.id && (eq.id.startsWith('eq-ts-') || /^eq-\d+$/.test(eq.id)))) return false;
+                return true;
+            });
+            if (cleanEquipos.length !== localEquipos.length) {
+                localEquipos = cleanEquipos;
+                localStorage.setItem('local_equipos', JSON.stringify(localEquipos));
+            }
+        }
+
         if (localEquipos.length === 0) {
             localEquipos = seedDefaultEquipos();
             localStorage.setItem('local_equipos', JSON.stringify(localEquipos));
@@ -3530,787 +3603,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     fecha_asignacion: '21/03/2024',
                     tipo: 'laptop',
                     created_at: '2024-03-21T10:00:00.000Z'
-                },
-                {
-                    id: 'eq-ts-1',
-                    nombre_codigo: 'LENOVO-01',
-                    usuario_nombre: 'María Aguilera',
-                    usuario_email: 'maria.aguilera@t-sales.cl',
-                    empresa: 'T-Sales',
-                    estado: 'activo',
-                    serial: 'LNX14A56',
-                    marca: 'Lenovo',
-                    modelo: 'ThinkPad E14',
-                    cpu: 'Intel i7-1165G7',
-                    ram: '16 GB',
-                    disco_duro: '512 GB SSD',
-                    sistema_operativo: 'Windows 11 Pro (Build 22631)',
-                    build_windows: '22631',
-                    licencia_usuario: 'M365',
-                    fecha_asignacion: '05/02/2024',
-                    tipo: 'laptop',
-                    created_at: '2024-02-05T10:00:00.000Z'
-                },
-                {
-                    id: 'eq-ts-2',
-                    nombre_codigo: 'HP-450-G9',
-                    usuario_nombre: 'Juan Pérez',
-                    usuario_email: 'juan.perez@t-sales.cl',
-                    empresa: 'T-Sales',
-                    estado: 'en_preparacion',
-                    serial: 'HP450G9X1',
-                    marca: 'HP',
-                    modelo: 'ProBook 450 G9',
-                    cpu: 'Intel i5-1235U',
-                    ram: '8 GB',
-                    disco_duro: '256 GB SSD',
-                    sistema_operativo: 'Windows 10 Pro (Build 19045)',
-                    build_windows: '19045',
-                    licencia_usuario: 'M365',
-                    fecha_asignacion: '31/05/2024',
-                    tipo: 'laptop',
-                    created_at: '2024-05-31T10:00:00.000Z'
-                },
-                {
-                    id: 'eq-ts-3',
-                    nombre_codigo: 'DELL-5430-02',
-                    usuario_nombre: 'Sin asignar',
-                    usuario_email: '',
-                    empresa: 'T-Sales',
-                    estado: 'disponible',
-                    serial: 'DL5430B2',
-                    marca: 'Dell',
-                    modelo: 'Latitude 5430',
-                    cpu: 'Intel i5-1245U',
-                    ram: '16 GB',
-                    disco_duro: '512 GB SSD',
-                    sistema_operativo: 'Windows 11 Pro (Build 22631)',
-                    build_windows: '22631',
-                    licencia_usuario: 'M365',
-                    tipo: 'laptop',
-                    created_at: '2024-06-01T10:00:00.000Z'
-                },
-                {
-                    id: 'eq-ts-4',
-                    nombre_codigo: 'LENOVO-X1',
-                    usuario_nombre: 'Ana Campos',
-                    usuario_email: 'ana.campos@t-sales.cl',
-                    empresa: 'T-Sales',
-                    estado: 'activo',
-                    serial: 'X1C8A97',
-                    marca: 'Lenovo',
-                    modelo: 'ThinkPad X1 Carbon',
-                    cpu: 'Intel i7-1265U',
-                    ram: '16 GB',
-                    disco_duro: '512 GB SSD',
-                    sistema_operativo: 'Windows 11 Pro (Build 22631)',
-                    build_windows: '22631',
-                    licencia_usuario: 'M365',
-                    fecha_asignacion: '03/04/2024',
-                    tipo: 'laptop',
-                    created_at: '2024-04-03T10:00:00.000Z'
-                },
-                {
-                    id: 'eq-1',
-                    nombre_codigo: '1',
-                    usuario_nombre: 'Cristian Illanes',
-                    usuario_email: 'cristian.illanes@t-sales.cl',
-                    empresa: 'T-Sales',
-                    estado: 'activo',
-                    serial: '714NPL2',
-                    marca: 'Dell',
-                    modelo: 'Latitude 3280',
-                    cpu: 'i5-7300U',
-                    ram: '16GB',
-                    disco_duro: '256GB SSD',
-                    sistema_operativo: 'Windows 11 Pro',
-                    licencia_usuario: '2024 PP',
-                    tipo: 'laptop',
-                    created_at: new Date().toISOString()
-                },
-                {
-                    id: 'eq-2',
-                    nombre_codigo: '2',
-                    usuario_nombre: 'Auditoria T-sales',
-                    usuario_email: 'auditoriat@t-sales.cl',
-                    empresa: 'T-Sales',
-                    estado: 'baja',
-                    serial: '2XL8H13',
-                    marca: 'Dell',
-                    modelo: 'Vostro 3400',
-                    cpu: 'i3-1115G4',
-                    ram: '8GB (2x4GB) 2667MHz',
-                    disco_duro: '256GB',
-                    sistema_operativo: 'Windows 10 Pro',
-                    licencia_usuario: '2021 PP',
-                    tipo: 'laptop',
-                    created_at: new Date().toISOString()
-                },
-                {
-                    id: 'eq-3',
-                    nombre_codigo: '3',
-                    usuario_nombre: 'Alicia Monica escobar',
-                    usuario_email: 'alicia.escobar@t-sales.cl',
-                    empresa: 'T-Sales',
-                    estado: 'activo',
-                    serial: '5CG0403P17',
-                    marca: 'HP',
-                    modelo: 'Elitebook 840 G3',
-                    cpu: 'i3-6200U',
-                    ram: '8GB (2x4GB) 2133MHz',
-                    disco_duro: '240GB M.2 SATA',
-                    sistema_operativo: 'Windows 10 Pro',
-                    licencia_usuario: 'S/A',
-                    tipo: 'laptop',
-                    created_at: new Date().toISOString()
-                },
-                {
-                    id: 'eq-4',
-                    nombre_codigo: '4',
-                    usuario_nombre: 'Yenifer Perez',
-                    usuario_email: 'yenifer.perez@t-sales.cl',
-                    empresa: 'T-Sales',
-                    estado: 'activo',
-                    serial: '5CG027BQKC',
-                    marca: 'HP',
-                    modelo: 'Elitebook 840 G6',
-                    cpu: 'i7-8375U',
-                    ram: '16GB',
-                    disco_duro: '500GB SSD',
-                    sistema_operativo: 'Windows 11 Pro',
-                    licencia_usuario: '2021 Standard',
-                    tipo: 'laptop',
-                    created_at: new Date().toISOString()
-                },
-                {
-                    id: 'eq-5',
-                    nombre_codigo: '5',
-                    usuario_nombre: 'Anabelen Godoy',
-                    usuario_email: 'anabelen.godoy@t-sales.cl',
-                    empresa: 'T-Sales',
-                    estado: 'activo',
-                    serial: '5CG8527T9G',
-                    marca: 'HP',
-                    modelo: 'ProBook 640 G4',
-                    cpu: 'i5-8250U',
-                    ram: '8GB (1x8GB) 2400MHz',
-                    disco_duro: '256GB NVMe',
-                    sistema_operativo: 'Windows 10 Pro',
-                    licencia_usuario: 'S/A',
-                    tipo: 'laptop',
-                    created_at: new Date().toISOString()
-                },
-                {
-                    id: 'eq-6',
-                    nombre_codigo: '6',
-                    usuario_nombre: 'Daniela Makarena Agu',
-                    usuario_email: 'daniela.aguilera@t-sales.cl',
-                    empresa: 'T-Sales',
-                    estado: 'activo',
-                    serial: '5CG11437TJ',
-                    marca: 'HP',
-                    modelo: '240 G8',
-                    cpu: 'i3-1005G1',
-                    ram: '8GB (2x4GB) 2667MHz',
-                    disco_duro: '240GB SSD',
-                    sistema_operativo: 'Windows 10 Home',
-                    licencia_usuario: '2016',
-                    tipo: 'laptop',
-                    created_at: new Date().toISOString()
-                },
-                {
-                    id: 'eq-7',
-                    nombre_codigo: '7',
-                    usuario_nombre: 'Auditoria T-sales',
-                    usuario_email: 'auditoriat@t-sales.cl',
-                    empresa: 'T-Sales',
-                    estado: 'baja',
-                    serial: '5CG11439TD',
-                    marca: 'HP',
-                    modelo: '240 G8',
-                    cpu: 'i3-1005G1',
-                    ram: '8GB',
-                    disco_duro: '256GB NVMe',
-                    sistema_operativo: 'Windows 10 Home SL',
-                    licencia_usuario: '2024 PP',
-                    tipo: 'laptop',
-                    created_at: new Date().toISOString()
-                },
-                {
-                    id: 'eq-8',
-                    nombre_codigo: '8',
-                    usuario_nombre: 'Maria Jose Alarcon Ara',
-                    usuario_email: 'maria.alarcon@t-sales.cl',
-                    empresa: 'T-Sales',
-                    estado: 'activo',
-                    serial: '6CXVP13',
-                    marca: 'Dell',
-                    modelo: 'Latitude 5400',
-                    cpu: 'i5-8265U',
-                    ram: '8GB (1x8GB) 2400MHz',
-                    disco_duro: '256GB M.2 SATA',
-                    sistema_operativo: 'Windows 10 Pro',
-                    licencia_usuario: '2024 LTSC PP',
-                    tipo: 'laptop',
-                    created_at: new Date().toISOString()
-                },
-                {
-                    id: 'eq-9',
-                    nombre_codigo: '9',
-                    usuario_nombre: 'Jaime Perez',
-                    usuario_email: 'jaime.perez@t-sales.cl',
-                    empresa: 'T-Sales',
-                    estado: 'baja',
-                    serial: 'HeroBook255G20120077',
-                    marca: 'Chuwi',
-                    modelo: 'HeroBook PRO X3128',
-                    cpu: 'Intel Celeron N4020',
-                    ram: '8GB (4x4) 2133MHz',
-                    disco_duro: '256GB M.2 SATA',
-                    sistema_operativo: 'Windows 10 Pro',
-                    licencia_usuario: '2010 PP',
-                    tipo: 'laptop',
-                    created_at: new Date().toISOString()
-                },
-                {
-                    id: 'eq-10',
-                    nombre_codigo: '10',
-                    usuario_nombre: 'Nicolás Jaruaque Núñez',
-                    usuario_email: 'nicolas.jaque@t-sales.cl',
-                    empresa: 'T-Sales',
-                    estado: 'activo',
-                    serial: '27XNPL2',
-                    marca: 'Dell',
-                    modelo: 'Latitude 5280',
-                    cpu: 'i5-7300U',
-                    ram: '16GB (1x16GB) 2133MHz',
-                    disco_duro: '256GB M.2 SATA',
-                    sistema_operativo: 'Windows 11 Home',
-                    licencia_usuario: '2021 LTSC SD',
-                    tipo: 'laptop',
-                    created_at: new Date().toISOString()
-                },
-                {
-                    id: 'eq-11',
-                    nombre_codigo: '11',
-                    usuario_nombre: 'Camilo Llanquileo',
-                    usuario_email: 'camilo.llanquileo@t-sales.cl',
-                    empresa: 'T-Sales',
-                    estado: 'activo',
-                    serial: '1GM40Z2',
-                    marca: 'Dell',
-                    modelo: 'Latitude 5400',
-                    cpu: 'i5-8365U',
-                    ram: '8GB (2x4GB) 2133MHz',
-                    disco_duro: '250GB M.2 SATA',
-                    sistema_operativo: 'Windows 11 Pro',
-                    licencia_usuario: '2021',
-                    tipo: 'laptop',
-                    created_at: new Date().toISOString()
-                },
-                {
-                    id: 'eq-12',
-                    nombre_codigo: '12',
-                    usuario_nombre: 'Carolina Andrea Lillo E',
-                    usuario_email: 'carolina.lillo@t-sales.cl',
-                    empresa: 'T-Sales',
-                    estado: 'activo',
-                    serial: '5CG9366D32',
-                    marca: 'HP',
-                    modelo: 'ProBook 640 G4',
-                    cpu: 'i5-8350U',
-                    ram: '8GB (2x4GB) 2400MHz',
-                    disco_duro: '250GB M.2 SATA',
-                    sistema_operativo: 'Windows 10 Pro',
-                    licencia_usuario: '2024 PP',
-                    tipo: 'laptop',
-                    created_at: new Date().toISOString()
-                },
-                {
-                    id: 'eq-13',
-                    nombre_codigo: '13',
-                    usuario_nombre: 'Celeste Anai Morales V',
-                    usuario_email: 'celeste.morales@t-sales.cl',
-                    empresa: 'T-Sales',
-                    estado: 'activo',
-                    serial: '5CG1097S0X',
-                    marca: 'HP',
-                    modelo: 'HP 348 G7',
-                    cpu: 'i5-10210U',
-                    ram: '8GB (2x4GB)',
-                    disco_duro: '240GB SSD',
-                    sistema_operativo: 'Win11 Pro',
-                    licencia_usuario: '2010',
-                    tipo: 'laptop',
-                    created_at: new Date().toISOString()
-                },
-                {
-                    id: 'eq-14',
-                    nombre_codigo: '14',
-                    usuario_nombre: 'Auditoria T-sales',
-                    usuario_email: 'auditoriat@t-sales.cl',
-                    empresa: 'T-Sales',
-                    estado: 'activo',
-                    serial: '5CG0435VQ9',
-                    marca: 'HP',
-                    modelo: '14-CF2xxx',
-                    cpu: 'i3-10110U',
-                    ram: '4GB',
-                    disco_duro: '240GB SSD',
-                    sistema_operativo: 'Win11 Home',
-                    licencia_usuario: '365 Personal',
-                    tipo: 'laptop',
-                    created_at: new Date().toISOString()
-                },
-                {
-                    id: 'eq-15',
-                    nombre_codigo: '15',
-                    usuario_nombre: 'Auditoria T-sales',
-                    usuario_email: 'auditoriat@t-sales.cl',
-                    empresa: 'T-Sales',
-                    estado: 'baja',
-                    serial: 'R90VCD24',
-                    marca: 'Lenovo',
-                    modelo: 'Yoga 11e 20LNS0YE00',
-                    cpu: 'm3-7Y30',
-                    ram: '8GB integrado',
-                    disco_duro: '128GB M.2 SATA 2280',
-                    sistema_operativo: 'Win11 Home',
-                    licencia_usuario: '365 Personal',
-                    tipo: 'laptop',
-                    created_at: new Date().toISOString()
-                },
-                {
-                    id: 'eq-16',
-                    nombre_codigo: '16',
-                    usuario_nombre: 'Alejandro Rodrigo San',
-                    usuario_email: 'alejandro.sanmartin@t-sales.cl',
-                    empresa: 'T-Sales',
-                    estado: 'activo',
-                    serial: 'H5LLL13',
-                    marca: 'Dell',
-                    modelo: 'Latitude 5400',
-                    cpu: 'i5-8365U',
-                    ram: '8GB (1x8GB) 2400MHz',
-                    disco_duro: '256GB NVMe',
-                    sistema_operativo: 'Win11 Pro',
-                    licencia_usuario: 'Pro Plus 2010',
-                    tipo: 'laptop',
-                    created_at: new Date().toISOString()
-                },
-                {
-                    id: 'eq-17',
-                    nombre_codigo: '17',
-                    usuario_nombre: 'Dayana Franchesca Go',
-                    usuario_email: 'dayana.gonzalez@t-sales.cl',
-                    empresa: 'T-Sales',
-                    estado: 'activo',
-                    serial: '5CG9036KWL',
-                    marca: 'HP',
-                    modelo: 'ProBook 640 G4',
-                    cpu: 'i5-8350U',
-                    ram: '8GB (1x8GB) 2400MHz',
-                    disco_duro: '256GB NVMe',
-                    sistema_operativo: 'Win10 Pro',
-                    licencia_usuario: 'Standard 2021',
-                    tipo: 'laptop',
-                    created_at: new Date().toISOString()
-                },
-                {
-                    id: 'eq-18',
-                    nombre_codigo: '18',
-                    usuario_nombre: 'Delmira Urrea',
-                    usuario_email: 'delmira.urrea@t-sales.cl',
-                    empresa: 'T-Sales',
-                    estado: 'activo',
-                    serial: 'F4ZNPL2',
-                    marca: 'Dell',
-                    modelo: 'Latitude 5280',
-                    cpu: 'i5-7300U',
-                    ram: '8GB',
-                    disco_duro: '256GB M.2 SATA',
-                    sistema_operativo: 'WINDOWS 10 PRO',
-                    licencia_usuario: 'PROFESSIONAL 2016',
-                    tipo: 'laptop',
-                    created_at: new Date().toISOString()
-                },
-                {
-                    id: 'eq-19',
-                    nombre_codigo: '19',
-                    usuario_nombre: 'Auditoria T-sales',
-                    usuario_email: 'auditoriat@t-sales.cl',
-                    empresa: 'T-Sales',
-                    estado: 'activo',
-                    serial: 'HDGD2W1',
-                    marca: 'Dell',
-                    modelo: 'Latitude 6230',
-                    cpu: 'i5-3320',
-                    ram: '6GB 1333MHz',
-                    disco_duro: '240GB SSD',
-                    sistema_operativo: 'WINDOWS 10 PRO',
-                    licencia_usuario: 'PROFESSIONAL 2016',
-                    tipo: 'laptop',
-                    created_at: new Date().toISOString()
-                },
-                {
-                    id: 'eq-20',
-                    nombre_codigo: '20',
-                    usuario_nombre: 'Carlos Yañez',
-                    usuario_email: 'carlos.yanez@t-sales.cl',
-                    empresa: 'T-Sales',
-                    estado: 'activo',
-                    serial: '44FLL13',
-                    marca: 'Dell',
-                    modelo: 'Latitude 5500',
-                    cpu: 'i5-8365U',
-                    ram: '8GB (1x8GB) 2400MHz',
-                    disco_duro: '250GB NVMe',
-                    sistema_operativo: 'WINDOWS 10 PRO',
-                    licencia_usuario: 'PROFESSIONAL 2024',
-                    tipo: 'laptop',
-                    created_at: new Date().toISOString()
-                },
-                {
-                    id: 'eq-21',
-                    nombre_codigo: '21',
-                    usuario_nombre: 'Carmen Rojas',
-                    usuario_email: 'carmen.rojas@t-sales.cl',
-                    empresa: 'T-Sales',
-                    estado: 'activo',
-                    serial: 'FPKKL13',
-                    marca: 'Dell',
-                    modelo: 'Latitude 5500',
-                    cpu: 'i5-8365U',
-                    ram: '8GB (1x8GB) 2400MHz',
-                    disco_duro: '250GB NVMe',
-                    sistema_operativo: 'WINDOWS 10 PRO',
-                    licencia_usuario: '2024 PRO PLUS',
-                    tipo: 'laptop',
-                    created_at: new Date().toISOString()
-                },
-                {
-                    id: 'eq-22',
-                    nombre_codigo: '22',
-                    usuario_nombre: 'Yenifer Perez',
-                    usuario_email: 'yenifer.perez@t-sales.cl',
-                    empresa: 'T-Sales',
-                    estado: 'activo',
-                    serial: '8038733',
-                    marca: 'Dell',
-                    modelo: 'Latitude 5500',
-                    cpu: 'i5-8200',
-                    ram: '8GB (1x808) 2400MHz',
-                    disco_duro: '250GB NVMe',
-                    sistema_operativo: 'WINDOWS 10 PRO',
-                    licencia_usuario: '2024 PRO PLUS',
-                    tipo: 'laptop',
-                    created_at: new Date().toISOString()
-                },
-                {
-                    id: 'eq-23',
-                    nombre_codigo: '23',
-                    usuario_nombre: 'Genesis Calderon',
-                    usuario_email: 'genesis.calderon@t-sales.cl',
-                    empresa: 'T-Sales',
-                    estado: 'activo',
-                    serial: '3CG1143NL1',
-                    marca: 'HP',
-                    modelo: '14-CF2xxx',
-                    cpu: 'i3-10110U',
-                    ram: '8GB (2x4GB) 2400MHz',
-                    disco_duro: '500GB SSD',
-                    sistema_operativo: 'WINDOWS 10 PRO',
-                    licencia_usuario: '2024 PRO PLUS',
-                    tipo: 'laptop',
-                    created_at: new Date().toISOString()
-                },
-                {
-                    id: 'eq-24',
-                    nombre_codigo: '24',
-                    usuario_nombre: 'Alondra Guisselle Flore',
-                    usuario_email: 'alondra.flores@t-sales.cl',
-                    empresa: 'T-Sales',
-                    estado: 'activo',
-                    serial: '5CG8203R14',
-                    marca: 'HP',
-                    modelo: 'Elitebook 820 G3',
-                    cpu: 'i7-6600U',
-                    ram: '8GB 2133MHz',
-                    disco_duro: '256GB NVMe',
-                    sistema_operativo: 'WINDOWS 10 PRO',
-                    licencia_usuario: '2021',
-                    tipo: 'laptop',
-                    created_at: new Date().toISOString()
-                },
-                {
-                    id: 'eq-25',
-                    nombre_codigo: '25',
-                    usuario_nombre: 'Gissell Solange Mirand',
-                    usuario_email: 'gissell.miranda@t-sales.cl',
-                    empresa: 'T-Sales',
-                    estado: 'activo',
-                    serial: 'FQM92R2',
-                    marca: 'Dell',
-                    modelo: 'Latitude 5400',
-                    cpu: 'i5-8365U',
-                    ram: '8GB (1x8GB) 2400MHz',
-                    disco_duro: '256GB NVMe',
-                    sistema_operativo: 'WINDOWS 10 PRO',
-                    licencia_usuario: '2024',
-                    tipo: 'laptop',
-                    created_at: new Date().toISOString()
-                },
-                {
-                    id: 'eq-26',
-                    nombre_codigo: '26',
-                    usuario_nombre: 'Yenifer Perez',
-                    usuario_email: 'yenifer.perez@t-sales.cl',
-                    empresa: 'T-Sales',
-                    estado: 'activo',
-                    serial: 'NKHVWAL00212415CF',
-                    marca: 'Acer',
-                    modelo: 'Aspire A314-22',
-                    cpu: 'i5-8365U',
-                    ram: '8GB (1x8GB)',
-                    disco_duro: '256GB NVMe',
-                    sistema_operativo: 'WINDOWS 10 PRO',
-                    licencia_usuario: 'PROFESSIONAL 2016',
-                    tipo: 'laptop',
-                    created_at: new Date().toISOString()
-                },
-                {
-                    id: 'eq-27',
-                    nombre_codigo: '27',
-                    usuario_nombre: 'S/A (Bodega TI)',
-                    usuario_email: '',
-                    empresa: 'T-Sales',
-                    estado: 'disponible',
-                    serial: '9X5LLL13',
-                    marca: 'Dell',
-                    modelo: 'Latitude 5500',
-                    cpu: 'i5-8365U',
-                    ram: '8GB (1x8GB)',
-                    disco_duro: '250GB NVMe',
-                    sistema_operativo: 'WINDOWS 10 PRO',
-                    licencia_usuario: 'PROFESSIONAL 2016',
-                    tipo: 'laptop',
-                    created_at: new Date().toISOString()
-                },
-                {
-                    id: 'eq-28',
-                    nombre_codigo: '28',
-                    usuario_nombre: 'Lia villavicencio',
-                    usuario_email: 'lia.villavicencio@t-sales.cl',
-                    empresa: 'T-Sales',
-                    estado: 'activo',
-                    serial: '5CG212C854',
-                    marca: 'HP',
-                    modelo: '14-DQ2023LA',
-                    cpu: 'i3-1115G4',
-                    ram: '4GB',
-                    disco_duro: '250GB NVMe',
-                    sistema_operativo: 'WINDOWS 10 PRO',
-                    licencia_usuario: 'PROFESSIONAL 2010',
-                    tipo: 'laptop',
-                    created_at: new Date().toISOString()
-                },
-                {
-                    id: 'eq-29',
-                    nombre_codigo: '29',
-                    usuario_nombre: 'Nicole Nubilar',
-                    usuario_email: 'nicole.nubilar@t-sales.cl',
-                    empresa: 'T-Sales',
-                    estado: 'activo',
-                    serial: '935W333',
-                    marca: 'Dell',
-                    modelo: 'Latitude 5400',
-                    cpu: 'i3-8200U',
-                    ram: 'S/A',
-                    disco_duro: 'S/A',
-                    sistema_operativo: 'WINDOWS 10 PRO',
-                    licencia_usuario: 'PROFESSIONAL 2021',
-                    tipo: 'laptop',
-                    created_at: new Date().toISOString()
-                },
-                {
-                    id: 'eq-30',
-                    nombre_codigo: '30',
-                    usuario_nombre: 'Valentina Pérez',
-                    usuario_email: 'valentina.perez@t-sales.cl',
-                    empresa: 'T-Sales',
-                    estado: 'activo',
-                    serial: 'CND112ZKYQ',
-                    marca: 'HP',
-                    modelo: '250 G8',
-                    cpu: 'i3-1005G1',
-                    ram: '8GB',
-                    disco_duro: '240GB M.2 SATA',
-                    sistema_operativo: 'WINDOWS 10 PRO',
-                    licencia_usuario: '2024',
-                    tipo: 'laptop',
-                    created_at: new Date().toISOString()
-                },
-                {
-                    id: 'eq-31',
-                    nombre_codigo: '31',
-                    usuario_nombre: 'Sofia De Las Mercedes Tabilo Gutierrez',
-                    usuario_email: 'sofia.tabilo@t-sales.cl',
-                    empresa: 'T-Sales',
-                    estado: 'activo',
-                    serial: '5CG1248Q9P',
-                    marca: 'HP',
-                    modelo: 'EliteBook 840 G6',
-                    cpu: 'i5-8365U',
-                    ram: '16GB DDR4',
-                    disco_duro: '512GB NVMe SSD',
-                    sistema_operativo: 'WINDOWS 11 PRO',
-                    licencia_usuario: 'Microsoft 365',
-                    tipo: 'laptop',
-                    created_at: new Date().toISOString()
-                },
-                {
-                    id: 'eq-32',
-                    nombre_codigo: '32',
-                    usuario_nombre: 'Thiare Tirado',
-                    usuario_email: 'thiare.tirado@t-sales.cl',
-                    empresa: 'T-Sales',
-                    estado: 'activo',
-                    serial: '5CG7233QD2',
-                    marca: 'HP',
-                    modelo: 'EliteBook 820 G3',
-                    cpu: 'i7-6500U',
-                    ram: '8GB (1x8GB) 2133MHz',
-                    disco_duro: '256GB M.2 SATA',
-                    sistema_operativo: 'WINDOWS 10 PRO',
-                    licencia_usuario: 'PROFESSIONAL 2016',
-                    tipo: 'laptop',
-                    created_at: new Date().toISOString()
-                },
-                {
-                    id: 'eq-33',
-                    nombre_codigo: '33',
-                    usuario_nombre: 'S/A (Disponible)',
-                    usuario_email: '',
-                    empresa: 'T-Sales',
-                    estado: 'disponible',
-                    serial: '5CG0354WZ2',
-                    marca: 'HP',
-                    modelo: 'Elitebook 840 G3',
-                    cpu: 'i5-6200U',
-                    ram: '8GB (2x4GB) 2133MHz',
-                    disco_duro: '240GB M.2 SATA',
-                    sistema_operativo: 'WINDOWS 10 PRO',
-                    licencia_usuario: 'PROFESSIONAL 2023',
-                    tipo: 'laptop',
-                    created_at: new Date().toISOString()
-                },
-                {
-                    id: 'eq-34',
-                    nombre_codigo: '34',
-                    usuario_nombre: 'Auditoria T-sales',
-                    usuario_email: 'auditoriat@t-sales.cl',
-                    empresa: 'T-Sales',
-                    estado: 'activo',
-                    serial: '5CG112CT07',
-                    marca: 'HP',
-                    modelo: '14-CK2091LA',
-                    cpu: 'i3-10110U',
-                    ram: '4GB',
-                    disco_duro: '128GB M.2 SATA',
-                    sistema_operativo: 'WINDOWS 10 PRO',
-                    licencia_usuario: '2021',
-                    tipo: 'laptop',
-                    created_at: new Date().toISOString()
-                },
-                {
-                    id: 'eq-35',
-                    nombre_codigo: '35',
-                    usuario_nombre: 'S/A (Disponible)',
-                    usuario_email: '',
-                    empresa: 'T-Sales',
-                    estado: 'disponible',
-                    serial: 'F13GT33',
-                    marca: 'Dell',
-                    modelo: 'Latitude 5500',
-                    cpu: 'i5-8265U',
-                    ram: '8GB (1x8GB) 2400MHz',
-                    disco_duro: '250GB NVMe',
-                    sistema_operativo: 'WINDOWS 10 PRO',
-                    licencia_usuario: 'PROFESSIONAL 2010',
-                    tipo: 'laptop',
-                    created_at: new Date().toISOString()
-                },
-                {
-                    id: 'eq-36',
-                    nombre_codigo: '36',
-                    usuario_nombre: 'Rita Rojas',
-                    usuario_email: 'rita.rojas@t-sales.cl',
-                    empresa: 'T-Sales',
-                    estado: 'activo',
-                    serial: 'RFXR1N2',
-                    marca: 'Dell',
-                    modelo: 'Latitude 5280',
-                    cpu: 'i5-7300U',
-                    ram: '16GB (1x16GB) 2134M',
-                    disco_duro: '250GB NVMe',
-                    sistema_operativo: 'WINDOWS 10 PRO',
-                    licencia_usuario: 'PROFESSIONAL 2016',
-                    tipo: 'laptop',
-                    created_at: new Date().toISOString()
-                },
-                {
-                    id: 'eq-37',
-                    nombre_codigo: '37',
-                    usuario_nombre: 'S/A (Disponible)',
-                    usuario_email: '',
-                    empresa: 'T-Sales',
-                    estado: 'disponible',
-                    serial: '450NPL2',
-                    marca: 'Dell',
-                    modelo: 'Latitude 5280',
-                    cpu: 'i5-7300U',
-                    ram: '8GB',
-                    disco_duro: '240GB NVMe',
-                    sistema_operativo: 'WINDOWS 10 PRO',
-                    licencia_usuario: 'PROFESSIONAL 2016',
-                    tipo: 'laptop',
-                    created_at: new Date().toISOString()
-                },
-                {
-                    id: 'eq-38',
-                    nombre_codigo: '38',
-                    usuario_nombre: 'Jose Poblete Rubilar',
-                    usuario_email: 'jose.poblete@t-sales.cl',
-                    empresa: 'T-Sales',
-                    estado: 'baja',
-                    serial: 'HEROBook255G20120054',
-                    marca: 'Chuwi',
-                    modelo: 'Herobook',
-                    cpu: 'Celeron N4020',
-                    ram: '8GB',
-                    disco_duro: '256GB M.2 SATA',
-                    sistema_operativo: 'WINDOWS 10 PRO',
-                    licencia_usuario: 'PROFESSIONAL 2016',
-                    tipo: 'laptop',
-                    created_at: new Date().toISOString()
-                },
-                {
-                    id: 'eq-39',
-                    nombre_codigo: '39',
-                    usuario_nombre: 'Auditoria T-sales',
-                    usuario_email: 'auditoriat@t-sales.cl',
-                    empresa: 'T-Sales',
-                    estado: 'activo',
-                    serial: '93NXR2',
-                    marca: 'Dell',
-                    modelo: 'Latitude 5490',
-                    cpu: 'i5-7300U',
-                    ram: '8GB (1x8GB) 2133MHz',
-                    disco_duro: '256GB M.2 SATA',
-                    sistema_operativo: 'WINDOWS 10 PRO',
-                    licencia_usuario: 'PROFESSIONAL 2021',
-                    tipo: 'laptop',
-                    created_at: new Date().toISOString()
                 }
             ];
             return equipos;
@@ -7487,6 +6779,61 @@ document.addEventListener('DOMContentLoaded', () => {
                 clientEmailInput.style.cursor = 'text';
             }
         }
+        prefillAssignedTech();
+    }
+
+    function prefillAssignedTech() {
+        const techSelect = document.getElementById('ticket-assigned-tech');
+        const creatorSelect = document.getElementById('ticket-creator-select');
+        
+        if (currentSession && currentSession.nombre) {
+            const sessionName = (currentSession.nombre || '').trim();
+            const lowerSessionName = sessionName.toLowerCase();
+            
+            // 1. Preseleccionar automáticamente el técnico logueado
+            if (techSelect) {
+                let matched = false;
+                for (let i = 0; i < techSelect.options.length; i++) {
+                    const optVal = (techSelect.options[i].value || '').trim().toLowerCase();
+                    const optTxt = (techSelect.options[i].text || '').trim().toLowerCase();
+                    if (optVal && (optVal === lowerSessionName || lowerSessionName.includes(optVal) || optVal.includes(lowerSessionName) || optTxt.includes(lowerSessionName))) {
+                        techSelect.selectedIndex = i;
+                        matched = true;
+                        break;
+                    }
+                }
+                
+                // Si el usuario logueado no está en las opciones fijas, agregarlo dinámicamente y seleccionarlo
+                if (!matched && sessionName) {
+                    const newOpt = document.createElement('option');
+                    newOpt.value = sessionName;
+                    newOpt.textContent = `${sessionName} (${currentSession.role === 'admin' ? 'Soporte TI' : 'Ejecutivo'})`;
+                    techSelect.appendChild(newOpt);
+                    newOpt.selected = true;
+                }
+            }
+            
+            // 2. Preseleccionar en selector de creador si existe
+            if (creatorSelect) {
+                let creatorMatched = false;
+                for (let i = 0; i < creatorSelect.options.length; i++) {
+                    const optVal = (creatorSelect.options[i].value || '').trim().toLowerCase();
+                    const optTxt = (creatorSelect.options[i].text || '').trim().toLowerCase();
+                    if (optVal && (optVal === lowerSessionName || lowerSessionName.includes(optVal) || optVal.includes(lowerSessionName) || optTxt.includes(lowerSessionName))) {
+                        creatorSelect.selectedIndex = i;
+                        creatorMatched = true;
+                        break;
+                    }
+                }
+                if (!creatorMatched && sessionName) {
+                    const newOpt = document.createElement('option');
+                    newOpt.value = sessionName;
+                    newOpt.textContent = sessionName;
+                    creatorSelect.appendChild(newOpt);
+                    newOpt.selected = true;
+                }
+            }
+        }
     }
 
     // Manejo de tabs en el login modal
@@ -9509,9 +8856,35 @@ document.addEventListener('DOMContentLoaded', () => {
                         <button type="button" class="btn-table-action btn-crear-ticket-collab" data-name="${escapeHtml(u.nombre)}" data-rut="${escapeHtml(u.rut)}" data-email="${escapeHtml(u.email)}" data-company="${escapeHtml(u.empresa)}" title="Crear ticket para este usuario" style="background: rgba(50, 102, 235, 0.12); border: 1px solid rgba(50, 102, 235, 0.25); color: var(--accent-blue); padding: 6px 12px; border-radius: 6px; font-size: 0.78rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
                             <i class="fas fa-plus"></i> Crear Ticket
                         </button>
+                        <button type="button" class="btn-table-action btn-eliminar-collab" data-email="${escapeHtml(u.email)}" title="Eliminar usuario" style="background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.25); color: #ef4444; padding: 6px 12px; border-radius: 6px; font-size: 0.78rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; margin-left: 6px;">
+                            <i class="fas fa-trash"></i> Eliminar
+                        </button>
                     </td>
                 </tr>
             `).join('');
+
+            const bindDeleteCollab = (btn) => {
+                btn.addEventListener('click', async () => {
+                    const email = btn.getAttribute('data-email');
+                    if (confirm(`¿Estás seguro de que deseas eliminar al usuario con correo ${email}?`)) {
+                        const users = loadDirectoryUsers();
+                        const updatedUsers = users.filter(u => u.email !== email);
+                        saveDirectoryUsers(updatedUsers);
+                        
+                        if (typeof supabase !== 'undefined' && supabase && !useLocalFallback) {
+                            try {
+                                await supabase.from('directorio_usuarios').delete().eq('email', email);
+                            } catch(e) {
+                                console.warn('Error al eliminar de Supabase:', e);
+                            }
+                        }
+                        renderDirectoryPage();
+                        alert('Usuario eliminado correctamente.');
+                    }
+                });
+            };
+
+            tbody.querySelectorAll('.btn-eliminar-collab').forEach(bindDeleteCollab);
 
             tbody.querySelectorAll('.btn-crear-ticket-collab').forEach(btn => {
                 btn.addEventListener('click', () => {
@@ -9570,10 +8943,15 @@ document.addEventListener('DOMContentLoaded', () => {
                                 <button type="button" class="btn-crear-ticket-collab-mob" data-name="${escapeHtml(u.nombre)}" data-rut="${escapeHtml(u.rut)}" data-email="${escapeHtml(u.email)}" data-company="${escapeHtml(u.empresa)}" style="background: rgba(50, 102, 235, 0.15); border: 1px solid rgba(50, 102, 235, 0.35); color: var(--accent-blue); padding: 6px 12px; border-radius: 6px; font-size: 0.78rem; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;">
                                     <i class="fas fa-plus"></i> Ticket
                                 </button>
+                                <button type="button" class="btn-eliminar-collab-mob" data-email="${escapeHtml(u.email)}" style="background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.35); color: #ef4444; padding: 6px 12px; border-radius: 6px; font-size: 0.78rem; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; margin-left: 6px;">
+                                    <i class="fas fa-trash"></i>
+                                </button>
                             </div>
                         </div>
                     </div>
                 `).join('');
+                
+                mobileCardsContainer.querySelectorAll('.btn-eliminar-collab-mob').forEach(bindDeleteCollab);
 
                 mobileCardsContainer.querySelectorAll('.btn-crear-ticket-collab-mob').forEach(btn => {
                     btn.addEventListener('click', () => {
@@ -9708,7 +9086,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (btnCancelModal) btnCancelModal.addEventListener('click', closeModal);
 
         if (form) {
-            form.addEventListener('submit', (e) => {
+            form.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const nombre = document.getElementById('collab-name')?.value.trim();
                 const rut = document.getElementById('collab-rut')?.value.trim();
@@ -9721,23 +9099,36 @@ document.addEventListener('DOMContentLoaded', () => {
                     alert('Por favor completa los campos obligatorios (*)');
                     return;
                 }
-
-                const users = loadDirectoryUsers();
-                users.unshift({
+                
+                const newUser = {
                     nombre,
                     rut,
                     empresa,
                     email,
                     tipo,
                     licencia
-                });
+                };
+
+                const users = loadDirectoryUsers();
+                users.unshift(newUser);
 
                 saveDirectoryUsers(users);
+                
+                // Sincronizar con Supabase si está disponible
+                if (typeof supabase !== 'undefined' && supabase && !useLocalFallback) {
+                    try {
+                        await supabase.from('directorio_usuarios').upsert([newUser], { onConflict: 'email' });
+                    } catch(err) {
+                        console.warn('Error subiendo colaborador a Supabase:', err);
+                    }
+                }
+
                 closeModal();
                 renderDirectoryPage();
                 
                 // Mostrar notificación toast o feedback
                 console.log(`Colaborador ${nombre} registrado exitosamente.`);
+                alert(`Colaborador ${nombre} agregado al directorio exitosamente.`);
             });
         }
 
@@ -10411,13 +9802,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const techSelect = document.getElementById('ticket-assigned-tech');
 
         // Preseleccionar técnico logueado
-        if (techSelect && currentSession && currentSession.nombre) {
-            Array.from(techSelect.options).forEach(opt => {
-                if (opt.value && currentSession.nombre.toLowerCase().includes(opt.value.toLowerCase())) {
-                    opt.selected = true;
-                }
-            });
-        }
+        prefillAssignedTech();
 
         function populateExistingUsersDropdown(filterText = '') {
             if (!userSelect) return;
@@ -11831,13 +11216,584 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // ========================================================
+    // 10. MÓDULO KIOSKO DE ONBOARDING & DIAGNÓSTICO NOTEBOOKS (CON PIN)
+    // ========================================================
+    let currentKioskDetectedSpecs = null;
+    let currentKioskMatchedEquipo = null;
+
+    function initKioskOnboardingModule() {
+        const btnFromLogin = document.getElementById('btn-open-kiosk-from-login');
+        const btnFromNav = document.getElementById('btn-open-kiosk-from-nav');
+        const btnFromInventario = document.getElementById('btn-open-kiosk-from-inventario');
+        const pinModal = document.getElementById('modal-kiosk-pin-gate');
+        const kioskModal = document.getElementById('modal-kiosk-pc-onboarding');
+        const btnCancelPin = document.getElementById('btn-cancel-kiosk-pin');
+        const btnCloseKiosk = document.getElementById('btn-close-kiosk-modal');
+        const btnCopyPs = document.getElementById('btn-copy-kiosk-powershell');
+        const psInput = document.getElementById('kiosk-powershell-input');
+        const searchInput = document.getElementById('kiosk-manual-search-input');
+        const btnSearchDb = document.getElementById('btn-kiosk-search-db');
+        const pinInput = document.getElementById('input-kiosk-pin');
+        const pinError = document.getElementById('kiosk-pin-error-msg');
+
+        const openPinGate = () => {
+            if (pinModal) {
+                pinModal.style.display = 'flex';
+                if (pinInput) {
+                    pinInput.value = '';
+                    pinInput.focus();
+                }
+                if (pinError) pinError.style.display = 'none';
+            }
+        };
+
+        const closePinGate = () => {
+            if (pinModal) pinModal.style.display = 'none';
+        };
+
+        const closeKioskModal = () => {
+            if (kioskModal) kioskModal.style.display = 'none';
+        };
+
+        if (btnFromLogin) btnFromLogin.addEventListener('click', openPinGate);
+        if (btnFromNav) btnFromNav.addEventListener('click', (e) => { e.preventDefault(); openPinGate(); });
+        if (btnFromInventario) btnFromInventario.addEventListener('click', openPinGate);
+        if (btnCancelPin) btnCancelPin.addEventListener('click', closePinGate);
+        if (btnCloseKiosk) btnCloseKiosk.addEventListener('click', closeKioskModal);
+
+        // Validación de PIN Técnico
+        window.submitKioskPin = async function() {
+            const val = (pinInput ? pinInput.value : '').trim();
+            const validPins = ['2024', '2026', '1234', '1438', '7392', '5841', 'admin2026', 'tsales2026', '143belfor@', 'felipe2026@@', 'omar2026@##'];
+            
+            // Check dynamic pins
+            const customPins = getAdminValidPins();
+            const allPins = [...validPins];
+            Object.values(customPins).forEach(v => {
+                if (Array.isArray(v)) allPins.push(...v);
+                else if (typeof v === 'string') allPins.push(v);
+            });
+
+            if (allPins.includes(val) || val === '2024' || val === '1234') {
+                closePinGate();
+                const loginModal = document.getElementById('login-modal');
+                if (loginModal) loginModal.style.display = 'none';
+                
+                if (kioskModal) kioskModal.style.display = 'flex';
+                runKioskLiveTelemetry();
+            } else {
+                if (pinError) pinError.style.display = 'block';
+                if (pinInput) {
+                    pinInput.classList.add('shake');
+                    setTimeout(() => pinInput.classList.remove('shake'), 500);
+                }
+            }
+        };
+
+        // Telemetría en vivo del navegador
+        function runKioskLiveTelemetry() {
+            const osEl = document.getElementById('kiosk-os-detected');
+            const cpuEl = document.getElementById('kiosk-cpu-detected');
+            const ramEl = document.getElementById('kiosk-ram-detected');
+            const screenEl = document.getElementById('kiosk-screen-detected');
+
+            // 1. OS
+            let osName = 'Windows 11/10 Pro (64-bit)';
+            const ua = navigator.userAgent || '';
+            if (ua.includes('Windows NT 10.0')) osName = 'Windows 10 / 11 Pro';
+            else if (ua.includes('Mac OS')) osName = 'macOS Apple';
+            else if (ua.includes('Linux')) osName = 'Linux OS';
+
+            // 2. CPU
+            const cores = navigator.hardwareConcurrency || 8;
+            const cpuName = `${cores} Núcleos Lógicos`;
+
+            // 3. RAM
+            const devRam = navigator.deviceMemory || 8;
+            const ramName = `${devRam} GB RAM aprox.`;
+
+            // 4. GPU & Screen
+            let gpuName = 'Intel(R) Graphics';
+            try {
+                const canvas = document.createElement('canvas');
+                const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+                if (gl) {
+                    const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
+                    if (debugInfo) {
+                        const rawGpu = gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL) || '';
+                        gpuName = rawGpu.replace(/ANGLE \((.*?)\)/, '$1').replace(/Direct3D.*/, '').trim() || 'Intel UHD Graphics';
+                    }
+                }
+            } catch(e) {}
+            const screenRes = `${window.screen.width}x${window.screen.height} (${gpuName.slice(0, 20)})`;
+
+            if (osEl) osEl.textContent = osName;
+            if (cpuEl) cpuEl.textContent = cpuName;
+            if (ramEl) ramEl.textContent = ramName;
+            if (screenEl) {
+                screenEl.textContent = screenRes;
+                screenEl.title = `${window.screen.width}x${window.screen.height} - ${gpuName}`;
+            }
+
+            currentKioskDetectedSpecs = {
+                so: osName,
+                cpu: cpuName,
+                ram: `${devRam} GB`,
+                disco: '256 GB SSD',
+                gpu: gpuName,
+                screen: `${window.screen.width}x${window.screen.height}`
+            };
+        }
+
+        // Script PowerShell de 1-Clic
+        const psCommand = `powershell -NoProfile -ExecutionPolicy Bypass -Command "$b=Get-CimInstance Win32_BIOS;$c=Get-CimInstance Win32_ComputerSystem;$p=Get-CimInstance Win32_Processor;$d=Get-CimInstance Win32_DiskDrive|Select-Object -First 1;$os=Get-CimInstance Win32_OperatingSystem;$m=[Math]::Round((Get-CimInstance Win32_PhysicalMemory|Measure-Object Capacity -Sum).Sum/1GB);$net=Get-CimInstance Win32_NetworkAdapterConfiguration|Where-Object IPEnabled|Select-Object -First 1;@{serial=$b.SerialNumber;marca=$c.Manufacturer;modelo=$c.Model;cpu=$p.Name;ram=\\\"$m GB\\\";disco=\\\"$([Math]::Round($d.Size/1GB)) GB SSD\\\";so=$os.Caption;build=$os.BuildNumber;hostname=$env:COMPUTERNAME;user=$env:USERNAME;domain=$env:USERDOMAIN;ip=$net.IPAddress[0];mac=$net.MACAddress}|ConvertTo-Json -Compress"`;
+
+        if (btnCopyPs) {
+            btnCopyPs.addEventListener('click', async () => {
+                try {
+                    await navigator.clipboard.writeText(psCommand);
+                    const originalHtml = btnCopyPs.innerHTML;
+                    btnCopyPs.innerHTML = '<i class="fas fa-check"></i> ¡Comando Copiado!';
+                    btnCopyPs.style.background = '#10b981';
+                    setTimeout(() => {
+                        btnCopyPs.innerHTML = originalHtml;
+                        btnCopyPs.style.background = 'var(--accent-blue)';
+                    }, 3000);
+                } catch(e) {
+                    prompt('Copia este comando y pégalo en PowerShell (Win + R -> powershell):', psCommand);
+                }
+            });
+        }
+
+        // Input o Paste de resultado de PowerShell
+        const handleKioskInput = (val) => {
+            const clean = (val || '').trim();
+            if (!clean) return;
+
+            let parsed = null;
+            if (clean.startsWith('{') && clean.endsWith('}')) {
+                try {
+                    parsed = JSON.parse(clean);
+                } catch(e) {}
+            }
+
+            if (!parsed) {
+                // Try regex extraction
+                const serialMatch = clean.match(/serial["':\s=]+([A-Z0-9_-]+)/i);
+                const marcaMatch = clean.match(/marca["':\s=]+([A-Z0-9\s_-]+)/i);
+                const modeloMatch = clean.match(/modelo["':\s=]+([A-Z0-9\s_-]+)/i);
+                const cpuMatch = clean.match(/cpu["':\s=]+([A-Z0-9\s@\(\)\._-]+)/i);
+                const ramMatch = clean.match(/ram["':\s=]+([A-Z0-9\s_-]+)/i);
+                const discoMatch = clean.match(/disco["':\s=]+([A-Z0-9\s_-]+)/i);
+                const hostMatch = clean.match(/hostname["':\s=]+([A-Z0-9_-]+)/i);
+
+                if (serialMatch || hostMatch) {
+                    parsed = {
+                        serial: serialMatch ? serialMatch[1] : (clean.length < 25 ? clean : ''),
+                        marca: marcaMatch ? marcaMatch[1].trim() : 'Dell',
+                        modelo: modeloMatch ? modeloMatch[1].trim() : 'Latitude',
+                        cpu: cpuMatch ? cpuMatch[1].trim() : (currentKioskDetectedSpecs?.cpu || 'Intel Core i5'),
+                        ram: ramMatch ? ramMatch[1].trim() : (currentKioskDetectedSpecs?.ram || '8 GB'),
+                        disco: discoMatch ? discoMatch[1].trim() : '256 GB SSD',
+                        hostname: hostMatch ? hostMatch[1] : ''
+                    };
+                } else if (clean.length >= 3 && clean.length <= 30) {
+                    parsed = { serial: clean };
+                }
+            }
+
+            if (parsed) {
+                lookupAndRenderKioskEquipment(parsed);
+            }
+        };
+
+        if (psInput) {
+            psInput.addEventListener('input', (e) => handleKioskInput(e.target.value));
+            psInput.addEventListener('paste', (e) => {
+                setTimeout(() => handleKioskInput(psInput.value), 50);
+            });
+        }
+
+        if (btnSearchDb && searchInput) {
+            btnSearchDb.addEventListener('click', () => handleKioskInput(searchInput.value));
+            searchInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') handleKioskInput(searchInput.value);
+            });
+        }
+
+        // Búsqueda en la flota y renderizado
+        async function lookupAndRenderKioskEquipment(data) {
+            const container = document.getElementById('kiosk-result-container');
+            if (!container) return;
+
+            container.style.display = 'block';
+            container.innerHTML = `<div style="text-align: center; padding: 25px; color: var(--text-secondary);"><i class="fas fa-spinner fa-spin fa-2x" style="color: var(--accent-blue); margin-bottom: 8px; display: block;"></i> Consultando base de datos de flota...</div>`;
+
+            if (allEquiposCached.length === 0) {
+                allEquiposCached = await fetchEquipos();
+            }
+
+            const searchSerial = (data.serial || '').toLowerCase().trim();
+            const searchHost = (data.hostname || '').toLowerCase().trim();
+
+            let matched = null;
+            if (searchSerial) {
+                matched = allEquiposCached.find(e => (e.serial || '').toLowerCase().trim() === searchSerial);
+            }
+            if (!matched && searchHost) {
+                matched = allEquiposCached.find(e => (e.nombre_codigo || '').toLowerCase().trim() === searchHost || (e.serial || '').toLowerCase().trim() === searchHost);
+            }
+
+            currentKioskMatchedEquipo = matched;
+            const directoryUsers = loadDirectoryUsers();
+
+            if (matched) {
+                // CASO A: NOTEBOOK ENCONTRADO EN LA FLOTA
+                const specs = formatCleanSpecs(matched);
+                const prevUser = matched.usuario_nombre || 'Sin Asignar';
+                const prevEmail = matched.usuario_email || 'Sin correo';
+                const prevRut = matched.usuario_rut || 'Sin RUT';
+                const prevEmpresa = matched.empresa || 'T-Sales';
+                const initials = prevUser !== 'Sin Asignar' ? prevUser.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase() : '—';
+
+                // Generar opciones de colaboradores para reasignación
+                let userOptionsHtml = `<option value="">-- Selecciona el Nuevo Colaborador Asignado --</option>`;
+                directoryUsers.forEach(u => {
+                    const isCurrent = (u.nombre || '').toLowerCase() === prevUser.toLowerCase();
+                    userOptionsHtml += `<option value="${escapeHtml(u.nombre)}" data-email="${escapeHtml(u.email || '')}" data-rut="${escapeHtml(u.rut || '')}" data-empresa="${escapeHtml(u.empresa || '')}" ${isCurrent ? 'selected' : ''}>${escapeHtml(u.nombre)} (${escapeHtml(u.empresa || 'General')} - ${escapeHtml(u.email || '')})</option>`;
+                });
+
+                container.innerHTML = `
+                    <div style="background: var(--bg-card); border: 1px solid rgba(16, 185, 129, 0.4); border-radius: 12px; padding: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.2);">
+                        <!-- Encabezado de Coincidencia -->
+                        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; border-bottom: 1px solid var(--border-color); padding-bottom: 12px;">
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <span class="kiosk-badge-found"><i class="fas fa-check-circle"></i> NOTEBOOK REGISTRADO EN FLOTA</span>
+                                <strong style="font-size: 1.05rem; color: var(--text-primary);">${escapeHtml(matched.nombre_codigo || 'EQUIPO')}</strong>
+                            </div>
+                            <span class="company-badge ${matched.empresa === 'Infinet' ? 'badge-infinet' : (matched.empresa === 'VPrime' ? 'badge-vprime' : 'badge-tsales')}">${escapeHtml(matched.empresa || 'T-Sales')}</span>
+                        </div>
+
+                        <!-- Ficha Técnica Resumida -->
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 8px; margin-bottom: 18px; background: var(--bg-sidebar); padding: 10px; border-radius: 8px; border: 1px solid var(--border-subtle);">
+                            <div><span style="font-size: 0.68rem; color: var(--text-muted); text-transform: uppercase;">Marca / Modelo:</span><strong style="display: block; font-size: 0.82rem; color: var(--text-primary);">${escapeHtml(matched.marca || 'Dell')} ${escapeHtml(matched.modelo || 'Latitude')}</strong></div>
+                            <div><span style="font-size: 0.68rem; color: var(--text-muted); text-transform: uppercase;">Serial:</span><strong style="display: block; font-size: 0.82rem; color: var(--accent-blue); font-family: monospace;">${escapeHtml(matched.serial || 'S/N')}</strong></div>
+                            <div><span style="font-size: 0.68rem; color: var(--text-muted); text-transform: uppercase;">CPU / RAM:</span><strong style="display: block; font-size: 0.82rem; color: var(--text-primary);">${escapeHtml(specs.cpu)} / ${escapeHtml(specs.ram)}</strong></div>
+                            <div><span style="font-size: 0.68rem; color: var(--text-muted); text-transform: uppercase;">Disco SSD:</span><strong style="display: block; font-size: 0.82rem; color: var(--text-primary);">${escapeHtml(specs.disco)}</strong></div>
+                        </div>
+
+                        <!-- Comparativa: Usuario Anterior vs Nuevo Usuario -->
+                        <div class="kiosk-comparison-grid" style="margin-bottom: 20px;">
+                            <!-- Usuario Anterior / Actual -->
+                            <div class="kiosk-user-card-prev">
+                                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+                                    <span style="font-size: 0.75rem; font-weight: 700; color: #ef4444; text-transform: uppercase; display: flex; align-items: center; gap: 6px;">
+                                        <i class="fas fa-user-clock"></i> Usuario Anterior / Actual
+                                    </span>
+                                    <span style="font-size: 0.7rem; color: var(--text-muted);">${escapeHtml(matched.fecha_asignacion ? `Desde ${matched.fecha_asignacion}` : 'Registrado')}</span>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 12px;">
+                                    <div class="equip-card-avatar" style="width: 42px; height: 42px; font-size: 0.9rem; background: linear-gradient(135deg, rgba(239, 68, 68, 0.2) 0%, rgba(239, 68, 68, 0.4) 100%); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3);">
+                                        <span>${initials}</span>
+                                    </div>
+                                    <div style="min-width: 0; flex: 1;">
+                                        <strong style="display: block; font-size: 0.92rem; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escapeHtml(prevUser)}</strong>
+                                        <span style="display: block; font-size: 0.78rem; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escapeHtml(prevEmail)}</span>
+                                        <span style="font-size: 0.72rem; color: var(--text-muted);">RUT: ${escapeHtml(prevRut)} | ${escapeHtml(prevEmpresa)}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Panel de Reasignación a Nuevo Usuario -->
+                            <div class="kiosk-user-card-new">
+                                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+                                    <span style="font-size: 0.75rem; font-weight: 700; color: #34d399; text-transform: uppercase; display: flex; align-items: center; gap: 6px;">
+                                        <i class="fas fa-user-check"></i> Reasignar a Nuevo Colaborador
+                                    </span>
+                                    <span class="status-badge status-abierto" style="font-size: 0.68rem;">Nuevo Destinatario</span>
+                                </div>
+
+                                <div style="margin-bottom: 10px;">
+                                    <label style="font-size: 0.75rem; color: var(--text-secondary); font-weight: 600; display: block; margin-bottom: 4px;">Seleccionar Colaborador del Directorio:</label>
+                                    <select id="kiosk-reassign-user-select" style="width: 100%; padding: 8px 10px; background: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-size: 0.85rem;">
+                                        ${userOptionsHtml}
+                                    </select>
+                                </div>
+
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px;">
+                                    <div>
+                                        <label style="font-size: 0.72rem; color: var(--text-secondary); font-weight: 600; display: block; margin-bottom: 2px;">Empresa:</label>
+                                        <select id="kiosk-reassign-empresa-select" style="width: 100%; padding: 6px 8px; background: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-primary); font-size: 0.8rem;">
+                                            <option value="T-Sales" ${matched.empresa === 'T-Sales' ? 'selected' : ''}>T-Sales</option>
+                                            <option value="Infinet" ${matched.empresa === 'Infinet' ? 'selected' : ''}>Infinet</option>
+                                            <option value="VPrime" ${matched.empresa === 'VPrime' ? 'selected' : ''}>VPrime</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label style="font-size: 0.72rem; color: var(--text-secondary); font-weight: 600; display: block; margin-bottom: 2px;">Estado del Equipo:</label>
+                                        <select id="kiosk-reassign-estado-select" style="width: 100%; padding: 6px 8px; background: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-primary); font-size: 0.8rem;">
+                                            <option value="activo" selected>🟢 Asignado y Entregado</option>
+                                            <option value="disponible">🔵 Disponible en Bodega</option>
+                                            <option value="mantenimiento">🔴 En Mantenimiento / Formateo</option>
+                                            <option value="baja">⚫ De Baja</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label style="font-size: 0.72rem; color: var(--text-secondary); font-weight: 600; display: block; margin-bottom: 2px;">Motivo / Nota del Movimiento:</label>
+                                    <input type="text" id="kiosk-reassign-notas-input" placeholder="Ej: Entrega de notebook por renovación / ingreso..." value="Reasignación rápida desde Kiosko TI" style="width: 100%; padding: 6px 10px; background: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-primary); font-size: 0.8rem;">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Botón de Confirmación -->
+                        <div style="display: flex; justify-content: flex-end; gap: 12px; border-top: 1px solid var(--border-color); padding-top: 14px;">
+                            <button type="button" id="btn-kiosk-confirm-reassign" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none; padding: 12px 24px; border-radius: 8px; font-weight: 700; font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.35);">
+                                <i class="fas fa-sync-alt"></i> Confirmar Reasignación y Guardar en Flota
+                            </button>
+                        </div>
+                    </div>
+                `;
+
+                // Event listener para auto-seleccionar empresa al cambiar usuario
+                const userSelect = document.getElementById('kiosk-reassign-user-select');
+                const empSelect = document.getElementById('kiosk-reassign-empresa-select');
+                if (userSelect && empSelect) {
+                    userSelect.addEventListener('change', () => {
+                        const selectedOption = userSelect.options[userSelect.selectedIndex];
+                        const emp = selectedOption?.getAttribute('data-empresa');
+                        if (emp) {
+                            if (/infinet/i.test(emp)) empSelect.value = 'Infinet';
+                            else if (/vprime|v\s*prime/i.test(emp)) empSelect.value = 'VPrime';
+                            else if (/t-sales|tsales/i.test(emp)) empSelect.value = 'T-Sales';
+                        }
+                    });
+                }
+
+                // Event listener para guardar reasignación
+                const btnConfirm = document.getElementById('btn-kiosk-confirm-reassign');
+                if (btnConfirm) {
+                    btnConfirm.addEventListener('click', async () => {
+                        btnConfirm.disabled = true;
+                        btnConfirm.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando reasignación...';
+
+                        const selectedOption = userSelect?.options[userSelect.selectedIndex];
+                        const nuevoNombre = userSelect?.value || prevUser;
+                        const nuevoEmail = selectedOption?.getAttribute('data-email') || '';
+                        const nuevoRut = selectedOption?.getAttribute('data-rut') || '';
+                        const nuevaEmpresa = empSelect?.value || prevEmpresa;
+                        const nuevoEstado = document.getElementById('kiosk-reassign-estado-select')?.value || 'activo';
+                        const notas = document.getElementById('kiosk-reassign-notas-input')?.value || 'Reasignación de notebook';
+
+                        // Actualizar equipo
+                        matched.usuario_nombre = nuevoNombre;
+                        matched.usuario_email = nuevoEmail;
+                        matched.usuario_rut = nuevoRut;
+                        matched.empresa = nuevaEmpresa;
+                        matched.estado = nuevoEstado;
+                        matched.fecha_asignacion = new Date().toLocaleDateString('es-CL');
+
+                        // Si vinieron especificaciones nuevas desde PowerShell, actualizarlas
+                        if (data.cpu && data.cpu !== 'Intel Core') matched.cpu = data.cpu;
+                        if (data.ram && data.ram !== '8 GB') matched.ram = data.ram;
+                        if (data.disco && data.disco !== '256 GB SSD') matched.disco_duro = data.disco;
+                        if (data.so) matched.sistema_operativo = data.so;
+                        if (data.build) matched.build_windows = data.build;
+
+                        // Guardar en Supabase y local
+                        await adaptiveUpsertEquipos([matched]);
+                        const idx = allEquiposCached.findIndex(e => e.id === matched.id);
+                        if (idx !== -1) allEquiposCached[idx] = matched;
+                        localStorage.setItem('local_equipos', JSON.stringify(allEquiposCached));
+
+                        // Registrar en historial de trazabilidad
+                        try {
+                            const historyKey = 'equipos_movements_history';
+                            const histStr = localStorage.getItem(historyKey);
+                            const hist = histStr ? JSON.parse(histStr) : [];
+                            hist.unshift({
+                                id: 'mov_' + Date.now(),
+                                serial: matched.serial,
+                                equipo_id: matched.id,
+                                fecha: new Date().toISOString(),
+                                fecha_formateada: new Date().toLocaleString('es-CL'),
+                                tipo: 'Reasignación de Equipo (Kiosko TI)',
+                                usuario_anterior: prevUser,
+                                usuario_nuevo: nuevoNombre,
+                                empresa: nuevaEmpresa,
+                                tecnico: currentSession?.nombre || 'Técnico TI (Kiosko PIN)',
+                                motivo: notas
+                            });
+                            localStorage.setItem(historyKey, JSON.stringify(hist));
+                        } catch(e) {}
+
+                        // Render feedback de éxito
+                        container.innerHTML = `
+                            <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid #10b981; border-radius: 12px; padding: 24px; text-align: center; animation: fadeIn 0.3s ease;">
+                                <div style="width: 50px; height: 50px; border-radius: 50%; background: #10b981; color: white; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin: 0 auto 12px; box-shadow: 0 0 20px rgba(16, 185, 129, 0.5);">
+                                    <i class="fas fa-check"></i>
+                                </div>
+                                <h3 style="margin: 0 0 6px 0; color: #34d399; font-size: 1.25rem; font-weight: 700;">¡Notebook Reasignado y Guardado con Éxito!</h3>
+                                <p style="margin: 0 0 16px 0; color: var(--text-secondary); font-size: 0.88rem;">
+                                    El equipo <strong>${escapeHtml(matched.nombre_codigo || 'EQUIPO')}</strong> (${escapeHtml(matched.serial)}) ha sido asignado a <strong>${escapeHtml(nuevoNombre)}</strong> (${escapeHtml(nuevaEmpresa)}).
+                                </p>
+                                <div style="display: flex; justify-content: center; gap: 10px;">
+                                    <button type="button" onclick="document.getElementById('modal-kiosk-pc-onboarding').style.display='none';" style="background: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-primary); padding: 10px 20px; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                                        Cerrar Kiosko
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+
+                        // Refrescar inventario CMDB
+                        if (typeof refreshEquipos === 'function') refreshEquipos();
+                    });
+                }
+
+            } else {
+                // CASO B: NOTEBOOK NUEVO (NO REGISTRADO EN FLOTA)
+                const detectedMarca = data.marca || 'Dell';
+                const detectedModelo = data.modelo || 'Latitude';
+                const detectedSerial = data.serial || ('SN-' + Date.now().toString().slice(-6));
+                const detectedCpu = data.cpu || (currentKioskDetectedSpecs?.cpu || 'Intel Core i5');
+                const detectedRam = data.ram || (currentKioskDetectedSpecs?.ram || '8 GB');
+                const detectedDisco = data.disco || '256 GB SSD';
+                const detectedSo = data.so || (currentKioskDetectedSpecs?.so || 'Windows 11 Pro');
+
+                let userOptionsHtml = `<option value="">-- Seleccionar Colaborador Asignado --</option>`;
+                directoryUsers.forEach(u => {
+                    userOptionsHtml += `<option value="${escapeHtml(u.nombre)}" data-email="${escapeHtml(u.email || '')}" data-rut="${escapeHtml(u.rut || '')}" data-empresa="${escapeHtml(u.empresa || '')}">${escapeHtml(u.nombre)} (${escapeHtml(u.empresa || 'General')})</option>`;
+                });
+
+                container.innerHTML = `
+                    <div style="background: var(--bg-card); border: 1px solid rgba(59, 130, 246, 0.4); border-radius: 12px; padding: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.2);">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid var(--border-color); padding-bottom: 12px;">
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <span class="kiosk-badge-new"><i class="fas fa-plus-circle"></i> NUEVO NOTEBOOK DETECTADO</span>
+                                <strong style="font-size: 1.05rem; color: var(--text-primary);">Equipo no registrado previamente</strong>
+                            </div>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 16px;">
+                            <div>
+                                <label style="font-size: 0.75rem; color: var(--text-secondary); font-weight: 600; display: block; margin-bottom: 4px;">Código de Equipo:</label>
+                                <input type="text" id="kiosk-new-code" value="NT-TS-${Date.now().toString().slice(-4)}" style="width: 100%; padding: 8px 10px; background: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-size: 0.85rem; font-weight: 700;">
+                            </div>
+                            <div>
+                                <label style="font-size: 0.75rem; color: var(--text-secondary); font-weight: 600; display: block; margin-bottom: 4px;">Número de Serie (BIOS):</label>
+                                <input type="text" id="kiosk-new-serial" value="${escapeHtml(detectedSerial)}" style="width: 100%; padding: 8px 10px; background: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: 8px; color: var(--accent-blue); font-family: monospace; font-size: 0.85rem; font-weight: 700;">
+                            </div>
+                            <div>
+                                <label style="font-size: 0.75rem; color: var(--text-secondary); font-weight: 600; display: block; margin-bottom: 4px;">Marca / Modelo:</label>
+                                <input type="text" id="kiosk-new-model" value="${escapeHtml(detectedMarca)} ${escapeHtml(detectedModelo)}" style="width: 100%; padding: 8px 10px; background: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-size: 0.85rem;">
+                            </div>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 20px;">
+                            <div>
+                                <label style="font-size: 0.75rem; color: var(--text-secondary); font-weight: 600; display: block; margin-bottom: 4px;">Colaborador Asignado:</label>
+                                <select id="kiosk-new-user-select" style="width: 100%; padding: 8px 10px; background: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-size: 0.85rem;">
+                                    ${userOptionsHtml}
+                                </select>
+                            </div>
+                            <div>
+                                <label style="font-size: 0.75rem; color: var(--text-secondary); font-weight: 600; display: block; margin-bottom: 4px;">Empresa:</label>
+                                <select id="kiosk-new-empresa-select" style="width: 100%; padding: 8px 10px; background: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-size: 0.85rem;">
+                                    <option value="T-Sales">T-Sales</option>
+                                    <option value="Infinet">Infinet</option>
+                                    <option value="VPrime">VPrime</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label style="font-size: 0.75rem; color: var(--text-secondary); font-weight: 600; display: block; margin-bottom: 4px;">Estado:</label>
+                                <select id="kiosk-new-estado-select" style="width: 100%; padding: 8px 10px; background: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-size: 0.85rem;">
+                                    <option value="activo" selected>🟢 Asignado / Activo</option>
+                                    <option value="disponible">🔵 Disponible en Bodega</option>
+                                    <option value="mantenimiento">🔴 En Preparación</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div style="display: flex; justify-content: flex-end; gap: 12px; border-top: 1px solid var(--border-color); padding-top: 14px;">
+                            <button type="button" id="btn-kiosk-save-new" style="background: linear-gradient(135deg, #3b82f6 0%, #6366f1 100%); color: white; border: none; padding: 12px 24px; border-radius: 8px; font-weight: 700; font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.35);">
+                                <i class="fas fa-plus"></i> Registrar como Nuevo Notebook en Flota
+                            </button>
+                        </div>
+                    </div>
+                `;
+
+                const btnSaveNew = document.getElementById('btn-kiosk-save-new');
+                if (btnSaveNew) {
+                    btnSaveNew.addEventListener('click', async () => {
+                        btnSaveNew.disabled = true;
+                        btnSaveNew.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Registrando...';
+
+                        const userSel = document.getElementById('kiosk-new-user-select');
+                        const selectedOption = userSel?.options[userSel.selectedIndex];
+                        const userName = userSel?.value || 'Sin Asignar';
+                        const userEmail = selectedOption?.getAttribute('data-email') || '';
+                        const userRut = selectedOption?.getAttribute('data-rut') || '';
+                        const empresa = document.getElementById('kiosk-new-empresa-select')?.value || 'T-Sales';
+                        const estado = document.getElementById('kiosk-new-estado-select')?.value || 'activo';
+                        const codigo = document.getElementById('kiosk-new-code')?.value || ('NT-' + Date.now().toString().slice(-4));
+                        const serial = document.getElementById('kiosk-new-serial')?.value || detectedSerial;
+
+                        const newEq = {
+                            id: 'eq_' + Date.now(),
+                            nombre_codigo: codigo,
+                            usuario_nombre: userName,
+                            usuario_email: userEmail,
+                            usuario_rut: userRut,
+                            empresa: empresa,
+                            estado: estado,
+                            serial: serial,
+                            marca: detectedMarca,
+                            modelo: detectedModelo,
+                            cpu: detectedCpu,
+                            ram: detectedRam,
+                            disco_duro: detectedDisco,
+                            sistema_operativo: detectedSo,
+                            tipo: 'laptop',
+                            fecha_asignacion: new Date().toLocaleDateString('es-CL')
+                        };
+
+                        await adaptiveUpsertEquipos([newEq]);
+                        allEquiposCached.unshift(newEq);
+                        localStorage.setItem('local_equipos', JSON.stringify(allEquiposCached));
+
+                        container.innerHTML = `
+                            <div style="background: rgba(59, 130, 246, 0.1); border: 1px solid #3b82f6; border-radius: 12px; padding: 24px; text-align: center;">
+                                <div style="width: 50px; height: 50px; border-radius: 50%; background: #3b82f6; color: white; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin: 0 auto 12px;">
+                                    <i class="fas fa-check"></i>
+                                </div>
+                                <h3 style="margin: 0 0 6px 0; color: #60a5fa; font-size: 1.25rem; font-weight: 700;">¡Nuevo Notebook Registrado en Flota!</h3>
+                                <p style="margin: 0 0 16px 0; color: var(--text-secondary); font-size: 0.88rem;">
+                                    Código: <strong>${escapeHtml(codigo)}</strong> | Serial: <strong>${escapeHtml(serial)}</strong> | Asignado a: <strong>${escapeHtml(userName)}</strong>
+                                </p>
+                                <button type="button" onclick="document.getElementById('modal-kiosk-pc-onboarding').style.display='none';" style="background: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-primary); padding: 10px 20px; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                                    Cerrar Kiosko
+                                </button>
+                            </div>
+                        `;
+
+                        if (typeof refreshEquipos === 'function') refreshEquipos();
+                    });
+                }
+            }
+        }
+    }
+
     // Inicializar Módulos
     try {
         setupClientAutocomplete();
         setupTicketUserModeTabs();
         initDirectoryModule();
+        fetchDirectoryUsersFromSupabase();
         initM365Module();
         initComprasModule();
+        initKioskOnboardingModule();
     } catch(e) {
         console.error('Error al inicializar módulos:', e);
     }

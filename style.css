@@ -7628,6 +7628,84 @@ input:checked + .slider:before {
     line-height: 1.4;
 }
 
+/* ========================================================
+   KIOSKO ONBOARDING & DIAGNÓSTICO NOTEBOOKS STYLES
+   ======================================================== */
+.kiosk-badge-found {
+    background: rgba(16, 185, 129, 0.15);
+    color: #34d399;
+    border: 1px solid rgba(16, 185, 129, 0.35);
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 0.78rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.kiosk-badge-new {
+    background: rgba(59, 130, 246, 0.15);
+    color: #60a5fa;
+    border: 1px solid rgba(59, 130, 246, 0.35);
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 0.78rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.kiosk-comparison-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+@media (max-width: 768px) {
+    .kiosk-comparison-grid,
+    .kiosk-capture-grid {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+.kiosk-user-card-prev {
+    background: rgba(239, 68, 68, 0.06);
+    border: 1px solid rgba(239, 68, 68, 0.25);
+    border-radius: 10px;
+    padding: 14px;
+}
+
+.kiosk-user-card-new {
+    background: rgba(16, 185, 129, 0.06);
+    border: 1px solid rgba(16, 185, 129, 0.25);
+    border-radius: 10px;
+    padding: 14px;
+}
+
+.kiosk-telemetry-pill {
+    background: var(--bg-sidebar);
+    border: 1px solid var(--border-subtle);
+    border-radius: 8px;
+    padding: 8px 12px;
+}
+
+.kiosk-telemetry-pill strong {
+    color: var(--text-primary);
+    font-size: 0.85rem;
+}
+
+.kiosk-pulse-icon {
+    animation: kioskPulse 2s infinite ease-in-out;
+}
+
+@keyframes kioskPulse {
+    0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.5); }
+    70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+    100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+}
+
 .equip-timeline-tech {
     font-size: 0.72rem;
     color: var(--text-muted);
