@@ -72,7 +72,7 @@ document.addEventListener('DOMContentLoaded', () => {
             try {
                 const { data, error } = await supabase
                     .from('directorio_usuarios')
-                    .select('*');
+                    .select('id, nombre, rut, email, empresa, tipo, licencia, created_at');
                 
                 if (error) {
                     if (error.code === '42P01' || (error.message && error.message.includes('does not exist'))) {
@@ -123,13 +123,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     // Subir a Supabase los usuarios locales que no existían allí (Sincronización inicial)
                     if (usersToUpload.length > 0) {
-                        try {
-                            // Supabase upsert tiene límite, pero para ~100-200 está bien.
-                            await supabase.from('directorio_usuarios').upsert(usersToUpload, { onConflict: 'email' });
-                            console.log(`Sincronizados ${usersToUpload.length} usuarios locales a Supabase.`);
-                        } catch(err) {
-                            console.warn('Error subiendo usuarios faltantes a Supabase:', err);
+                        let successCount = 0;
+                        for (const u of usersToUpload) {
+                            try {
+                                const { error } = await supabase.from('directorio_usuarios').upsert([u], { onConflict: 'email' });
+                                if (error) {
+                                    console.warn('Error subiendo a Supabase:', u.email, error.message);
+                                } else {
+                                    successCount++;
+                                }
+                            } catch(err) {
+                                console.warn('Excepción subiendo usuario a Supabase:', u.email, err);
+                            }
                         }
+                        console.log(`Sincronizados ${successCount} de ${usersToUpload.length} usuarios locales a Supabase.`);
                     }
                 }
             } catch (err) {
@@ -4272,8 +4279,8 @@ document.addEventListener('DOMContentLoaded', () => {
     function openEquipDetailModal(eq) {
         activeEquip = eq;
         if (detailModal) {
-            document.getElementById('modal-equip-type').textContent = `${eq.tipo.toUpperCase()} / ${eq.estado.toUpperCase()}`;
-            document.getElementById('modal-equip-codigo').textContent = eq.nombre_codigo;
+            document.getElementById('modal-equip-type').textContent = `${(eq.tipo || 'equipo').toUpperCase()} / ${(eq.estado || 'sin estado').toUpperCase()}`;
+            document.getElementById('modal-equip-codigo').textContent = eq.nombre_codigo || eq.hostname || eq.codigo || 'Equipo sin nombre';
             
             document.getElementById('modal-equip-user-nombre').textContent = eq.usuario_nombre;
             document.getElementById('modal-equip-user-email').textContent = eq.usuario_email || 'S/A';
@@ -4291,6 +4298,39 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('modal-equip-empresa').textContent = eq.empresa || '-';
             document.getElementById('modal-equip-cpu').textContent = eq.cpu || '-';
             document.getElementById('modal-equip-licencia').textContent = eq.licencia_usuario || '-';
+
+            const allDataContainer = document.getElementById('modal-equip-all-data');
+            const fieldsCount = document.getElementById('modal-equip-fields-count');
+            if (allDataContainer) {
+                const fieldLabels = {
+                    id: 'ID del registro', nombre_codigo: 'Código / nombre', hostname: 'Hostname', codigo: 'Código',
+                    tipo: 'Tipo de equipo', estado: 'Estado', usuario_nombre: 'Usuario asignado',
+                    usuario_email: 'Correo del usuario', usuario_rut: 'RUT del usuario', empresa: 'Empresa',
+                    marca: 'Marca', modelo: 'Modelo', serial: 'Número de serie', cpu: 'Procesador',
+                    ram: 'Memoria RAM', disco_duro: 'Almacenamiento', sistema_operativo: 'Sistema operativo',
+                    build_windows: 'Build de Windows', licencia_usuario: 'Licencia', fecha_asignacion: 'Fecha de asignación',
+                    ip: 'Dirección IP', direccion_ip: 'Dirección IP', mac: 'Dirección MAC', created_at: 'Fecha de registro',
+                    updated_at: 'Última actualización'
+                };
+                const entries = Object.entries(eq).filter(([key, value]) => {
+                    const keyLower = key.toLowerCase();
+                    if (['password', 'contraseña', 'secret', 'token'].some(term => keyLower.includes(term))) return false;
+                    return value !== undefined && value !== null && String(value).trim() !== '';
+                });
+                allDataContainer.innerHTML = entries.map(([key, value]) => {
+                    const label = fieldLabels[key] || key.replace(/_/g, ' ').replace(/\b\w/g, char => char.toUpperCase());
+                    let displayValue = value;
+                    if (typeof value === 'object') {
+                        try { displayValue = JSON.stringify(value); } catch (e) { displayValue = String(value); }
+                    }
+                    if ((key === 'created_at' || key === 'updated_at') && value) {
+                        const date = new Date(value);
+                        if (!isNaN(date)) displayValue = date.toLocaleString('es-CL');
+                    }
+                    return `<div><dt>${escapeHtml(label)}</dt><dd>${escapeHtml(displayValue)}</dd></div>`;
+                }).join('');
+                if (fieldsCount) fieldsCount.textContent = `${entries.length} campo${entries.length === 1 ? '' : 's'}`;
+            }
 
             detailModal.style.display = 'flex';
         }
@@ -8747,6 +8787,117 @@ document.addEventListener('DOMContentLoaded', () => {
     // ========================================================
     // GESTIÓN DEL DIRECTORIO DE COLABORADORES
     // ========================================================
+    let currentProfilePasswordCache = { email: '', value: '' };
+
+    function applyProfilePasswordState(hasPassword) {
+        const status = document.getElementById('perfil-password-status');
+        const revealBtn = document.getElementById('btn-reveal-password');
+        const manageBtn = document.getElementById('btn-manage-profile-password');
+        const displayInput = document.getElementById('perfil-password-display');
+        const editor = document.getElementById('profile-password-editor');
+        const editorInput = document.getElementById('profile-new-password');
+
+        if (status) {
+            status.className = `profile-password-status ${hasPassword ? 'saved' : 'missing'}`;
+            status.textContent = hasPassword ? 'Guardada' : 'No registrada';
+        }
+        if (revealBtn) revealBtn.disabled = !hasPassword;
+        if (manageBtn) {
+            manageBtn.dataset.mode = hasPassword ? 'edit' : 'add';
+            manageBtn.innerHTML = hasPassword
+                ? '<i class="fas fa-pen"></i><span>Editar contraseña</span>'
+                : '<i class="fas fa-plus"></i><span>Agregar contraseña</span>';
+        }
+        if (displayInput) {
+            displayInput.type = 'password';
+            displayInput.value = hasPassword ? '********' : '';
+            displayInput.placeholder = hasPassword ? '' : 'Sin contraseña registrada';
+        }
+        if (editor) editor.hidden = true;
+        if (editorInput) editorInput.value = '';
+    }
+
+    async function refreshProfilePasswordStatus(email) {
+        const cleanEmail = normalizeStr(email);
+        const status = document.getElementById('perfil-password-status');
+        const revealBtn = document.getElementById('btn-reveal-password');
+        if (status) {
+            status.className = 'profile-password-status checking';
+            status.textContent = 'Comprobando...';
+        }
+        if (revealBtn) revealBtn.disabled = true;
+        currentProfilePasswordCache = { email: cleanEmail, value: '' };
+
+        const localUser = loadDirectoryUsers().find(u => normalizeStr(u.email) === cleanEmail);
+        let passwordValue = localUser?.password_usuario || '';
+
+        if (typeof supabase !== 'undefined' && supabase && !useLocalFallback) {
+            try {
+                const { data, error } = await supabase
+                    .from('directorio_usuarios')
+                    .select('password_usuario')
+                    .eq('email', email)
+                    .maybeSingle();
+                if (!error && data && data.password_usuario) passwordValue = data.password_usuario;
+            } catch (error) {
+                console.warn('No fue posible comprobar la contraseña en Supabase:', error);
+            }
+        }
+
+        const activeEmail = normalizeStr(document.getElementById('perfil-password-display')?.getAttribute('data-target-email'));
+        if (activeEmail !== cleanEmail) return;
+        currentProfilePasswordCache = { email: cleanEmail, value: passwordValue };
+        applyProfilePasswordState(Boolean(passwordValue));
+    }
+
+    async function authorizeProfilePasswordAction() {
+        if (!currentSession || !currentSession.email) {
+            alert('Debes iniciar sesión como administrador para gestionar contraseñas.');
+            return false;
+        }
+        const adminPass = prompt(`Autorización requerida.\nIngresa la contraseña del administrador (${currentSession.nombre}):`);
+        if (!adminPass) return false;
+        const validAdmin = await authenticateUser(currentSession.email, adminPass);
+        if (!validAdmin) {
+            alert('Contraseña de administrador incorrecta.');
+            return false;
+        }
+        const adminPin = prompt(`Ingresa tu PIN de seguridad de Administrador (${currentSession.nombre}):`);
+        if (!adminPin) return false;
+        const validPin = await verifyAdminPinFromSupabase(currentSession.email, adminPin.trim());
+        if (!validPin) {
+            alert('PIN de administrador incorrecto. Acceso denegado.');
+            return false;
+        }
+        return true;
+    }
+
+    async function saveProfilePassword(email, newPassword) {
+        const users = loadDirectoryUsers();
+        const userIndex = users.findIndex(u => normalizeStr(u.email) === normalizeStr(email));
+        if (userIndex === -1) throw new Error('No se encontró el usuario en el directorio.');
+
+        const updatedUser = { ...users[userIndex], password_usuario: newPassword };
+        users[userIndex] = updatedUser;
+        saveDirectoryUsers(users);
+
+        let cloudSaved = false;
+        if (typeof supabase !== 'undefined' && supabase && !useLocalFallback) {
+            try {
+                const { error } = await supabase
+                    .from('directorio_usuarios')
+                    .upsert([updatedUser], { onConflict: 'email' });
+                if (error) throw error;
+                cloudSaved = true;
+            } catch (error) {
+                console.warn('Contraseña guardada localmente; Supabase no pudo sincronizarla:', error);
+            }
+        }
+
+        currentProfilePasswordCache = { email: normalizeStr(email), value: newPassword };
+        return cloudSaved;
+    }
+
     let directoryCurrentPage = 1;
     const DIRECTORY_PAGE_SIZE = 15;
 
@@ -8851,12 +9002,17 @@ document.addEventListener('DOMContentLoaded', () => {
                     <td style="padding: 14px 16px; font-family: monospace; font-size: 0.85rem; color: var(--text-primary);">${escapeHtml(u.rut || 'Sin RUT')}</td>
                     <td style="padding: 14px 16px;"><span class="autocomplete-badge ${getCompanyBadgeClass(u.empresa)}">${escapeHtml(u.empresa || 'T-Sales')}</span></td>
                     <td style="padding: 14px 16px;"><span class="autocomplete-badge badge-tipo">${escapeHtml(u.tipo || 'Ejecutivo')}</span></td>
-                    <td style="padding: 14px 16px; font-size: 0.78rem; color: var(--text-secondary); max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${escapeHtml(u.licencia || '-')}</td>
-                    <td style="padding: 14px 16px; text-align: right;">
-                        <button type="button" class="btn-table-action btn-crear-ticket-collab" data-name="${escapeHtml(u.nombre)}" data-rut="${escapeHtml(u.rut)}" data-email="${escapeHtml(u.email)}" data-company="${escapeHtml(u.empresa)}" title="Crear ticket para este usuario" style="background: rgba(50, 102, 235, 0.12); border: 1px solid rgba(50, 102, 235, 0.25); color: var(--accent-blue); padding: 6px 12px; border-radius: 6px; font-size: 0.78rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
-                            <i class="fas fa-plus"></i> Crear Ticket
+                    <td style="padding: 14px 16px; text-align: right; white-space: nowrap;">
+                        <button type="button" class="btn-table-action btn-perfil-collab" data-name="${escapeHtml(u.nombre)}" data-rut="${escapeHtml(u.rut)}" data-email="${escapeHtml(u.email)}" data-company="${escapeHtml(u.empresa)}" data-tipo="${escapeHtml(u.tipo || 'Ejecutivo')}" data-licencia="${escapeHtml(u.licencia || '')}" data-created="${escapeHtml(u.created_at || '')}" title="Ver Perfil" style="background: rgba(139, 92, 246, 0.12); border: 1px solid rgba(139, 92, 246, 0.25); color: #8b5cf6; padding: 6px 10px; border-radius: 6px; font-size: 0.78rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;">
+                            <i class="fas fa-eye"></i> Perfil
                         </button>
-                        <button type="button" class="btn-table-action btn-eliminar-collab" data-email="${escapeHtml(u.email)}" title="Eliminar usuario" style="background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.25); color: #ef4444; padding: 6px 12px; border-radius: 6px; font-size: 0.78rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; margin-left: 6px;">
+                        <button type="button" class="btn-table-action btn-crear-ticket-collab" data-name="${escapeHtml(u.nombre)}" data-rut="${escapeHtml(u.rut)}" data-email="${escapeHtml(u.email)}" data-company="${escapeHtml(u.empresa)}" title="Crear ticket para este usuario" style="background: rgba(50, 102, 235, 0.12); border: 1px solid rgba(50, 102, 235, 0.25); color: var(--accent-blue); padding: 6px 10px; border-radius: 6px; font-size: 0.78rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; margin-left: 4px;">
+                            <i class="fas fa-plus"></i> Ticket
+                        </button>
+                        <button type="button" class="btn-table-action btn-editar-collab" data-name="${escapeHtml(u.nombre)}" data-rut="${escapeHtml(u.rut)}" data-email="${escapeHtml(u.email)}" data-company="${escapeHtml(u.empresa)}" data-tipo="${escapeHtml(u.tipo || 'Ejecutivo')}" data-licencia="${escapeHtml(u.licencia || '')}" title="Editar usuario" style="background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.25); color: #10b981; padding: 6px 10px; border-radius: 6px; font-size: 0.78rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; margin-left: 4px;">
+                            <i class="fas fa-pen"></i> Editar
+                        </button>
+                        <button type="button" class="btn-table-action btn-eliminar-collab" data-email="${escapeHtml(u.email)}" title="Eliminar usuario" style="background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.25); color: #ef4444; padding: 6px 10px; border-radius: 6px; font-size: 0.78rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; margin-left: 4px;">
                             <i class="fas fa-trash"></i> Eliminar
                         </button>
                     </td>
@@ -8884,7 +9040,178 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             };
 
+            const bindEditCollab = (btn) => {
+                btn.addEventListener('click', () => {
+                    const modal = document.getElementById('modal-crear-colaborador');
+                    if (!modal) return;
+                    
+                    document.getElementById('collab-modal-title').textContent = 'Editar Colaborador';
+                    document.getElementById('collab-modal-icon').className = 'fas fa-user-edit';
+                    
+                    document.getElementById('collab-original-email').value = btn.getAttribute('data-email');
+                    document.getElementById('collab-name').value = btn.getAttribute('data-name');
+                    document.getElementById('collab-rut').value = btn.getAttribute('data-rut');
+                    document.getElementById('collab-email').value = btn.getAttribute('data-email');
+                    document.getElementById('collab-company').value = btn.getAttribute('data-company');
+                    document.getElementById('collab-type').value = btn.getAttribute('data-tipo');
+                    document.getElementById('collab-license').value = btn.getAttribute('data-licencia');
+                    document.getElementById('collab-password').value = '';
+                    
+                    modal.style.display = 'flex';
+                });
+            };
+
+            const bindPerfilCollab = (btn) => {
+                btn.addEventListener('click', async () => {
+                    const modal = document.getElementById('modal-perfil-colaborador');
+                    if (!modal) return;
+                    
+                    const email = btn.getAttribute('data-email');
+                    const nombre = btn.getAttribute('data-name');
+                    const empresa = btn.getAttribute('data-company');
+                    
+                    document.getElementById('perfil-nombre').textContent = nombre;
+                    const perfilEmail = document.getElementById('perfil-email');
+                    perfilEmail.textContent = email;
+                    perfilEmail.href = email ? `mailto:${email}` : '#';
+                    document.getElementById('perfil-rut').textContent = btn.getAttribute('data-rut');
+                    document.getElementById('perfil-empresa').textContent = empresa;
+                    document.getElementById('perfil-empresa-resumen').textContent = empresa || 'Sin empresa';
+                    document.getElementById('perfil-tipo').textContent = btn.getAttribute('data-tipo');
+                    document.getElementById('perfil-licencia').textContent = btn.getAttribute('data-licencia') || 'Sin licencia asignada';
+                    const createdAt = btn.getAttribute('data-created');
+                    const createdDate = createdAt ? new Date(createdAt) : null;
+                    document.getElementById('perfil-fecha-registro').textContent = createdDate && !isNaN(createdDate) ? createdDate.toLocaleDateString('es-CL') : 'Sin fecha';
+                    
+                    const avatar = document.getElementById('perfil-avatar');
+                    avatar.textContent = getInitials(nombre);
+                    avatar.style.background = getAvatarBg(empresa);
+                    
+                    const passInput = document.getElementById('perfil-password-display');
+                    passInput.type = 'password';
+                    passInput.value = '********';
+                    passInput.setAttribute('data-target-email', email);
+                    refreshProfilePasswordStatus(email);
+                    
+                    // Buscar Equipos
+                    let localEquipos = [];
+                    try { localEquipos = JSON.parse(localStorage.getItem('local_equipos') || '[]'); } catch(e){}
+                    const normalizeProfileValue = value => (value || '').toString().trim().toLowerCase();
+                    const userEquipos = localEquipos.filter(eq => {
+                        const assigned = normalizeProfileValue(eq.asignado || eq.usuario_nombre || eq.usuario);
+                        const assignedEmail = normalizeProfileValue(eq.usuario_email || eq.email);
+                        const assignedRut = normalizeProfileValue(eq.usuario_rut || eq.rut);
+                        return assigned === normalizeProfileValue(nombre) ||
+                            assigned.includes(normalizeProfileValue(nombre)) ||
+                            assignedEmail === normalizeProfileValue(email) ||
+                            (assignedRut && assignedRut === normalizeProfileValue(btn.getAttribute('data-rut')));
+                    });
+                    
+                    const equiposContainer = document.getElementById('perfil-equipos-container');
+                    if (equiposContainer) {
+                        if (userEquipos.length > 0) {
+                            equiposContainer.innerHTML = userEquipos.map((eq, index) => `
+                                <div class="profile-list-item profile-equipment-item" role="button" tabindex="0" data-equipment-index="${index}" aria-label="Abrir detalle completo de ${escapeHtml(eq.hostname || eq.nombre_codigo || eq.codigo || 'equipo')}">
+                                    <div class="profile-item-icon"><i class="fas fa-laptop"></i></div>
+                                    <div class="profile-item-copy">
+                                        <strong>${escapeHtml(eq.hostname || eq.nombre_codigo || eq.codigo || 'Equipo sin nombre')}</strong>
+                                        <span>${escapeHtml([eq.marca, eq.modelo].filter(Boolean).join(' ') || 'Marca y modelo sin registrar')}${eq.sistema_operativo || eq.so ? ` · ${escapeHtml(eq.sistema_operativo || eq.so)}` : ''}</span>
+                                    </div>
+                                    <div class="profile-item-meta">
+                                        <b>${escapeHtml(eq.estado || 'Activo')}</b>
+                                        <small>Serie: ${escapeHtml(eq.serie || eq.serial || '-')}</small>
+                                    </div>
+                                    <i class="fas fa-chevron-right profile-item-chevron" aria-hidden="true"></i>
+                                </div>
+                            `).join('');
+                            equiposContainer.querySelectorAll('.profile-equipment-item').forEach(item => {
+                                const openStoredEquipment = () => {
+                                    const selectedEquipment = userEquipos[Number(item.dataset.equipmentIndex)];
+                                    if (!selectedEquipment) return;
+                                    modal.style.display = 'none';
+                                    openEquipDetailModal(selectedEquipment);
+                                };
+                                item.addEventListener('click', openStoredEquipment);
+                                item.addEventListener('keydown', event => {
+                                    if (event.key === 'Enter' || event.key === ' ') {
+                                        event.preventDefault();
+                                        openStoredEquipment();
+                                    }
+                                });
+                            });
+                        } else {
+                            equiposContainer.innerHTML = '<div class="profile-list-empty"><span><i class="fas fa-laptop"></i>No hay equipos registrados a su nombre.</span></div>';
+                        }
+                    }
+                    document.getElementById('perfil-equipos-count').textContent = userEquipos.length;
+                    document.getElementById('perfil-equipos-badge').textContent = userEquipos.length;
+
+                    // Buscar Tickets
+                    let allTickets = [];
+                    try { allTickets = await fetchTickets(); } catch(e) {
+                        console.warn('No se pudieron consultar los tickets para el perfil:', e);
+                        try { allTickets = JSON.parse(localStorage.getItem('local_tickets') || '[]'); } catch(ignore) {}
+                    }
+                    const normalizeRut = value => normalizeProfileValue(value).replace(/[^0-9k]/g, '');
+                    const profileEmail = normalizeProfileValue(email);
+                    const profileName = normalizeStr(nombre).replace(/\s+/g, ' ');
+                    const profileRut = normalizeRut(btn.getAttribute('data-rut'));
+                    const userTickets = allTickets.filter(t => {
+                        const meta = extractMetadata(t);
+                        const clientEmails = [t.clientEmail, t.clienteEmail, t.cliente_email, t.email, meta.cliente_email]
+                            .map(normalizeProfileValue).filter(Boolean);
+                        const clientNames = [t.clientName, t.clienteNombre, t.cliente_nombre, t.nombre_cliente, meta.cliente_nombre]
+                            .map(value => normalizeStr(value).replace(/\s+/g, ' ')).filter(Boolean);
+                        const clientRuts = [t.clientRut, t.clienteRut, t.cliente_rut, t.rut_cliente, meta.cliente_rut]
+                            .map(normalizeRut).filter(Boolean);
+
+                        if ((profileEmail && clientEmails.includes(profileEmail)) ||
+                            (profileRut && clientRuts.includes(profileRut)) ||
+                            (profileName && clientNames.includes(profileName))) return true;
+
+                        const hasClientIdentity = clientEmails.length || clientNames.length || clientRuts.length;
+                        if (hasClientIdentity) return false;
+
+                        return (profileEmail && normalizeProfileValue(t.usuario_email) === profileEmail) ||
+                            (profileRut && normalizeRut(t.usuario_rut) === profileRut) ||
+                            (profileName && normalizeStr(t.usuario_nombre).replace(/\s+/g, ' ') === profileName);
+                    });
+                    // Ordenar por más recientes
+                    userTickets.sort((a,b) => new Date(b.createdAt || b.created_at || b.fecha || 0) - new Date(a.createdAt || a.created_at || a.fecha || 0));
+                    
+                    const ticketsContainer = document.getElementById('perfil-tickets-container');
+                    if (ticketsContainer) {
+                        if (userTickets.length > 0) {
+                            ticketsContainer.innerHTML = userTickets.slice(0, 10).map(t => {
+                                const tDate = new Date(t.createdAt || t.created_at || t.fecha || 0);
+                                const dateStr = !isNaN(tDate) ? tDate.toLocaleDateString('es-CL') : '-';
+                                const ticketTitle = t.issue || t.asunto || t.titulo || t.subject || 'Sin descripción';
+                                const ticketStatus = t.status || t.estado || 'Abierto';
+                                return `
+                                <div class="profile-list-item profile-ticket-item">
+                                    <div class="profile-item-icon"><i class="fas fa-ticket-alt"></i></div>
+                                    <div class="profile-item-copy">
+                                        <strong>Ticket #${escapeHtml(t.id || t.ticket_id || '?')} · ${escapeHtml(ticketTitle)}</strong>
+                                        <span>${escapeHtml(t.prioridad || t.priority || 'Prioridad sin registrar')}</span>
+                                    </div>
+                                    <div class="profile-item-meta"><b>${escapeHtml(ticketStatus)}</b><small>${dateStr}</small></div>
+                                </div>
+                                `;
+                            }).join('');
+                        } else {
+                            ticketsContainer.innerHTML = '<div class="profile-list-empty"><span><i class="fas fa-ticket-alt"></i>No hay tickets asociados a este colaborador.</span></div>';
+                        }
+                    }
+                    document.getElementById('perfil-tickets-count').textContent = userTickets.length;
+                    document.getElementById('perfil-tickets-badge').textContent = userTickets.length;
+                    
+                    modal.style.display = 'flex';
+                });
+            };
+
             tbody.querySelectorAll('.btn-eliminar-collab').forEach(bindDeleteCollab);
+            tbody.querySelectorAll('.btn-editar-collab').forEach(bindEditCollab);
+            tbody.querySelectorAll('.btn-perfil-collab').forEach(bindPerfilCollab);
 
             tbody.querySelectorAll('.btn-crear-ticket-collab').forEach(btn => {
                 btn.addEventListener('click', () => {
@@ -8935,15 +9262,17 @@ document.addEventListener('DOMContentLoaded', () => {
                                 <span style="color: var(--text-muted); font-size: 0.68rem; display: block; font-weight: 600; text-transform: uppercase;">RUT</span>
                                 <span style="font-family: monospace; font-weight: 700; color: var(--text-primary); font-size: 0.84rem;">${escapeHtml(u.rut || 'Sin RUT')}</span>
                             </div>
-                            <div>
-                                <span style="color: var(--text-muted); font-size: 0.68rem; display: block; font-weight: 600; text-transform: uppercase;">Tipo</span>
-                                <span class="autocomplete-badge badge-tipo" style="font-size: 0.7rem; padding: 2px 7px;">${escapeHtml(u.tipo || 'Ejecutivo')}</span>
-                            </div>
-                            <div>
-                                <button type="button" class="btn-crear-ticket-collab-mob" data-name="${escapeHtml(u.nombre)}" data-rut="${escapeHtml(u.rut)}" data-email="${escapeHtml(u.email)}" data-company="${escapeHtml(u.empresa)}" style="background: rgba(50, 102, 235, 0.15); border: 1px solid rgba(50, 102, 235, 0.35); color: var(--accent-blue); padding: 6px 12px; border-radius: 6px; font-size: 0.78rem; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;">
-                                    <i class="fas fa-plus"></i> Ticket
+                            <div style="display: flex; gap: 4px;">
+                                <button type="button" class="btn-perfil-collab-mob btn-perfil-collab" data-name="${escapeHtml(u.nombre)}" data-rut="${escapeHtml(u.rut)}" data-email="${escapeHtml(u.email)}" data-company="${escapeHtml(u.empresa)}" data-tipo="${escapeHtml(u.tipo || 'Ejecutivo')}" data-licencia="${escapeHtml(u.licencia || '')}" data-created="${escapeHtml(u.created_at || '')}" style="background: rgba(139, 92, 246, 0.15); border: 1px solid rgba(139, 92, 246, 0.35); color: #8b5cf6; padding: 6px 10px; border-radius: 6px; font-size: 0.78rem; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;">
+                                    <i class="fas fa-eye"></i>
                                 </button>
-                                <button type="button" class="btn-eliminar-collab-mob" data-email="${escapeHtml(u.email)}" style="background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.35); color: #ef4444; padding: 6px 12px; border-radius: 6px; font-size: 0.78rem; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; margin-left: 6px;">
+                                <button type="button" class="btn-crear-ticket-collab-mob" data-name="${escapeHtml(u.nombre)}" data-rut="${escapeHtml(u.rut)}" data-email="${escapeHtml(u.email)}" data-company="${escapeHtml(u.empresa)}" style="background: rgba(50, 102, 235, 0.15); border: 1px solid rgba(50, 102, 235, 0.35); color: var(--accent-blue); padding: 6px 10px; border-radius: 6px; font-size: 0.78rem; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                                <button type="button" class="btn-editar-collab-mob btn-editar-collab" data-name="${escapeHtml(u.nombre)}" data-rut="${escapeHtml(u.rut)}" data-email="${escapeHtml(u.email)}" data-company="${escapeHtml(u.empresa)}" data-tipo="${escapeHtml(u.tipo || 'Ejecutivo')}" data-licencia="${escapeHtml(u.licencia || '')}" style="background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.35); color: #10b981; padding: 6px 10px; border-radius: 6px; font-size: 0.78rem; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;">
+                                    <i class="fas fa-pen"></i>
+                                </button>
+                                <button type="button" class="btn-eliminar-collab-mob" data-email="${escapeHtml(u.email)}" style="background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.35); color: #ef4444; padding: 6px 10px; border-radius: 6px; font-size: 0.78rem; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;">
                                     <i class="fas fa-trash"></i>
                                 </button>
                             </div>
@@ -8952,6 +9281,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 `).join('');
                 
                 mobileCardsContainer.querySelectorAll('.btn-eliminar-collab-mob').forEach(bindDeleteCollab);
+                mobileCardsContainer.querySelectorAll('.btn-editar-collab-mob').forEach(bindEditCollab);
+                mobileCardsContainer.querySelectorAll('.btn-perfil-collab-mob').forEach(bindPerfilCollab);
 
                 mobileCardsContainer.querySelectorAll('.btn-crear-ticket-collab-mob').forEach(btn => {
                     btn.addEventListener('click', () => {
@@ -9071,6 +9402,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (btnOpenModal && modal) {
             btnOpenModal.addEventListener('click', () => {
+                document.getElementById('collab-modal-title').textContent = 'Nuevo Colaborador';
+                document.getElementById('collab-modal-icon').className = 'fas fa-user-plus';
+                document.getElementById('collab-original-email').value = '';
+                if (form) form.reset();
                 modal.style.display = 'flex';
             });
         }
@@ -9088,18 +9423,25 @@ document.addEventListener('DOMContentLoaded', () => {
         if (form) {
             form.addEventListener('submit', async (e) => {
                 e.preventDefault();
+                const originalEmail = document.getElementById('collab-original-email')?.value.trim();
+                
                 const nombre = document.getElementById('collab-name')?.value.trim();
                 const rut = document.getElementById('collab-rut')?.value.trim();
                 const empresa = document.getElementById('collab-company')?.value;
                 const email = document.getElementById('collab-email')?.value.trim();
                 const tipo = document.getElementById('collab-type')?.value;
                 const licencia = document.getElementById('collab-license')?.value.trim() || 'M365 Asignado';
+                const pass = document.getElementById('collab-password')?.value;
 
                 if (!nombre || !rut || !email) {
                     alert('Por favor completa los campos obligatorios (*)');
                     return;
                 }
                 
+                let users = loadDirectoryUsers();
+                const previousUser = originalEmail
+                    ? users.find(u => normalizeStr(u.email) === normalizeStr(originalEmail))
+                    : null;
                 const newUser = {
                     nombre,
                     rut,
@@ -9108,27 +9450,207 @@ document.addEventListener('DOMContentLoaded', () => {
                     tipo,
                     licencia
                 };
-
-                const users = loadDirectoryUsers();
+                if (pass) newUser.password_usuario = pass;
+                else if (previousUser && previousUser.password_usuario) newUser.password_usuario = previousUser.password_usuario;
+                
+                if (originalEmail) {
+                    // Modo Edición
+                    users = users.filter(u => u.email !== originalEmail);
+                }
+                
                 users.unshift(newUser);
-
                 saveDirectoryUsers(users);
+                
+                // Payload para Supabase con password si se ingresó
+                const supabasePayload = { ...newUser };
                 
                 // Sincronizar con Supabase si está disponible
                 if (typeof supabase !== 'undefined' && supabase && !useLocalFallback) {
                     try {
-                        await supabase.from('directorio_usuarios').upsert([newUser], { onConflict: 'email' });
+                        // Si cambió el correo en edición, borrar el antiguo
+                        if (originalEmail && originalEmail !== email) {
+                            await supabase.from('directorio_usuarios').delete().eq('email', originalEmail);
+                        }
+                        
+                        const { error: upsertError } = await supabase.from('directorio_usuarios').upsert([supabasePayload], { onConflict: 'email' });
+                        if (upsertError) {
+                            alert('Hubo un error al guardar en la nube (Supabase): ' + upsertError.message);
+                            console.error(upsertError);
+                            return;
+                        }
                     } catch(err) {
-                        console.warn('Error subiendo colaborador a Supabase:', err);
+                        alert('Error guardando colaborador en Supabase: ' + err.message);
+                        console.error(err);
+                        return;
                     }
                 }
 
                 closeModal();
                 renderDirectoryPage();
                 
-                // Mostrar notificación toast o feedback
-                console.log(`Colaborador ${nombre} registrado exitosamente.`);
-                alert(`Colaborador ${nombre} agregado al directorio exitosamente.`);
+                // Mostrar notificación
+                console.log(`Colaborador ${nombre} guardado exitosamente.`);
+                alert(`Colaborador ${nombre} guardado exitosamente.`);
+            });
+        }
+
+        const modalPerfil = document.getElementById('modal-perfil-colaborador');
+        const btnClosePerfil = document.getElementById('btn-close-perfil-modal');
+        const closeProfileModal = () => {
+            if (modalPerfil) modalPerfil.style.display = 'none';
+        };
+        if (btnClosePerfil) {
+            btnClosePerfil.addEventListener('click', closeProfileModal);
+        }
+        if (modalPerfil) {
+            modalPerfil.addEventListener('click', (event) => {
+                if (event.target === modalPerfil) closeProfileModal();
+            });
+        }
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape' && modalPerfil && modalPerfil.style.display === 'flex') closeProfileModal();
+        });
+
+        const managePasswordBtn = document.getElementById('btn-manage-profile-password');
+        const passwordEditor = document.getElementById('profile-password-editor');
+        const newPasswordInput = document.getElementById('profile-new-password');
+        const cancelPasswordBtn = document.getElementById('btn-cancel-profile-password');
+        const savePasswordBtn = document.getElementById('btn-save-profile-password');
+
+        if (managePasswordBtn && passwordEditor && newPasswordInput) {
+            managePasswordBtn.addEventListener('click', () => {
+                passwordEditor.hidden = false;
+                newPasswordInput.value = '';
+                newPasswordInput.placeholder = managePasswordBtn.dataset.mode === 'edit'
+                    ? 'Escribe la nueva contraseña'
+                    : 'Escribe una contraseña para este usuario';
+                newPasswordInput.focus();
+            });
+        }
+        if (cancelPasswordBtn && passwordEditor && newPasswordInput) {
+            cancelPasswordBtn.addEventListener('click', () => {
+                passwordEditor.hidden = true;
+                newPasswordInput.value = '';
+            });
+        }
+        if (savePasswordBtn && newPasswordInput && passwordEditor) {
+            savePasswordBtn.addEventListener('click', async () => {
+                const newPassword = newPasswordInput.value;
+                const targetEmail = document.getElementById('perfil-password-display')?.getAttribute('data-target-email');
+                if (!newPassword.trim()) {
+                    alert('Ingresa una contraseña antes de guardar.');
+                    newPasswordInput.focus();
+                    return;
+                }
+                if (!targetEmail) {
+                    alert('No se pudo identificar al usuario seleccionado.');
+                    return;
+                }
+
+                const authorized = await authorizeProfilePasswordAction();
+                if (!authorized) return;
+
+                const originalButton = savePasswordBtn.innerHTML;
+                savePasswordBtn.disabled = true;
+                savePasswordBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
+                try {
+                    const cloudSaved = await saveProfilePassword(targetEmail, newPassword);
+                    applyProfilePasswordState(true);
+                    passwordEditor.hidden = true;
+                    newPasswordInput.value = '';
+                    alert(cloudSaved
+                        ? 'Contraseña guardada correctamente en la bóveda.'
+                        : 'Contraseña guardada en este navegador. Se sincronizará cuando Supabase esté disponible.');
+                } catch (error) {
+                    alert('No fue posible guardar la contraseña: ' + (error.message || 'error desconocido'));
+                    console.warn('Error guardando contraseña del perfil:', error);
+                } finally {
+                    savePasswordBtn.disabled = false;
+                    savePasswordBtn.innerHTML = originalButton;
+                }
+            });
+        }
+        
+        const btnRevealPassword = document.getElementById('btn-reveal-password');
+        if (btnRevealPassword) {
+            btnRevealPassword.addEventListener('click', async () => {
+                const passInput = document.getElementById('perfil-password-display');
+                if (passInput.type === 'text') {
+                    passInput.type = 'password';
+                    passInput.value = '********';
+                    btnRevealPassword.innerHTML = '<i class="fas fa-eye"></i>';
+                    return;
+                }
+
+                if (!currentSession || !currentSession.email) {
+                    alert('Debes iniciar sesión como administrador para ver esta contraseña.');
+                    return;
+                }
+
+                const adminPass = prompt(`Autorización requerida.\nIngresa la contraseña del administrador (${currentSession.nombre}):`);
+                if (!adminPass) return;
+
+                const validAdmin = await authenticateUser(currentSession.email, adminPass);
+                if (!validAdmin) {
+                    alert('Contraseña de administrador incorrecta.');
+                    return;
+                }
+
+                let adminPin = prompt(`Ingresa tu PIN de seguridad de Administrador (${currentSession.nombre}):`);
+                if (!adminPin) return;
+                adminPin = adminPin.trim();
+
+                const validPin = await verifyAdminPinFromSupabase(currentSession.email, adminPin);
+                if (!validPin) {
+                    alert('PIN de administrador incorrecto. Acceso denegado.');
+                    return;
+                }
+
+                const targetEmail = passInput.getAttribute('data-target-email');
+
+                if (currentProfilePasswordCache.email === normalizeStr(targetEmail) && currentProfilePasswordCache.value) {
+                    passInput.type = 'text';
+                    passInput.value = currentProfilePasswordCache.value;
+                    btnRevealPassword.innerHTML = '<i class="fas fa-eye-slash"></i>';
+                } else if (typeof supabase !== 'undefined' && supabase && !useLocalFallback) {
+                    try {
+                        const { data, error } = await supabase
+                            .from('directorio_usuarios')
+                            .select('password_usuario')
+                            .eq('email', targetEmail)
+                            .single();
+
+                        if (error || !data) {
+                            alert('Usuario no encontrado en la base de datos o sin contraseña asignada.');
+                            return;
+                        }
+
+                        if (!data.password_usuario) {
+                            alert('Este usuario no tiene una contraseña registrada.');
+                            return;
+                        }
+
+                        passInput.type = 'text';
+                        passInput.value = data.password_usuario;
+                        currentProfilePasswordCache = { email: normalizeStr(targetEmail), value: data.password_usuario };
+                        btnRevealPassword.innerHTML = '<i class="fas fa-eye-slash"></i>';
+
+                    } catch (err) {
+                        alert('Error al conectar con la base de datos.');
+                        console.warn(err);
+                    }
+                } else {
+                    const localUser = loadDirectoryUsers().find(u => normalizeStr(u.email) === normalizeStr(targetEmail));
+                    if (!localUser || !localUser.password_usuario) {
+                        alert('Este usuario no tiene una contraseña registrada.');
+                        applyProfilePasswordState(false);
+                        return;
+                    }
+                    passInput.type = 'text';
+                    passInput.value = localUser.password_usuario;
+                    currentProfilePasswordCache = { email: normalizeStr(targetEmail), value: localUser.password_usuario };
+                    btnRevealPassword.innerHTML = '<i class="fas fa-eye-slash"></i>';
+                }
             });
         }
 

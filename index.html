@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Soportes - Centro de Soporte - Mi Empresa</title>
-    <link rel="stylesheet" href="style.css?v=2.9">
+    <link rel="stylesheet" href="style.css?v=3.2">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 </head>
@@ -1768,6 +1768,7 @@
   empresa text,
   tipo text,
   licencia text,
+  password_usuario text,
   created_at timestamp with time zone DEFAULT now()
 );</pre>
                         </div>
@@ -1805,7 +1806,6 @@
                                         <th style="padding: 12px 16px; color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; font-weight: 600;">RUT</th>
                                         <th style="padding: 12px 16px; color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; font-weight: 600;">Empresa</th>
                                         <th style="padding: 12px 16px; color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; font-weight: 600;">Tipo</th>
-                                        <th style="padding: 12px 16px; color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; font-weight: 600;">Licencia M365</th>
                                         <th style="padding: 12px 16px; color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; font-weight: 600; text-align: right;">Acciones</th>
                                     </tr>
                                 </thead>
@@ -4083,6 +4083,17 @@
                     </div>
 
                 </div>
+
+                <section class="equip-all-data-section" aria-labelledby="equip-all-data-title">
+                    <div class="equip-all-data-heading">
+                        <div>
+                            <i class="fas fa-database"></i>
+                            <h3 id="equip-all-data-title">Todos los datos almacenados</h3>
+                        </div>
+                        <span id="modal-equip-fields-count">0 campos</span>
+                    </div>
+                    <dl id="modal-equip-all-data" class="equip-all-data-grid"></dl>
+                </section>
             </div>
             
             <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
@@ -4420,34 +4431,35 @@
         </div>
     </div>
 
-    <!-- ============ MODAL AGREGAR COLABORADOR AL DIRECTORIO ============ -->
+    <!-- ============ MODAL AGREGAR/EDITAR COLABORADOR AL DIRECTORIO ============ -->
     <div id="modal-crear-colaborador" class="modal-backdrop" style="display: none; align-items: center; justify-content: center;">
-        <div class="modal-card" style="max-width: 520px; width: 90%;">
-            <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 14px;">
-                <div class="modal-title-area" style="display: flex; align-items: center; gap: 10px;">
-                    <div style="width: 36px; height: 36px; border-radius: 10px; background: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-blue) 100%); display: flex; align-items: center; justify-content: center; color: white;">
-                        <i class="fas fa-user-plus"></i>
+        <div class="modal-card" style="max-width: 520px; width: 90%; background-color: var(--bg-card); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);">
+            <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding: 20px 24px 16px;">
+                <div class="modal-title-area" style="display: flex; align-items: center; gap: 12px;">
+                    <div style="width: 40px; height: 40px; border-radius: 10px; background: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-blue) 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 1.1rem; box-shadow: 0 4px 10px rgba(97, 62, 234, 0.3);">
+                        <i class="fas fa-user-edit" id="collab-modal-icon"></i>
                     </div>
                     <div>
-                        <h3 style="margin: 0; font-size: 1.1rem; font-weight: 700; color: var(--text-primary);">Nuevo Colaborador</h3>
-                        <p style="margin: 2px 0 0; font-size: 0.78rem; color: var(--text-secondary);">Agregar al directorio para autocompletado en tickets</p>
+                        <h3 id="collab-modal-title" style="margin: 0; font-size: 1.25rem; font-weight: 700; color: #ffffff;">Nuevo Colaborador</h3>
+                        <p style="margin: 4px 0 0; font-size: 0.85rem; color: #a1a1aa;">Agregar o modificar en el directorio</p>
                     </div>
                 </div>
-                <button type="button" class="modal-close-btn" id="btn-close-collab-modal" style="background: none; border: none; color: var(--text-muted); font-size: 1.2rem; cursor: pointer;"><i class="fas fa-times"></i></button>
+                <button type="button" class="modal-close-btn" id="btn-close-collab-modal" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: #e4e4e7; font-size: 1.1rem; cursor: pointer; width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; transition: all 0.2s;"><i class="fas fa-times"></i></button>
             </div>
-            <form id="form-crear-colaborador" style="padding: 20px 0 0; display: flex; flex-direction: column; gap: 16px;">
+            <form id="form-crear-colaborador" style="padding: 24px; display: flex; flex-direction: column; gap: 18px;">
+                <input type="hidden" id="collab-original-email" value="">
                 <div class="form-group">
-                    <label for="collab-name" style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 6px; display: block;">Nombre Completo *</label>
-                    <input type="text" id="collab-name" required placeholder="Ej: Francisca Morales Castro" style="width: 100%; padding: 10px 12px; background-color: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family); font-size: 0.88rem;">
+                    <label for="collab-name" style="font-size: 0.85rem; color: #d4d4d8; font-weight: 600; margin-bottom: 8px; display: block;">Nombre Completo <span style="color: #f87171;">*</span></label>
+                    <input type="text" id="collab-name" required placeholder="Ej: Francisca Morales Castro" style="width: 100%; padding: 12px 14px; background-color: rgba(0, 0, 0, 0.2); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 8px; color: #ffffff; font-family: var(--font-family); font-size: 0.95rem; transition: border-color 0.2s;">
                 </div>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
                     <div class="form-group">
-                        <label for="collab-rut" style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 6px; display: block;">RUT *</label>
-                        <input type="text" id="collab-rut" required placeholder="Ej: 19.456.789-0" style="width: 100%; padding: 10px 12px; background-color: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family); font-size: 0.88rem;">
+                        <label for="collab-rut" style="font-size: 0.85rem; color: #d4d4d8; font-weight: 600; margin-bottom: 8px; display: block;">RUT <span style="color: #f87171;">*</span></label>
+                        <input type="text" id="collab-rut" required placeholder="Ej: 19.456.789-0" style="width: 100%; padding: 12px 14px; background-color: rgba(0, 0, 0, 0.2); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 8px; color: #ffffff; font-family: var(--font-family); font-size: 0.95rem; transition: border-color 0.2s;">
                     </div>
                     <div class="form-group">
-                        <label for="collab-company" style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 6px; display: block;">Empresa *</label>
-                        <select id="collab-company" required style="width: 100%; padding: 10px 12px; background-color: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family); font-size: 0.88rem; cursor: pointer;">
+                        <label for="collab-company" style="font-size: 0.85rem; color: #d4d4d8; font-weight: 600; margin-bottom: 8px; display: block;">Empresa <span style="color: #f87171;">*</span></label>
+                        <select id="collab-company" required style="width: 100%; padding: 12px 14px; background-color: rgba(0, 0, 0, 0.2); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 8px; color: #ffffff; font-family: var(--font-family); font-size: 0.95rem; cursor: pointer;">
                             <option value="T-Sales" selected>T-Sales</option>
                             <option value="Infinet">INFINET</option>
                             <option value="VPrime">V PRIME</option>
@@ -4455,29 +4467,119 @@
                     </div>
                 </div>
                 <div class="form-group">
-                    <label for="collab-email" style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 6px; display: block;">Correo Electrónico *</label>
-                    <input type="email" id="collab-email" required placeholder="Ej: francisca.morales@t-sales.cl" style="width: 100%; padding: 10px 12px; background-color: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family); font-size: 0.88rem;">
+                    <label for="collab-email" style="font-size: 0.85rem; color: #d4d4d8; font-weight: 600; margin-bottom: 8px; display: block;">Correo Electrónico <span style="color: #f87171;">*</span></label>
+                    <input type="email" id="collab-email" required placeholder="Ej: francisca.morales@t-sales.cl" style="width: 100%; padding: 12px 14px; background-color: rgba(0, 0, 0, 0.2); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 8px; color: #ffffff; font-family: var(--font-family); font-size: 0.95rem; transition: border-color 0.2s;">
                 </div>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
                     <div class="form-group">
-                        <label for="collab-type" style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 6px; display: block;">Tipo de Contrato</label>
-                        <select id="collab-type" style="width: 100%; padding: 10px 12px; background-color: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family); font-size: 0.88rem; cursor: pointer;">
+                        <label for="collab-type" style="font-size: 0.85rem; color: #d4d4d8; font-weight: 600; margin-bottom: 8px; display: block;">Tipo de Contrato</label>
+                        <select id="collab-type" style="width: 100%; padding: 12px 14px; background-color: rgba(0, 0, 0, 0.2); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 8px; color: #ffffff; font-family: var(--font-family); font-size: 0.95rem; cursor: pointer;">
                             <option value="Ejecutivo" selected>Ejecutivo</option>
                             <option value="Freelance">Freelance</option>
                             <option value="Externo">Externo</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label for="collab-license" style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 6px; display: block;">Licencia M365 (Opcional)</label>
-                        <input type="text" id="collab-license" placeholder="Ej: M365 Empresa Básico" style="width: 100%; padding: 10px 12px; background-color: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family); font-size: 0.88rem;">
+                        <label for="collab-license" style="font-size: 0.85rem; color: #d4d4d8; font-weight: 600; margin-bottom: 8px; display: block;">Licencia M365</label>
+                        <input type="text" id="collab-license" placeholder="Ej: M365 Empresa Básico" style="width: 100%; padding: 12px 14px; background-color: rgba(0, 0, 0, 0.2); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 8px; color: #ffffff; font-family: var(--font-family); font-size: 0.95rem; transition: border-color 0.2s;">
                     </div>
                 </div>
-                <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 12px; padding-top: 14px; border-top: 1px solid var(--border-color); margin-top: 6px;">
-                    <button type="button" id="btn-cancel-collab-modal" style="background-color: transparent; border: 1px solid var(--border-color); color: var(--text-secondary); padding: 10px 18px; border-radius: 8px; cursor: pointer; font-weight: 600; font-family: var(--font-family);">Cancelar</button>
-                    <button type="submit" style="background: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-blue) 100%); color: white; border: none; padding: 10px 24px; border-radius: 8px; cursor: pointer; font-weight: 600; font-family: var(--font-family); box-shadow: 0 4px 15px rgba(97, 62, 234, 0.3);"><i class="fas fa-save" style="margin-right: 6px;"></i> Guardar Colaborador</button>
+                <div style="background: rgba(16, 185, 129, 0.05); border: 1px dashed rgba(16, 185, 129, 0.3); border-radius: 8px; padding: 16px;">
+                    <div class="form-group">
+                        <label for="collab-password" style="font-size: 0.85rem; color: #10b981; font-weight: 600; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;"><i class="fas fa-lock"></i> Contraseña del Usuario (M365 / PC)</label>
+                        <input type="text" id="collab-password" placeholder="Ingresa la contraseña para guardarla en la bóveda" style="width: 100%; padding: 10px 14px; background-color: rgba(0, 0, 0, 0.3); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 8px; color: #ffffff; font-family: var(--font-family); font-size: 0.95rem; transition: border-color 0.2s;">
+                    </div>
+                </div>
+                <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 14px; padding-top: 20px; border-top: 1px solid rgba(255, 255, 255, 0.08); margin-top: 8px;">
+                    <button type="button" id="btn-cancel-collab-modal" style="background-color: transparent; border: 1px solid rgba(255, 255, 255, 0.2); color: #d4d4d8; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; font-family: var(--font-family); transition: all 0.2s;">Cancelar</button>
+                    <button type="submit" id="btn-submit-collab-modal" style="background: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-blue) 100%); color: white; border: none; padding: 10px 24px; border-radius: 8px; cursor: pointer; font-weight: 600; font-family: var(--font-family); box-shadow: 0 4px 15px rgba(97, 62, 234, 0.3); transition: all 0.2s;"><i class="fas fa-save" style="margin-right: 8px;"></i> Guardar</button>
                 </div>
             </form>
         </div>
+    </div>
+
+    <!-- ============ PERFIL 360° DEL COLABORADOR ============ -->
+    <div id="modal-perfil-colaborador" class="modal-backdrop profile-modal-backdrop" style="display: none;">
+        <article class="profile-modal-card" role="dialog" aria-modal="true" aria-labelledby="perfil-nombre">
+            <header class="profile-modal-header">
+                <div class="profile-identity">
+                    <div id="perfil-avatar" class="profile-avatar">U</div>
+                    <div class="profile-heading">
+                        <div class="profile-heading-row">
+                            <h3 id="perfil-nombre">Nombre</h3>
+                            <span class="profile-status"><span></span> Activo</span>
+                        </div>
+                        <a id="perfil-email" href="#">correo@empresa.com</a>
+                        <div class="profile-summary-badges">
+                            <span><i class="fas fa-building"></i> <b id="perfil-empresa-resumen">Empresa</b></span>
+                            <span><i class="far fa-calendar-alt"></i> Registro: <b id="perfil-fecha-registro">Sin fecha</b></span>
+                        </div>
+                    </div>
+                </div>
+                <button type="button" class="profile-close-btn" id="btn-close-perfil-modal" aria-label="Cerrar perfil"><i class="fas fa-times"></i></button>
+            </header>
+
+            <div class="profile-modal-body">
+                <aside class="profile-sidebar">
+                    <section class="profile-panel profile-data-panel">
+                        <div class="profile-section-title neutral"><i class="fas fa-id-card"></i><span>Información del colaborador</span></div>
+                        <dl class="profile-data-grid">
+                            <div><dt>RUT</dt><dd id="perfil-rut">-</dd></div>
+                            <div><dt>Empresa</dt><dd id="perfil-empresa">-</dd></div>
+                            <div><dt>Tipo de contrato</dt><dd id="perfil-tipo">-</dd></div>
+                            <div class="profile-data-full"><dt>Licencia Microsoft 365</dt><dd id="perfil-licencia">-</dd></div>
+                        </dl>
+                    </section>
+
+                    <section class="profile-panel profile-stats-panel" aria-label="Resumen de actividad">
+                        <div class="profile-stat blue"><i class="fas fa-laptop"></i><div><strong id="perfil-equipos-count">0</strong><span>Equipos</span></div></div>
+                        <div class="profile-stat purple"><i class="fas fa-ticket-alt"></i><div><strong id="perfil-tickets-count">0</strong><span>Tickets</span></div></div>
+                        <div class="profile-stat green"><i class="fas fa-user-check"></i><div><strong>Activo</strong><span>Estado</span></div></div>
+                    </section>
+
+                    <section class="profile-panel profile-password-panel">
+                        <div class="profile-password-heading">
+                            <div class="profile-section-title green"><i class="fas fa-lock"></i><span>Contraseña de acceso</span></div>
+                            <span id="perfil-password-status" class="profile-password-status checking">Comprobando...</span>
+                        </div>
+                        <div class="profile-password-row">
+                            <input type="password" id="perfil-password-display" readonly value="********" aria-label="Contraseña protegida">
+                            <button type="button" id="btn-reveal-password" aria-label="Mostrar contraseña"><i class="fas fa-eye"></i></button>
+                        </div>
+                        <button type="button" id="btn-manage-profile-password" class="profile-password-manage-btn">
+                            <i class="fas fa-plus"></i><span>Agregar contraseña</span>
+                        </button>
+                        <div id="profile-password-editor" class="profile-password-editor" hidden>
+                            <label for="profile-new-password">Nueva contraseña</label>
+                            <input type="password" id="profile-new-password" autocomplete="new-password" placeholder="Escribe la contraseña que deseas guardar">
+                            <div class="profile-password-editor-actions">
+                                <button type="button" id="btn-cancel-profile-password">Cancelar</button>
+                                <button type="button" id="btn-save-profile-password"><i class="fas fa-save"></i> Guardar contraseña</button>
+                            </div>
+                        </div>
+                        <p><i class="fas fa-shield-alt"></i> Requiere contraseña y PIN de administrador.</p>
+                    </section>
+                </aside>
+
+                <main class="profile-activity">
+                    <section class="profile-activity-section">
+                        <div class="profile-section-header blue">
+                            <div><i class="fas fa-laptop"></i><span>Equipos registrados</span></div>
+                            <span class="profile-count-badge" id="perfil-equipos-badge">0</span>
+                        </div>
+                        <div id="perfil-equipos-container" class="profile-list-container">Cargando...</div>
+                    </section>
+
+                    <section class="profile-activity-section">
+                        <div class="profile-section-header purple">
+                            <div><i class="fas fa-ticket-alt"></i><span>Historial de tickets</span></div>
+                            <span class="profile-count-badge" id="perfil-tickets-badge">0</span>
+                        </div>
+                        <div id="perfil-tickets-container" class="profile-list-container profile-tickets-list">Cargando...</div>
+                    </section>
+                </main>
+            </div>
+        </article>
     </div>
 
     <!-- Input oculto para subir archivos -->
@@ -5141,6 +5243,6 @@
             window['pdfjsLib'].GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
         }
     </script>
-    <script src="script.js?v=2.9"></script>
+    <script src="script.js?v=3.2"></script>
 </body>
 </html>
