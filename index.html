@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Soportes - Centro de Soporte - Mi Empresa</title>
-    <link rel="stylesheet" href="style.css?v=3.2">
+    <link rel="stylesheet" href="style.css?v=4.1">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 </head>
@@ -550,11 +550,11 @@
                         </div>
                     </section>
 
-                    <!-- Tabla: Técnicos destacados (mes actual) -->
+                    <!-- Tabla: actividad real por técnico -->
                     <section class="dash-card dash-card-technicians">
                         <div class="dash-card-header">
                             <div class="dash-card-title-group">
-                                <h3>Técnicos destacados (mes actual)</h3>
+                                <h3>Actividad real del equipo</h3>
                             </div>
                             <button type="button" class="dash-card-action-link" onclick="document.querySelector('#nav-tecnicos a').click();">Ver ranking</button>
                         </div>
@@ -563,43 +563,14 @@
                                 <thead>
                                     <tr>
                                         <th>TÉCNICO</th>
+                                        <th>ASIGNADOS</th>
                                         <th>RESUELTOS</th>
-                                        <th>TIEMPO PROM.</th>
-                                        <th>SLA</th>
-                                        <th>SATISFACCIÓN</th>
+                                        <th>PENDIENTES</th>
+                                        <th>TASA RES.</th>
                                     </tr>
                                 </thead>
                                 <tbody id="dashboard-technicians-tbody">
-                                    <tr>
-                                        <td class="tech-cell">
-                                            <div class="tech-avatar-mini bg-indigo">OG</div>
-                                            <span class="tech-name">Omar Gálvez</span>
-                                        </td>
-                                        <td class="val-bold">398</td>
-                                        <td>4m 12s</td>
-                                        <td class="text-positive font-bold">98%</td>
-                                        <td><span class="star-rating"><i class="fas fa-star"></i> 4.9</span></td>
-                                    </tr>
-                                    <tr>
-                                        <td class="tech-cell">
-                                            <div class="tech-avatar-mini bg-blue">FO</div>
-                                            <span class="tech-name">Felipe Olivares</span>
-                                        </td>
-                                        <td class="val-bold">388</td>
-                                        <td>5m 03s</td>
-                                        <td class="text-positive font-bold">96%</td>
-                                        <td><span class="star-rating"><i class="fas fa-star"></i> 4.8</span></td>
-                                    </tr>
-                                    <tr>
-                                        <td class="tech-cell">
-                                            <div class="tech-avatar-mini bg-purple">BA</div>
-                                            <span class="tech-name">Belfor Aburto</span>
-                                        </td>
-                                        <td class="val-bold">6</td>
-                                        <td>3m 45s</td>
-                                        <td class="text-positive font-bold">99%</td>
-                                        <td><span class="star-rating"><i class="fas fa-star"></i> 5.0</span></td>
-                                    </tr>
+                                    <tr><td colspan="5" style="text-align:center; color:var(--text-secondary);">Cargando datos reales…</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -808,12 +779,7 @@
                             <div class="form-group">
                                 <label for="ticket-office" style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 6px; display: block;">Sede / Oficina *</label>
                                 <select id="ticket-office" required style="width: 100%; padding: 12px; background-color: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-family); font-size: 0.88rem; cursor: pointer;">
-                                    <option value="Latadia 4602, Las Condes" selected>Latadia 4602, Las Condes</option>
-                                    <option value="Calle doce norte 996, Viña del Mar">Calle doce norte 996, Viña del Mar</option>
-                                    <option value="Fidel Oteiza 1941, oficina 801, Providencia">Fidel Oteiza 1941, oficina 801, Providencia</option>
-                                    <option value="Agustinas 641, 501, Providencia">Agustinas 641, 501, Providencia</option>
-                                    <option value="Elidoro Yáñez 2318, Providencia">Elidoro Yáñez 2318, Providencia</option>
-                                    <option value="Fanor Velasco 85, oficina 201, Santiago">Fanor Velasco 85, oficina 201, Santiago</option>
+                                    <option value="Fanor Velasco 85, oficina 201, Santiago" selected>Fanor Velasco 85, oficina 201, Santiago</option>
                                 </select>
                             </div>
 
@@ -3294,56 +3260,15 @@
                                 <thead>
                                     <tr>
                                         <th>TÉCNICO</th>
+                                        <th>ASIGNADOS</th>
                                         <th>RESUELTOS</th>
-                                        <th>TIEMPO PROM.</th>
-                                        <th>SLA %</th>
-                                        <th>SATISFACCIÓN</th>
-                                        <th>ESTADO</th>
+                                        <th>PENDIENTES</th>
+                                        <th>TASA RES.</th>
+                                        <th>ACTIVIDAD</th>
                                     </tr>
                                 </thead>
                                 <tbody id="scorecard-technicians-tbody">
-                                    <tr>
-                                        <td class="tech-cell">
-                                            <div class="tech-avatar-mini bg-indigo">OG</div>
-                                            <div>
-                                                <div class="tech-name">Omar Gálvez</div>
-                                                <small style="color: var(--text-secondary);">omar.galvez@t-sales.cl</small>
-                                            </div>
-                                        </td>
-                                        <td class="val-bold">398</td>
-                                        <td>4m 12s</td>
-                                        <td class="text-positive font-bold">98%</td>
-                                        <td><span class="star-rating"><i class="fas fa-star"></i> 4.9</span></td>
-                                        <td><span class="status-badge status-resuelto"><i class="fas fa-circle" style="font-size: 0.5rem; margin-right: 4px;"></i> En línea</span></td>
-                                    </tr>
-                                    <tr>
-                                        <td class="tech-cell">
-                                            <div class="tech-avatar-mini bg-blue">FO</div>
-                                            <div>
-                                                <div class="tech-name">Felipe Olivares</div>
-                                                <small style="color: var(--text-secondary);">felipe.olivares@t-sales.cl</small>
-                                            </div>
-                                        </td>
-                                        <td class="val-bold">388</td>
-                                        <td>5m 03s</td>
-                                        <td class="text-positive font-bold">96%</td>
-                                        <td><span class="star-rating"><i class="fas fa-star"></i> 4.8</span></td>
-                                        <td><span class="status-badge status-resuelto"><i class="fas fa-circle" style="font-size: 0.5rem; margin-right: 4px;"></i> En línea</span></td>
-                                    </tr>
-                                    <tr>
-                                        <td class="tech-cell">
-                                            <div class="tech-avatar-mini bg-purple">BA</div>
-                                            <div>
-                                                <div class="tech-name">Belfor Aburto</div>
-                                                <small style="color: var(--text-secondary);">belfor.aburto@t-sales.cl</small>
-                                            </div>
-                                        </td>
-                                        <td class="val-bold">6</td>
-                                        <td>3m 45s</td>
-                                        <td class="text-positive font-bold">99%</td>
-                                        <td><span class="star-rating"><i class="fas fa-star"></i> 5.0</span></td>
-                                        <td><span class="status-badge status-resuelto"><i class="fas fa-circle" style="font-size: 0.5rem; margin-right: 4px;"></i> En línea</span></td>
-                                    </tr>
+                                    <tr><td colspan="6" style="text-align:center; color:var(--text-secondary);">Cargando datos reales…</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -3353,26 +3278,26 @@
                     <div class="dash-card">
                         <div class="dash-card-header">
                             <div class="dash-card-title-group">
-                                <h3><i class="fas fa-trophy" style="color: #f59e0b; margin-right: 8px;"></i> Técnico del Mes</h3>
+                                <h3><i class="fas fa-trophy" style="color: #f59e0b; margin-right: 8px;"></i> Técnico destacado</h3>
                             </div>
                         </div>
                         <div style="padding: 20px; text-align: center;">
-                            <div class="tech-avatar-mini bg-indigo" style="width: 72px; height: 72px; font-size: 1.8rem; margin: 0 auto 16px; box-shadow: 0 0 25px rgba(97,62,234,0.4);">OG</div>
-                            <h3 style="margin: 0 0 4px 0; font-size: 1.3rem;">Omar Gálvez</h3>
-                            <p style="color: var(--accent-purple); font-weight: 600; margin: 0 0 16px 0; font-size: 0.9rem;">Especialista Senior de Soporte</p>
+                            <div id="featured-tech-avatar" class="tech-avatar-mini bg-indigo" style="width: 72px; height: 72px; font-size: 1.8rem; margin: 0 auto 16px; box-shadow: 0 0 25px rgba(97,62,234,0.4);">—</div>
+                            <h3 id="featured-tech-name" style="margin: 0 0 4px 0; font-size: 1.3rem;">Cargando…</h3>
+                            <p id="featured-tech-role" style="color: var(--accent-purple); font-weight: 600; margin: 0 0 16px 0; font-size: 0.9rem;">Según tickets registrados</p>
                             
                             <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 20px;">
                                 <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-radius: 10px; padding: 12px;">
-                                    <div style="font-size: 1.3rem; font-weight: 700; color: var(--accent-blue);">398</div>
+                                    <div id="featured-tech-resolved" style="font-size: 1.3rem; font-weight: 700; color: var(--accent-blue);">0</div>
                                     <div style="font-size: 0.72rem; color: var(--text-secondary); margin-top: 4px;">Tickets Resueltos</div>
                                 </div>
                                 <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-radius: 10px; padding: 12px;">
-                                    <div style="font-size: 1.3rem; font-weight: 700; color: var(--accent-green);">98%</div>
-                                    <div style="font-size: 0.72rem; color: var(--text-secondary); margin-top: 4px;">SLA Cumplido</div>
+                                    <div id="featured-tech-assigned" style="font-size: 1.3rem; font-weight: 700; color: var(--accent-green);">0</div>
+                                    <div style="font-size: 0.72rem; color: var(--text-secondary); margin-top: 4px;">Tickets Asignados</div>
                                 </div>
                                 <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-radius: 10px; padding: 12px;">
-                                    <div style="font-size: 1.3rem; font-weight: 700; color: #f59e0b;">⭐ 4.9</div>
-                                    <div style="font-size: 0.72rem; color: var(--text-secondary); margin-top: 4px;">Calificación</div>
+                                    <div id="featured-tech-rate" style="font-size: 1.3rem; font-weight: 700; color: #f59e0b;">0%</div>
+                                    <div style="font-size: 0.72rem; color: var(--text-secondary); margin-top: 4px;">Tasa de resolución</div>
                                 </div>
                             </div>
                         </div>
@@ -3548,43 +3473,43 @@
             
             <!-- TIMELINE HORIZONTAL DE RESOLUCIÓN -->
             <div class="ticket-status-timeline-bar" id="ticket-modal-timeline">
-                <div class="t-step active">
+                <div class="t-step active" id="t-step-creado">
                     <div class="t-step-circle"><i class="fas fa-plus"></i></div>
                     <div class="t-step-info">
                         <span class="t-step-title">Creado</span>
-                        <span class="t-step-time" id="tl-time-creado">10:32</span>
+                        <span class="t-step-time" id="t-step-creado-time">--:--</span>
                     </div>
                 </div>
                 <div class="t-step-line active"></div>
-                <div class="t-step active">
+                <div class="t-step" id="t-step-asignado">
                     <div class="t-step-circle"><i class="fas fa-user-check"></i></div>
                     <div class="t-step-info">
                         <span class="t-step-title">Asignado</span>
-                        <span class="t-step-time" id="tl-time-asignado">10:34</span>
+                        <span class="t-step-time" id="t-step-asignado-time">Pendiente</span>
                     </div>
                 </div>
                 <div class="t-step-line active"></div>
-                <div class="t-step active">
+                <div class="t-step" id="t-step-respondido">
                     <div class="t-step-circle"><i class="fas fa-reply"></i></div>
                     <div class="t-step-info">
                         <span class="t-step-title">Técnico respondió</span>
-                        <span class="t-step-time" id="tl-time-respondio">10:37</span>
+                        <span class="t-step-time" id="t-step-respondido-time">Pendiente</span>
                     </div>
                 </div>
                 <div class="t-step-line active"></div>
-                <div class="t-step active">
+                <div class="t-step" id="t-step-solucion">
                     <div class="t-step-circle"><i class="fas fa-wrench"></i></div>
                     <div class="t-step-info">
                         <span class="t-step-title">Solución aplicada</span>
-                        <span class="t-step-time" id="tl-time-solucion">10:48</span>
+                        <span class="t-step-time" id="t-step-solucion-time">Pendiente</span>
                     </div>
                 </div>
                 <div class="t-step-line"></div>
-                <div class="t-step">
+                <div class="t-step" id="t-step-resuelto">
                     <div class="t-step-circle"><i class="fas fa-check-double"></i></div>
                     <div class="t-step-info">
                         <span class="t-step-title">Resuelto</span>
-                        <span class="t-step-time" id="tl-time-resuelto">--:--</span>
+                        <span class="t-step-time" id="t-step-resuelto-time">Pendiente</span>
                     </div>
                 </div>
             </div>
@@ -3595,37 +3520,37 @@
                 <!-- COLUMNA PRINCIPAL (IZQUIERDA) -->
                 <div class="ticket-main-col">
                     
-                    <!-- 💡 SUGERENCIAS DE SOLUCIÓN POR IA -->
-                    <div class="ai-solution-box" id="ai-solution-box">
-                        <div class="ai-solution-header">
-                            <div class="ai-header-title">
-                                <i class="fas fa-lightbulb" style="color: #f59e0b;"></i>
-                                <h4>Sugerencias de solución asistida por IA</h4>
-                            </div>
-                            <span class="ai-badge-pill"><i class="fas fa-robot"></i> Inteligencia TI</span>
-                        </div>
-                        <div class="ai-solution-content" id="ai-solution-content">
-                            <div class="ai-field-block">
-                                <span class="ai-field-label">Diagnóstico automático:</span>
-                                <p class="ai-field-text" id="ai-diagnostico-text">Falla en la negociación del túnel SSL/IPsec de GlobalProtect. Posible conflicto con credenciales en caché o bloqueo de certificados.</p>
-                            </div>
-                            <div class="ai-field-block">
-                                <span class="ai-field-label">Pasos recomendados:</span>
-                                <ol class="ai-steps-list" id="ai-pasos-list">
-                                    <li>Verificar conectividad de internet básica del usuario.</li>
-                                    <li>Limpiar caché en GlobalProtect: Configuración &gt; General &gt; Cerrar Sesión &gt; Reconectar.</li>
-                                    <li>Reinstalar el certificado raíz corporativo si persiste el error de validación.</li>
-                                </ol>
-                            </div>
-                            <div class="ai-links-row">
-                                <span class="ai-links-label">Artículos y casos vinculados:</span>
-                                <div class="ai-links-pills" id="ai-links-container">
-                                    <a href="#" class="ai-link-pill" onclick="openKbCategory('VPN GlobalProtect'); return false;"><i class="fas fa-book"></i> Guía GlobalProtect</a>
-                                    <a href="#" class="ai-link-pill" onclick="return false;"><i class="fas fa-history"></i> Ticket similar #1021</a>
+                    <!-- Resumen compacto construido solo con datos reales del ticket -->
+                    <section class="ticket-case-summary" aria-labelledby="ticket-case-summary-title">
+                        <div class="ticket-case-summary-header">
+                            <div>
+                                <span class="ticket-case-summary-icon"><i class="fas fa-clipboard-list"></i></span>
+                                <div>
+                                    <h4 id="ticket-case-summary-title">Resumen del caso</h4>
+                                    <span>Información operativa del ticket</span>
                                 </div>
                             </div>
+                            <span id="ticket-summary-updated" class="ticket-summary-updated">Sin actualizaciones</span>
                         </div>
-                    </div>
+                        <div class="ticket-case-summary-grid">
+                            <div class="ticket-summary-item">
+                                <span>Estado actual</span>
+                                <strong id="ticket-summary-status">Abierto</strong>
+                            </div>
+                            <div class="ticket-summary-item">
+                                <span>Responsable</span>
+                                <strong id="ticket-summary-owner">Sin asignar</strong>
+                            </div>
+                            <div class="ticket-summary-item">
+                                <span>Antigüedad</span>
+                                <strong id="ticket-summary-age">Recién creado</strong>
+                            </div>
+                        </div>
+                        <div id="ticket-summary-resolution" class="ticket-summary-resolution">
+                            <i class="fas fa-info-circle"></i>
+                            <div><span>Resolución</span><strong>Sin resolución registrada.</strong></div>
+                        </div>
+                    </section>
 
                     <!-- Metadatos Rápidos del ticket -->
                     <div class="modal-meta-grid">
@@ -4557,7 +4482,7 @@
                                 <button type="button" id="btn-save-profile-password"><i class="fas fa-save"></i> Guardar contraseña</button>
                             </div>
                         </div>
-                        <p><i class="fas fa-shield-alt"></i> Requiere contraseña y PIN de administrador.</p>
+                        <p><i class="fas fa-shield-alt"></i> La contraseña y el PIN de administrador se solicitan únicamente para visualizarla.</p>
                     </section>
                 </aside>
 
@@ -5243,6 +5168,6 @@
             window['pdfjsLib'].GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
         }
     </script>
-    <script src="script.js?v=3.2"></script>
+    <script src="script.js?v=4.1"></script>
 </body>
 </html>

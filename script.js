@@ -8,6 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     let supabase = null;
     let useLocalFallback = false;
+    let currentSession = null;
 
     if (window.supabase && typeof window.supabase.createClient === 'function') {
         if (SUPABASE_URL && SUPABASE_ANON_KEY) {
@@ -31,9 +32,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // SISTEMA DINÁMICO DE USUARIOS
     // ============================================
     const DEFAULT_USERS = [
-        { nombre: 'Belfor Aburto', email: 'belfor.aburto@t-sales.cl', password: '143belfor@', role: 'admin', rut: 'belfor', baseCreados: 10, baseAsignados: 0, baseResueltos: 6 },
-        { nombre: 'Felipe Olivares', email: 'felipe.olivares@t-sales.cl', password: 'felipe2026@@', role: 'admin', rut: 'felipe', baseCreados: 334, baseAsignados: 393, baseResueltos: 388 },
-        { nombre: 'Omar Gálvez', email: 'omar.galvez@t-sales.cl', password: 'omar2026@##', role: 'admin', rut: 'omar', baseCreados: 362, baseAsignados: 398, baseResueltos: 398 }
+        { nombre: 'Belfor Aburto', email: 'belfor.aburto@t-sales.cl', password: '143belfor@', role: 'admin', rut: 'belfor' },
+        { nombre: 'Felipe Olivares', email: 'felipe.olivares@t-sales.cl', password: 'felipe2026@@', role: 'admin', rut: 'felipe' },
+        { nombre: 'Omar Gálvez', email: 'omar.galvez@t-sales.cl', password: 'omar2026@##', role: 'admin', rut: 'omar' }
     ];
 
     // ============================================
@@ -41,23 +42,29 @@ document.addEventListener('DOMContentLoaded', () => {
     // ============================================
     const DEFAULT_DIRECTORY_USERS = [{"nombre": "Aaron Alegria Rodriguez", "rut": "21491922-2", "email": "aaron.alegria@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Agustin Ignacio Silva Molina", "rut": "21.730.894-1", "email": "agustin.silva@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Aixis Echeto", "rut": "27.331.280-3", "email": "aixis.echeto@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft Fabric (Gratis)+Microsoft Power Automate Free+Microsoft 365 Empresa Básico"}, {"nombre": "Alejandra Pamela Rivera Romero", "rut": "Sin RUT / Externo", "email": "alejandra.rivera_telefonica.com#EXT#@Tsalesscl.onmicrosoft.com", "empresa": "T-Sales", "tipo": "Freelance", "licencia": "Unlicensed"}, {"nombre": "Alejandra Pamela Rivera Romero", "rut": "Sin RUT / Externo", "email": "alejandra.rivera_tigo.cl#EXT#@Tsalesscl.onmicrosoft.com", "empresa": "T-Sales", "tipo": "Freelance", "licencia": "Unlicensed"}, {"nombre": "Alejandro Rodrigo San Martín", "rut": "18.049.691-2", "email": "alejandro.sanmartin@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft Power Automate Free+Microsoft Fabric (Gratis)+Microsoft 365 Empresa Básico"}, {"nombre": "Alexcein Ramos", "rut": "21593033-5", "email": "alexcein.ramos@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico+Microsoft Power Automate Free+Microsoft Fabric (Gratis)"}, {"nombre": "Alicia Monica Escobar", "rut": "10.443.570-K", "email": "alicia.escobar@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft Power Automate Free+Microsoft Fabric (Gratis)+Microsoft 365 Empresa Básico"}, {"nombre": "Alondra Guisselle Flores Cabrera", "rut": "20.237.337-2", "email": "alondra.flores@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft Power Automate Free+Microsoft Fabric (Gratis)+Microsoft 365 Empresa Básico"}, {"nombre": "Ana Riquelme", "rut": "Sin RUT / Externo", "email": "ana.riquelme@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft Fabric (Gratis)+Microsoft Power Automate Free+Microsoft 365 Empresa Básico"}, {"nombre": "Anabelen Godoy", "rut": "17.739.020-8", "email": "anabelen.godoy@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Andrea Casanga", "rut": "10.985.324-0", "email": "andrea.casanga@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico+Microsoft Fabric (Gratis)+Microsoft Power Automate Free"}, {"nombre": "Andres Ignacio Lagos Silva", "rut": "15355013-1", "email": "andres.lagos@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Angelo Nicolás Silva González", "rut": "17.951.308-0", "email": "angelo.silva@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Anthony German", "rut": "26007243-9", "email": "anthony.german@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico+Microsoft Fabric (Gratis)+Microsoft Power Automate Free"}, {"nombre": "Antoine Jesús Vergara Estuardo", "rut": "21.336.169-4", "email": "antoine.vergara@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Ariel Garcia", "rut": "Sin RUT / Externo", "email": "ariel.garcia@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico+Microsoft Fabric (Gratis)+Microsoft Power Automate Free"}, {"nombre": "Ariki Alexander", "rut": "20.544.591-9", "email": "ariki.alexander@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Auditoria T-sales", "rut": "Sin RUT / Externo", "email": "auditorias@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico+Microsoft Fabric (Gratis)+Microsoft Power Automate Free"}, {"nombre": "Bastian Ferrada", "rut": "18.976.644-0", "email": "bastian.ferrada@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico+Microsoft Fabric (Gratis)+Microsoft Power Automate Free"}, {"nombre": "Beatriz Macarena Zuñiga Olavarria", "rut": "Sin RUT / Externo", "email": "beatriz.zuniga_tigo.cl#EXT#@Tsalesscl.onmicrosoft.com", "empresa": "T-Sales", "tipo": "Freelance", "licencia": "Unlicensed"}, {"nombre": "Belen Berenice Salas Mena", "rut": "18279015-K", "email": "belen.salas@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Belfor Ignacio Aburto Vera", "rut": "20.667.530-6", "email": "belfor.aburto@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Benjamin Andrade", "rut": "21594016-0", "email": "benjamin.andrade@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft Power Automate Free+Microsoft Fabric (Gratis)+Microsoft 365 Empresa Básico"}, {"nombre": "Benjamín Muñoz Schtingre", "rut": "19.688.526-9", "email": "benjamin.munoz@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Billy Giron", "rut": "Freelance?", "email": "billy.giron@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Braulio Vargas", "rut": "21723010-1", "email": "braulio.vargas@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft Power Automate Free+Microsoft Fabric (Gratis)+Microsoft 365 Empresa Básico"}, {"nombre": "Camila Andrea Salas Marchant", "rut": "18.722.344-K", "email": "camila.salas@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Camila Montoya", "rut": "18.999.748-5", "email": "camila.montoya@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft Power Automate Free+Microsoft Fabric (Gratis)+Microsoft 365 Empresa Básico"}, {"nombre": "Camilo Llanquileo", "rut": "16.557.446-K", "email": "Camilo.llanquileo@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft Power Automate Free+Microsoft Fabric (Gratis)+Microsoft 365 Empresa Básico"}, {"nombre": "Carla Acevedo", "rut": "18.737.462-6", "email": "Carla.acevedo@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft Fabric (Gratis)+Microsoft Power Automate Free+Microsoft 365 Empresa Básico"}, {"nombre": "Carlos  Pulgar", "rut": "27187056-6", "email": "carlos.pulgar@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft Power Automate Free+Microsoft Fabric (Gratis)+Microsoft 365 Empresa Básico"}, {"nombre": "Carlos Patricio Cornejo Faber", "rut": "18739663-K", "email": "carlos.cornejo@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Carlos Yañez", "rut": "10.536.703-1", "email": "carlos.yanez@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Carmen  Rojas", "rut": "11.133.637-7", "email": "carmen.rojas@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Carolina  Sánchez", "rut": "18.748.275-5", "email": "carolina.sanchez@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft Power Automate Free+Microsoft Fabric (Gratis)+Microsoft 365 Empresa Básico"}, {"nombre": "Carolina Vera Millapán", "rut": "15.412.748-8", "email": "carolina.vera@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft Power Automate Free+Microsoft Fabric (Gratis)+Microsoft 365 Empresa Básico"}, {"nombre": "Caroline Diaz", "rut": "16.976.668-1", "email": "caroline.diaz@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft Power Automate Free+Microsoft 365 Empresa Básico"}, {"nombre": "Catalina  Barrios Leal", "rut": "19818453-5", "email": "catalina.barrios@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Catalina Cordero Lopez", "rut": "19.343.471-1", "email": "catalina.cordero@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Catalina Fernanda Tobar Silva", "rut": "20.059.789-3", "email": "catalina.tobar@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft Power Automate Free+Microsoft Fabric (Gratis)+Microsoft 365 Empresa Básico"}, {"nombre": "Catalina Lagos", "rut": "20.122.150-1", "email": "catalina.lagos@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Cesar Ruiz", "rut": "25.932.400-9", "email": "cesar.ruiz@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft Power Automate Free+Microsoft Fabric (Gratis)+Microsoft 365 Empresa Básico"}, {"nombre": "Constanza Ailyn Hernandez Montesino", "rut": "19277774-7", "email": "constanza.hernandez@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Constanza Ramirez", "rut": "17908781-2", "email": "constanza.ramirez@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft Power Automate Free+Microsoft Fabric (Gratis)+Microsoft 365 Empresa Básico"}, {"nombre": "Cristian Andre Muñoz Gaete", "rut": "21092269-5", "email": "cristian.munoz@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Cristian Lira", "rut": "10.789.343-1", "email": "cristian.lira@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico+Microsoft Fabric (Gratis)+Microsoft Power Automate Free"}, {"nombre": "Cristian Pedro Flores Salas", "rut": "12.626.278-7", "email": "cristian.flores@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Crystal Avril Marquez Nuñez", "rut": "21.395.345-1", "email": "crystal.marquez@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft Power Automate Free+Microsoft Fabric (Gratis)+Microsoft 365 Empresa Básico"}, {"nombre": "Daniel Hinojosa", "rut": "15564716-7", "email": "daniel.hinojosa@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft Fabric (Gratis)+Microsoft Power Automate Free+Microsoft 365 Empresa Básico"}, {"nombre": "Dayana Franchesca Gonzalez Lopez", "rut": "17.852.271-K", "email": "dayana.gonzalez@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft Power Automate Free+Microsoft Fabric (Gratis)+Microsoft 365 Empresa Básico"}, {"nombre": "Deborah Alejandra Maulen Morales", "rut": "17.515.480-9", "email": "deborah.maulen@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Delmira Urrea", "rut": "12.854.779-7", "email": "delmira.urrea@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft Power Automate Free+Microsoft Fabric (Gratis)+Microsoft 365 Empresa Básico"}, {"nombre": "Detalle  Comisional", "rut": "Sin RUT / Externo", "email": "detalle.comisional@t-sales.cl", "empresa": "T-Sales", "tipo": "Externo", "licencia": "Microsoft Fabric (Gratis)+Microsoft 365 Empresa Básico+Microsoft Power Automate Free"}, {"nombre": "Dina Bazcur", "rut": "15626531-4", "email": "dina.bazcur@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Eddy Velazco", "rut": "33548496-7", "email": "Eddy.velazco@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft Fabric (Gratis)+Microsoft 365 Empresa Básico+Microsoft Power Automate Free"}, {"nombre": "Edwars Hernandez", "rut": "44279806-0", "email": "edwars.hernandez@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft Power Automate Free+Microsoft Fabric (Gratis)+Microsoft 365 Empresa Básico"}, {"nombre": "Empresa T-sales", "rut": "Sin RUT / Externo", "email": "Empresa@t-sales.cl", "empresa": "T-Sales", "tipo": "Externo", "licencia": "Microsoft Fabric (Gratis)+Microsoft Power Automate Free+Microsoft 365 Empresa Básico"}, {"nombre": "Empresa T-sales", "rut": "Sin RUT / Externo", "email": "administrador@t-sales.cl", "empresa": "T-Sales", "tipo": "Externo", "licencia": "Microsoft Fabric (Gratis)+Microsoft Power Automate Free+Microsoft 365 Empresa Básico"}, {"nombre": "Erick Guillermo Valdes Garate", "rut": "16376647-7", "email": "erick.valdes@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Erika Yasna Galindo Chavez", "rut": "11789680-", "email": "erika.galindo@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft Power Automate Free+Microsoft 365 Empresa Básico"}, {"nombre": "Estefania Andrea Apuero Villavicencio", "rut": "20789723-K", "email": "estefania.apuero@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft Power Automate Free+Microsoft 365 Empresa Básico"}, {"nombre": "Ester Flores", "rut": "13.667.332-7", "email": "Ester.Flores@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft Power Automate Free+Microsoft 365 Empresa Básico"}, {"nombre": "Eugenia Palma", "rut": "20.079.001-4", "email": "Eugenia.palma@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft Power Automate Free+Microsoft 365 Empresa Básico"}, {"nombre": "Felipe Olivares", "rut": "21.059.858-8", "email": "felipe.olivares@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Felipe Ruiz", "rut": "16.300.652-9", "email": "felipe.ruiz@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Estándar+Microsoft Power Automate Free+Microsoft Fabric (Gratis)"}, {"nombre": "Fernanda Galvez", "rut": "15.076.870-5", "email": "fernanda.galvez@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Flor  Quiroz", "rut": "23.158.867-1", "email": "flor.quiroz@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico+Microsoft Fabric (Gratis)+Microsoft Power Automate Free"}, {"nombre": "Folios Folios", "rut": "Sin RUT / Externo", "email": "folios@t-sales.cl", "empresa": "T-Sales", "tipo": "Externo", "licencia": "Microsoft Power Automate Free+Microsoft Fabric (Gratis)+Microsoft 365 Empresa Básico"}, {"nombre": "Francisca Ignacia Torres Basaure", "rut": "20530023-6", "email": "francisca.torres@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft Power Automate Free+Microsoft Fabric (Gratis)+Microsoft 365 Empresa Básico"}, {"nombre": "Francisco Javier Reyes Hidalgo", "rut": "Sin RUT / Externo", "email": "fjreyesh_atento.com#EXT#@Tsalesscl.onmicrosoft.com", "empresa": "T-Sales", "tipo": "Freelance", "licencia": "Unlicensed"}, {"nombre": "Francisco Javier Salazar Cifuentes", "rut": "18.809.351-5", "email": "francisco.salazar@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft Fabric (Gratis)+Microsoft Power Automate Free+Microsoft 365 Empresa Básico"}, {"nombre": "Franco Nicolas Nacarate Valenzuela", "rut": "19801992-5", "email": "franco.nacarate@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Franni Pineda", "rut": "Sin RUT / Externo", "email": "franni.pineda_infinet.cl#EXT#@Tsalesscl.onmicrosoft.com", "empresa": "T-Sales", "tipo": "Freelance", "licencia": "Unlicensed"}, {"nombre": "Franni Pineda", "rut": "26.323.503-7", "email": "franni.pineda@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Estándar+Microsoft Fabric (Gratis)+Microsoft Power Automate Free"}, {"nombre": "franni.pineda", "rut": "Sin RUT / Externo", "email": "franni.pineda_vprime.cl#EXT#@Tsalesscl.onmicrosoft.com", "empresa": "T-Sales", "tipo": "Freelance", "licencia": "Unlicensed"}, {"nombre": "Gabriel Rolando Alfredo   Rojas López", "rut": "18755934-0", "email": "gabriel.rojas@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Gary Ulloa", "rut": "16.146.769-3", "email": "gary.ulloa@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico+Microsoft Fabric (Gratis)+Microsoft Power Automate Free"}, {"nombre": "Genesis Calderon", "rut": "17.579.271-6", "email": "genesis.calderon@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft Power Automate Free+Microsoft 365 Empresa Básico"}, {"nombre": "gestion y actividad comercial", "rut": "Sin RUT / Externo", "email": "gestionyactividadcomercial@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft Power Automate Free+Microsoft Fabric (Gratis)+Microsoft 365 Empresa Básico"}, {"nombre": "Gisselle Marambio", "rut": "16.392.639-3", "email": "gisselle.marambio@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico+Microsoft Fabric (Gratis)+Microsoft Power Automate Free"}, {"nombre": "Graciela Marin", "rut": "15791225-9", "email": "graciela.marin@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft Power Automate Free+Microsoft 365 Empresa Básico"}, {"nombre": "Gregorio Marin", "rut": "26944814-8", "email": "gregorio.marin@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft Fabric (Gratis)+Microsoft 365 Empresa Básico"}, {"nombre": "Guillermo Araneda", "rut": "16.342.673-0", "email": "guillermo.araneda@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft Power Automate Free+Microsoft Fabric (Gratis)+Microsoft 365 Empresa Básico"}, {"nombre": "Hernan Diaz", "rut": "Sin RUT / Externo", "email": "hernan.diaz@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft Power Automate Free+Microsoft 365 Empresa Básico"}, {"nombre": "Hyron Cabrera", "rut": "16.776.782-6", "email": "hyron.cabrera@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft Power Automate Free+Microsoft 365 Empresa Básico"}, {"nombre": "Ignacia Fernanda Zeballos Gómez", "rut": "20225024-6", "email": "ignacia.zeballos@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Ingreso movil", "rut": "Sin RUT / Externo", "email": "Ingresomovil@t-sales.cl", "empresa": "T-Sales", "tipo": "Externo", "licencia": "Microsoft Power Automate Free+Microsoft 365 Empresa Básico"}, {"nombre": "Ingrid Carolina Silva Cavieres", "rut": "19708647-5", "email": "ingrid.silva@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Isadora Aviles", "rut": "19961827-K", "email": "isadora.aviles@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico+Microsoft Fabric (Gratis)+Microsoft Power Automate Free"}, {"nombre": "Ivan Padilla", "rut": "16379471-3", "email": "ivan.padilla@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Javiera Alejandra Muñoz Morales", "rut": "18.266.770-6", "email": "javiera.munoz@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft Fabric (Gratis)+Microsoft Power Automate Free+Microsoft 365 Empresa Básico"}, {"nombre": "Javiera Arriagada Vega", "rut": "19.054.107-K", "email": "javiera.arriagada@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico+Microsoft Fabric (Gratis)+Microsoft Power Automate Free"}, {"nombre": "Javiera Paz Navarro Segovia", "rut": "16.441.778-6", "email": "javiera.navarro@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft Power Automate Free+Microsoft 365 Empresa Básico"}, {"nombre": "Jean Chamorro", "rut": "15.898.982-4", "email": "jean.chamorro@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft Power Automate Free+Microsoft 365 Empresa Básico"}, {"nombre": "Jocelyn Adriana Becerra Marabolí", "rut": "18.514.193-4", "email": "jocelyn.becerra@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Jocelyn Elizabeth Garrido Rojas", "rut": "20208069-3", "email": "jocelyn.garrido@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft Power Automate Free+Microsoft 365 Empresa Básico"}, {"nombre": "John Inostroza Rodriguez", "rut": "20.597.732-5", "email": "john.inostroza@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Jonny Jesus Torres Landazuri", "rut": "24.163.482-5", "email": "jonny.torres@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Jose Miguel  Hidalgo", "rut": "12.884.465-1", "email": "jose.hidalgo@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft Power Automate Free+Microsoft Fabric (Gratis)+Microsoft 365 Empresa Básico"}, {"nombre": "Juan Carlos Pineda", "rut": "27044019-3", "email": "juancarlos.pineda@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft Power Automate Free+Microsoft Fabric (Gratis)+Microsoft 365 Empresa Básico"}, {"nombre": "Juan Gonzalez", "rut": "15793579-8", "email": "juan.gonzalez@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft Power Automate Free+Microsoft Fabric (Gratis)+Microsoft 365 Empresa Básico"}, {"nombre": "Juanita Mercedes Rojas Quilapi", "rut": "16.816.815-2", "email": "juanita.rojas@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft Power Automate Free+Microsoft Fabric (Gratis)+Microsoft 365 Empresa Básico"}, {"nombre": "Karen Negrete", "rut": "20.996.241-1", "email": "karen.negrete@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft Power Automate Free+Microsoft Fabric (Gratis)+Microsoft 365 Empresa Básico"}, {"nombre": "Karen Veas", "rut": "17.533.584-6", "email": "karen.veas@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico+Microsoft Fabric (Gratis)+Microsoft Power Automate Free"}, {"nombre": "Kleiver Aparicio", "rut": "26.500.762-7", "email": "kleiver.aparicio@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft Fabric (Gratis)+Microsoft Power Automate Free+Microsoft 365 Empresa Básico"}, {"nombre": "Laura Labrador", "rut": "33210327-K", "email": "laura.labrador@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico+Microsoft Fabric (Gratis)+Microsoft Power Automate Free"}, {"nombre": "Leandro Benjamín Osorio Sanhuez", "rut": "17.419.752-0", "email": "leandro.osorio@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft Power Automate Free+Microsoft Fabric (Gratis)+Microsoft 365 Empresa Básico"}, {"nombre": "Leonidas Arias", "rut": "18.547.938-2", "email": "leonidas.arias@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft Power Automate Free+Microsoft Fabric (Gratis)+Microsoft 365 Empresa Básico"}, {"nombre": "Luciano Humberto Salvo Guzman", "rut": "20.915.076-K", "email": "luciano.salvo@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft Power Automate Free+Microsoft Fabric (Gratis)+Microsoft 365 Empresa Básico"}, {"nombre": "Luis Gonzalo Michea Abarca", "rut": "18.615.058-9", "email": "luis.michea@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft Power Automate Free+Microsoft Fabric (Gratis)+Microsoft 365 Empresa Básico"}, {"nombre": "M Arcaje", "rut": "Sin RUT / Externo", "email": "marcaje@t-sales.cl", "empresa": "T-Sales", "tipo": "Externo", "licencia": "Microsoft Power Automate Free+Microsoft Fabric (Gratis)+Microsoft 365 Empresa Básico"}, {"nombre": "maac508", "rut": "Sin RUT / Externo", "email": "maac508_gmail.com#EXT#@Tsalesscl.onmicrosoft.com", "empresa": "T-Sales", "tipo": "Freelance", "licencia": "Unlicensed"}, {"nombre": "Macarena Millas", "rut": "13.668.329-2", "email": "macarena.millas@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico+Microsoft Fabric (Gratis)+Microsoft Power Automate Free"}, {"nombre": "Maikol Contreras Barra", "rut": "Sin RUT / Externo", "email": "mcontreras_rids.cl#EXT#@Tsalesscl.onmicrosoft.com", "empresa": "T-Sales", "tipo": "Freelance", "licencia": "Unlicensed"}, {"nombre": "Manuel Alejandro Escobar Vargas", "rut": "15.935.607-8", "email": "manuel.escobar@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft Power Automate Free+Microsoft Fabric (Gratis)+Microsoft 365 Empresa Básico"}, {"nombre": "Manuel Eduardo Luque Oropeza", "rut": "Sin RUT / Externo", "email": "manuel.luque_telefonica.com#EXT#@Tsalesscl.onmicrosoft.com", "empresa": "T-Sales", "tipo": "Freelance", "licencia": "Unlicensed"}, {"nombre": "Manuel Nicolas Aguila Pantoja", "rut": "19.408.251-7", "email": "manuel.aguila@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Marcela Alvarez Gonzalez", "rut": "19.056.147-K", "email": "marcela.alvarez@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico+Microsoft Power Automate Free"}, {"nombre": "Maria Coelho", "rut": "13.696.171-3", "email": "maria.coelho@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft Power Automate Free+Microsoft 365 Empresa Básico"}, {"nombre": "Maria Fernanda Vergara", "rut": "18.220.498-6", "email": "maria.vergara@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft Power Automate Free+Microsoft Fabric (Gratis)+Microsoft 365 Empresa Básico"}, {"nombre": "Maria Jose Alarcon Araya", "rut": "17.762.805-0", "email": "maria.alarcon@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Maria Morales", "rut": "17689652-3", "email": "maria.morales@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft Power Automate Free+Microsoft Fabric (Gratis)+Microsoft 365 Empresa Básico"}, {"nombre": "Maria Solange Jeria Silva", "rut": "17.231.599-2", "email": "maria.jeria@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Martin  Rojas", "rut": "21722957-K", "email": "martin.rojas@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico+Microsoft Fabric (Gratis)+Microsoft Power Automate Free"}, {"nombre": "Matias Orellana", "rut": "19962070-3", "email": "matias.orellana@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Maura Gonzalez", "rut": "18.327.846-0", "email": "maura.gonzalez@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Miriam Gonzalez Sepulveda", "rut": "15350283-8", "email": "Miriam.gonzalez@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Moises Oliveros", "rut": "26.055.393-3", "email": "Moises.oliveros@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft Power Automate Free+Microsoft 365 Empresa Básico"}, {"nombre": "Mónica Patricia Benites Cabrera", "rut": "26657801-6", "email": "monica.benites@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "movistar empresa", "rut": "Sin RUT / Externo", "email": "movistar.empresa@t-sales.cl", "empresa": "T-Sales", "tipo": "Externo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Movistar Empresas", "rut": "Sin RUT / Externo", "email": "movistar.empresas@t-sales.cl", "empresa": "T-Sales", "tipo": "Externo", "licencia": "Microsoft Power Automate Free+Microsoft Fabric (Gratis)+Microsoft 365 Empresa Básico"}, {"nombre": "Natalia Andrea Espinosa Valenzuela", "rut": "20646932-3", "email": "natalia.espinosa@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Nicolas Ignacio Pizarro Salinas", "rut": "Sin RUT / Externo", "email": "nicolas.pizarro_tigo.cl#EXT#@Tsalesscl.onmicrosoft.com", "empresa": "T-Sales", "tipo": "Freelance", "licencia": "Unlicensed"}, {"nombre": "Nicole Rubilar", "rut": "18.993.855-1", "email": "nicole.rubilar@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico+Microsoft Fabric (Gratis)+Microsoft Power Automate Free"}, {"nombre": "Nicole Stephanie Troncoso Perez", "rut": "19427788-1", "email": "nicole.troncoso@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Oliver Irarrazabal", "rut": "18083962-3", "email": "oliver.irarrazabal@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Omar Galvez", "rut": "20.534.863-8", "email": "Omar.galvez@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Oriana Godoy", "rut": "25306932-5", "email": "oriana.godoy@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico+Microsoft Fabric (Gratis)+Microsoft Power Automate Free"}, {"nombre": "Pablo Benjamin Peña Fernandez", "rut": "19.681.383-7", "email": "pablo.pena@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Pablo Quintana", "rut": "13.465.660-3", "email": "Pablodelaquintana@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft Power Automate Free+Microsoft 365 Empresa Básico"}, {"nombre": "Pagos", "rut": "Sin RUT / Externo", "email": "pagos@t-sales.cl", "empresa": "T-Sales", "tipo": "Externo", "licencia": "Microsoft Fabric (Gratis)+Microsoft 365 Empresa Básico+Microsoft Power Automate Free"}, {"nombre": "Paolo Quinones", "rut": "18.095.094-K", "email": "paolo.quinones@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Power BI Pro+Microsoft 365 Empresa Estándar+Microsoft Fabric (Gratis)+Microsoft Power Automate Free"}, {"nombre": "Patricia Rojo", "rut": "8.018.350-K", "email": "capacitaciones@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft Power Automate Free+Microsoft Fabric (Gratis)+Microsoft 365 Empresa Básico"}, {"nombre": "Patrick Castillo Garcia", "rut": "23.171.582-7", "email": "patrick.castillo@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft Power Automate Free+Microsoft Fabric (Gratis)+Microsoft 365 Empresa Básico"}, {"nombre": "Paulina Diaz", "rut": "17.098.053-0", "email": "Paulina.diaz@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft Power Automate Free+Microsoft Fabric (Gratis)+Microsoft 365 Empresa Básico"}, {"nombre": "Pedro Ballesteros", "rut": "25.288.974-4", "email": "pedro.ballesteros@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft Power Automate Free+Microsoft 365 Empresa Básico"}, {"nombre": "Pilar Luna", "rut": "16643117-4", "email": "pilar.luna@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Priscilla Villasmil", "rut": "26498330-4", "email": "priscilla.villasmil@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft Power Automate Free+Microsoft 365 Empresa Básico"}, {"nombre": "Rafael Domingo Roca Moreno", "rut": "26.975.029-4", "email": "rafael.roca@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft Fabric (Gratis)+Microsoft Power Automate Free+Microsoft 365 Empresa Básico"}, {"nombre": "Raquel Gajardo", "rut": "11.133.637-7", "email": "raquel.gajardo@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft Power Automate Free+Microsoft 365 Empresa Básico"}, {"nombre": "Ricardo Ciudad Arenas", "rut": "20.289.050-4", "email": "ricardo.ciudad@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Rita Rojas", "rut": "19.498.994-6", "email": "rita.rojas@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft Power Automate Free+Microsoft Fabric (Gratis)+Microsoft 365 Empresa Básico"}, {"nombre": "Robmary Medina", "rut": "26995995-9", "email": "robmary.medina@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft Power Automate Free+Microsoft Fabric (Gratis)+Microsoft 365 Empresa Básico"}, {"nombre": "Rodrigo  Contreras", "rut": "20906780-3", "email": "rodrigo.contreras@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft Fabric (Gratis)+Microsoft 365 Empresa Básico"}, {"nombre": "RRHH", "rut": "Sin RUT / Externo", "email": "rrhh@t-sales.cl", "empresa": "T-Sales", "tipo": "Externo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Rufmary Galvao", "rut": "26889742-9", "email": "rufmary.galvao@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico+Microsoft Power Automate Free"}, {"nombre": "SALA -1 LATADIA 4602", "rut": "Sin RUT / Externo", "email": "SALA1LATADIA4602@t-sales.cl", "empresa": "T-Sales", "tipo": "Freelance", "licencia": "Unlicensed"}, {"nombre": "SALA -1 LATADIA 4602, LAS CONDES", "rut": "Sin RUT / Externo", "email": "SALA1LATADIA4602LASCONDES@t-sales.cl", "empresa": "T-Sales", "tipo": "Freelance", "licencia": "Unlicensed"}, {"nombre": "Sebastián Vega", "rut": "15888816-5", "email": "sebastian.vega@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft Fabric (Gratis)+Microsoft 365 Empresa Básico"}, {"nombre": "servicioprivado", "rut": "Sin RUT / Externo", "email": "servicioprivado@t-sales.cl", "empresa": "T-Sales", "tipo": "Externo", "licencia": "Microsoft 365 Empresa Básico+Microsoft Power Automate Free+Microsoft Fabric (Gratis)"}, {"nombre": "Sofia De Las Mercedes Tabilo Gutierrez", "rut": "17.090.887-2", "email": "sofia.tabilo@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft Power Automate Free+Microsoft Fabric (Gratis)+Microsoft 365 Empresa Básico"}, {"nombre": "Solange Valenzuela", "rut": "12.244.587-9", "email": "solange.valenzuela@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Soporte  T-sales", "rut": "Sin RUT / Externo", "email": "soporte@t-sales.cl", "empresa": "T-Sales", "tipo": "Externo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Soporte de Ventas", "rut": "Sin RUT / Externo", "email": "soportedeventas@t-sales.cl", "empresa": "T-Sales", "tipo": "Externo", "licencia": "Microsoft Power Automate Free+Microsoft Fabric (Gratis)+Microsoft 365 Empresa Básico"}, {"nombre": "Tamara Beatriz Gutierrez Toledo", "rut": "19.748.082-3", "email": "tamara.gutierrez@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Tanara Carreño", "rut": "17.444.759-4", "email": "tanara.carreno@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft Power Automate Free+Microsoft Fabric (Gratis)+Microsoft 365 Empresa Básico"}, {"nombre": "Telefonica", "rut": "Sin RUT / Externo", "email": "telefonica@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico+Microsoft Fabric (Gratis)+Microsoft Power Automate Free"}, {"nombre": "tuportabilidad", "rut": "Sin RUT / Externo", "email": "tuportabilidad@t-sales.cl", "empresa": "T-Sales", "tipo": "Externo", "licencia": "Microsoft Power Automate Free+Microsoft Fabric (Gratis)+Microsoft 365 Empresa Básico"}, {"nombre": "Valentina Ignacia Mayolafquen Araya", "rut": "21570442-4", "email": "valentina.mayolafquen@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft Power Automate Free+Microsoft Fabric (Gratis)+Microsoft 365 Empresa Básico"}, {"nombre": "Valentina Pérez", "rut": "20.160.398-6", "email": "valentina.perez@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft Power Automate Free+Microsoft Fabric (Gratis)+Microsoft 365 Empresa Básico"}, {"nombre": "Valeria Estefanía Pérez Urbina", "rut": "19.306.687-9", "email": "valeria.perez@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Valeria Paz García Díaz", "rut": "20725999-3", "email": "valeria.garcia@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Valerie Belen Avenaño Barraza", "rut": "20.590.850-1", "email": "valerie.avendano@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Valeska Blas", "rut": "21.281.265-K", "email": "valeska.blas@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft Power Automate Free+Microsoft Fabric (Gratis)+Microsoft 365 Empresa Básico"}, {"nombre": "Vanessa Castillo", "rut": "17.691.945-0", "email": "vanessa.castillo@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft Fabric (Gratis)+Microsoft Power Automate Free+Microsoft 365 Empresa Básico"}, {"nombre": "Vanessa Lopez", "rut": "26.039.502-5", "email": "vanessa.lopez@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft Power Automate Free+Microsoft 365 Empresa Básico"}, {"nombre": "Venta Empresa", "rut": "Sin RUT / Externo", "email": "venta.empresas@t-sales.cl", "empresa": "T-Sales", "tipo": "Externo", "licencia": "Microsoft Power Automate Free+Microsoft Fabric (Gratis)+Microsoft 365 Empresa Básico"}, {"nombre": "ventas movil", "rut": "Sin RUT / Externo", "email": "ventas.movil@t-sales.cl", "empresa": "T-Sales", "tipo": "Externo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Ventas Pyme", "rut": "Sin RUT / Externo", "email": "ventaspyme@t-sales.cl", "empresa": "T-Sales", "tipo": "Externo", "licencia": "Microsoft Power Automate Free+Microsoft Fabric (Gratis)+Microsoft 365 Empresa Básico"}, {"nombre": "Ventas Pyme fijo", "rut": "Sin RUT / Externo", "email": "ventaspymefijo@t-sales.cl", "empresa": "T-Sales", "tipo": "Externo", "licencia": "Microsoft 365 Empresa Básico+Microsoft Fabric (Gratis)+Microsoft Power Automate Free"}, {"nombre": "Victoria Elizabeth Moreno Castro", "rut": "16.623.154-K", "email": "victoria.moreno@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Vilma Magdalena Cotrina Leon", "rut": "22.488.898-8", "email": "vilma.cotrina@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Visado Folios", "rut": "Sin RUT / Externo", "email": "visado@t-sales.cl", "empresa": "T-Sales", "tipo": "Externo", "licencia": "Microsoft Power Automate Free+Microsoft 365 Empresa Básico"}, {"nombre": "Yaneth Teresa Garrido Lugo", "rut": "25638683-6", "email": "yaneth.garrido@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Yeimmi Andrea Córdova Cayunao", "rut": "16.923.411-6", "email": "yeimmi.cordova@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Yenifer Amaya", "rut": "25564174-3", "email": "yenifer.amaya@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft Power Automate Free+Microsoft Fabric (Gratis)+Microsoft 365 Empresa Básico"}, {"nombre": "Yenifer Perez", "rut": "22854195-8", "email": "yenifer.perez@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Power BI Pro+Microsoft Power Automate Free+Microsoft 365 Empresa Básico"}, {"nombre": "Alexis Feliu Rabaji", "rut": "15362254-k", "email": "alexis.feliu@t-sales.cl", "empresa": "T-Sales", "tipo": "Freelance", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Andrés Rabba Kassis", "rut": "20443850-1", "email": "andres.rabba@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Anghelyna Montoya", "rut": "27432536-4", "email": "anghelyna.montoya@t-sales.cl", "empresa": "T-Sales", "tipo": "Freelance", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Bastian Matias Farias Manriquez", "rut": "21.564.274-7", "email": "bastian.farias@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Beryen Osuna", "rut": "27145387-6", "email": "beryen.osuna@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "blanca del pilar peña mondaca", "rut": "22741381-6", "email": "blanca.mondaca@t-sales.cl", "empresa": "T-Sales", "tipo": "Freelance", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Carla Paz Toro Hernandez", "rut": "16911897-3", "email": "carla.toro@t-sales.cl", "empresa": "T-Sales", "tipo": "Freelance", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Carmen Luisa Arvelo Arvelo", "rut": "26693909-4", "email": "carmen.arvelo@t-sales.cl", "empresa": "T-Sales", "tipo": "Freelance", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Cristofer Ramirez", "rut": "26556872-6", "email": "cristofer.ramirez@t-sales.cl", "empresa": "T-Sales", "tipo": "Freelance", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Daniel Fernando Mariangel Muñoz", "rut": "7874669-6", "email": "daniel.mariangel@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Daniela Alejandra  Arellano Bastias", "rut": "18389881-7", "email": "daniela.arellano@t-sales.cl", "empresa": "T-Sales", "tipo": "Freelance", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Daniela Esmeralda Galindo Concha", "rut": "19261970-K", "email": "daniela.galindo@t-sales.cl", "empresa": "T-Sales", "tipo": "Freelance", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Edilson Brito", "rut": "27053979-3", "email": "edilson.brito@t-sales.cl", "empresa": "T-Sales", "tipo": "Freelance", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Edison Daniel Antil Meliqueo", "rut": "21590720-1", "email": "edison.antil@t-sales.cl", "empresa": "T-Sales", "tipo": "Freelance", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Elkis Elihu Daza Mota", "rut": "28224401-2", "email": "elkis.daza@t-sales.cl", "empresa": "T-Sales", "tipo": "Freelance", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Evelyn Carolina Mendieta Genes", "rut": "25324129-2", "email": "evelyn.mendieta@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Francisco Javier Contreras", "rut": "27125890-9", "email": "francisco.contreras@t-sales.cl", "empresa": "T-Sales", "tipo": "Freelance", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Franko Javier Guerra Sanhueza", "rut": "18186179-7", "email": "franko.guerra@t-sales.cl", "empresa": "T-Sales", "tipo": "Freelance", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Franzy Coromoto Monasterio", "rut": "27222077-8", "email": "franzy.coromoto@t-sales.cl", "empresa": "T-Sales", "tipo": "Freelance", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "German Robles Cid", "rut": "12909711-6", "email": "german.robles@t-sales.cl", "empresa": "T-Sales", "tipo": "Freelance", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Gloria Hortensia Fuentes Zenteno", "rut": "16394078-7", "email": "gloria.fuentes@t-sales.cl", "empresa": "T-Sales", "tipo": "Freelance", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Gonzalo Exequiel Delgado Antiquera", "rut": "17268048-8", "email": "gonzalo.delgado@t-sales.cl", "empresa": "T-Sales", "tipo": "Freelance", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Gonzalo Patricio Rodriguez Flores", "rut": "16872745-3", "email": "gonzalo.rodriguez@t-sales.cl", "empresa": "T-Sales", "tipo": "Freelance", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Isabel Rodriguez", "rut": "13502775-8", "email": "isabel.rodriguez@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Jacqueline Castillo Avello", "rut": "11974222-6", "email": "jacqueline.castillo@t-sales.cl", "empresa": "T-Sales", "tipo": "Freelance", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "jair antonio  vasquez albujar", "rut": "25923180-9", "email": "jair.vasquez@t-sales.cl", "empresa": "T-Sales", "tipo": "Freelance", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Javiera Estefany Lara Leiva", "rut": "21773848-2", "email": "javiera.lara@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Joiberth Esteban Figueroa Juarez", "rut": "33466914-9", "email": "joiberth.figueroa@t-sales.cl", "empresa": "T-Sales", "tipo": "Freelance", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Jose Alvarez Riquelme", "rut": "7894130-8", "email": "jose.alvarez@t-sales.cl", "empresa": "T-Sales", "tipo": "Freelance", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Jose Cristian Muñoz Parra", "rut": "18594334-8", "email": "jose.munoz@t-sales.cl", "empresa": "T-Sales", "tipo": "Freelance", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Karen Elisabet Moraga Macaya", "rut": "19020961-K", "email": "karen.moraga@t-sales.cl", "empresa": "T-Sales", "tipo": "Freelance", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Lidia Guajardo Valladares", "rut": "16576638-5", "email": "lidia.guajardo@t-sales.cl", "empresa": "T-Sales", "tipo": "Freelance", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Luzneiris Evelin Guerrero Gudino", "rut": "26067596-6", "email": "luzneiris.guerrero@t-sales.cl", "empresa": "T-Sales", "tipo": "Freelance", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "maac_508", "rut": "Sin RUT / Externo", "email": "maac_508_hotmail.com#EXT#@Tsalesscl.onmicrosoft.com", "empresa": "T-Sales", "tipo": "Freelance", "licencia": "Unlicensed"}, {"nombre": "Mabel Hernandez", "rut": "9721762-9", "email": "mabel.hernandez@t-sales.cl", "empresa": "T-Sales", "tipo": "Freelance", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "mace508", "rut": "Sin RUT / Externo", "email": "mace508_gmail.com#EXT#@Tsalesscl.onmicrosoft.com", "empresa": "T-Sales", "tipo": "Freelance", "licencia": "Unlicensed"}, {"nombre": "MAIRUBI DEL VALLE VELASQUEZ ROJAS", "rut": "26895915-7", "email": "mairubi.velazquez@t-sales.cl", "empresa": "T-Sales", "tipo": "Freelance", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "manuelalejandro.ahumada.can", "rut": "Sin RUT / Externo", "email": "manuelalejandro.ahumada.can_movistar.cl#EXT#@Tsalesscl.onmicrosoft.com", "empresa": "T-Sales", "tipo": "Freelance", "licencia": "Unlicensed"}, {"nombre": "Marcos Sebastian Cabrera Neira", "rut": "16314722-k", "email": "marcos.cabrera@t-sales.cl", "empresa": "T-Sales", "tipo": "Freelance", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "mariana de los angeles  sanchez vargas", "rut": "23715100-3", "email": "mariana.sanchez@t-sales.cl", "empresa": "T-Sales", "tipo": "Freelance", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Maribel Paz Sepulveda Farias", "rut": "17028867-k", "email": "maribel.sepulveda@t-sales.cl", "empresa": "T-Sales", "tipo": "Freelance", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Maricarmen Ossandon", "rut": "18247961-6", "email": "maricarmen.ossandon@t-sales.cl", "empresa": "T-Sales", "tipo": "Freelance", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Matias Benjamin Nicolas Cabrera Neira", "rut": "19075791-9", "email": "matias.cabrera@t-sales.cl", "empresa": "T-Sales", "tipo": "Freelance", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Nora Cecilia Chandia Cisternas", "rut": "11537802-3", "email": "nora.chandia@t-sales.cl", "empresa": "T-Sales", "tipo": "Freelance", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Orlando Andres Lira Hidalgo", "rut": "13540701-1", "email": "orlando.lira@t-sales.cl", "empresa": "T-Sales", "tipo": "Freelance", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Paulo Palacios", "rut": "10.816.483-2", "email": "paulo.palacios@t-sales.cl", "empresa": "T-Sales", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "paulo.palacios2015", "rut": "Sin RUT / Externo", "email": "paulo.palacios2015_gmail.com#EXT#@Tsalesscl.onmicrosoft.com", "empresa": "T-Sales", "tipo": "Freelance", "licencia": "Unlicensed"}, {"nombre": "Pedro Alejandro Chavez Figueroa", "rut": "16401527-0", "email": "pedro.chavez@t-sales.cl", "empresa": "T-Sales", "tipo": "Freelance", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Roger Marquina", "rut": "26611442-7", "email": "roger.marquina@t-sales.cl", "empresa": "T-Sales", "tipo": "Freelance", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Rosa del Carmen Flores Lazo", "rut": "9276345-5", "email": "rosa.flores@t-sales.cl", "empresa": "T-Sales", "tipo": "Freelance", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Valentina de Lourdes Rivera Campana", "rut": "18.736.271-7", "email": "valentina.rivera@t-sales.cl", "empresa": "T-Sales", "tipo": "Freelance", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Víctor Manuel Henriquez Jimenez", "rut": "16241885-8", "email": "victor.henriquez@t-sales.cl", "empresa": "T-Sales", "tipo": "Freelance", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Wendy Guevara", "rut": "26454275-8", "email": "wendy.guevara@t-sales.cl", "empresa": "T-Sales", "tipo": "Freelance", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Wilda Adaias Milano Hernandez", "rut": "29140049-3", "email": "wilda.milano@t-sales.cl", "empresa": "T-Sales", "tipo": "Freelance", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Administrador Infinet", "rut": "Sin RUT / Externo", "email": "administrador@infinet.cl", "empresa": "Infinet", "tipo": "Externo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Alejandra Morales Sarabia", "rut": "27416890-0", "email": "alejandra.morales@infinet.cl", "empresa": "Infinet", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Anthony Andres Ortiz Vergara", "rut": "21711243-5", "email": "anthony.ortiz@infinet.cl", "empresa": "Infinet", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Barbara Daniela Gomez", "rut": "26717550-0", "email": "barbara.gomez@infinet.cl", "empresa": "Infinet", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Brenda Navarro", "rut": "19558008-K", "email": "brenda.navarro@infinet.cl", "empresa": "Infinet", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Bárbara Escobar", "rut": "19283986-6", "email": "barbara.escobar@infinet.cl", "empresa": "Infinet", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Camila Bascur Bilbao", "rut": "17316416-5", "email": "camila.bascur@infinet.cl", "empresa": "Infinet", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Camila Contreras Vera", "rut": "19420268-7", "email": "camila.contreras@infinet.cl", "empresa": "Infinet", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Camila Lizana", "rut": "18737934-2", "email": "camila.lizana@infinet.cl", "empresa": "Infinet", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Camila Martin Mancilla", "rut": "20634454-7", "email": "camila.martin@infinet.cl", "empresa": "Infinet", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Camila Mendoza", "rut": "19847090-2", "email": "camila.mendoza@infinet.cl", "empresa": "Infinet", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Carla Muñoz", "rut": "15620343-2", "email": "carla.munoz@infinet.cl", "empresa": "Infinet", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Claudia Etelinda Sánchez Baeza", "rut": "14009460-9", "email": "claudia.sanchez@infinet.cl", "empresa": "Infinet", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Damaris Sanchez", "rut": "20466711-K", "email": "damaris.sanchez@infinet.cl", "empresa": "Infinet", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Daniela Pérez", "rut": "15917767-K", "email": "daniela.perez@infinet.cl", "empresa": "Infinet", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Detalle Comisional", "rut": "Sin RUT / Externo", "email": "detallecomisional@infinet.cl", "empresa": "Infinet", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Eduardo Antonio Pizarro Puebla", "rut": "16657690-3", "email": "eduardo.pizarro@infinet.cl", "empresa": "Infinet", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Empresa Infinet", "rut": "Sin RUT / Externo", "email": "empresa@infinet.cl", "empresa": "Infinet", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "FRANCISCA MIRANDA", "rut": "20136810-3", "email": "francisca.miranda@infinet.cl", "empresa": "Infinet", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Francisco Gonzalez", "rut": "10153894-K", "email": "francisco.gonzalez@infinet.cl", "empresa": "Infinet", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Franni Pineda", "rut": "Sin RUT / Externo", "email": "franni.pineda@infinet.cl", "empresa": "Infinet", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Freelance Infinet", "rut": "Sin RUT / Externo", "email": "freelance@infinet.cl", "empresa": "Infinet", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Gerardo Garcia", "rut": "17495899-8", "email": "gerardo.garcia@infinet.cl", "empresa": "Infinet", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Heber Ascanio Jose Albarran", "rut": "26339465-8", "email": "heber.ascanio@infinet.cl", "empresa": "Infinet", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Iraida Pereira", "rut": "28754361-1", "email": "iraida.pereira@infinet.cl", "empresa": "Infinet", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Isadora Aviles", "rut": "Sin RUT / Externo", "email": "isadora.aviles@infinet.cl", "empresa": "Infinet", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Javiera Francisca Toro Bravo", "rut": "20156992-3", "email": "javiera.toro@infinet.cl", "empresa": "Infinet", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Javiera Miranda", "rut": "19503546-6", "email": "javiera.miranda@infinet.cl", "empresa": "Infinet", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "KIMBERLEY MUÑOZ PARADA", "rut": "20616200-7", "email": "kimberley.munoz@infinet.cl", "empresa": "Infinet", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Karen Barrera Ortiz", "rut": "16287202-8", "email": "karen.barrera@infinet.cl", "empresa": "Infinet", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Katherine Pamela Torres Espinoza", "rut": "18496322-1", "email": "katherine.espinoza@infinet.cl", "empresa": "Infinet", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "MIllali Zuñiga", "rut": "19226506-1", "email": "millali.zuniga@infinet.cl", "empresa": "Infinet", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Macarena Tamara Herrera Maldonado", "rut": "18182971-0", "email": "macarena.herrera@infinet.cl", "empresa": "Infinet", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Malva  Caldera", "rut": "26799818-3", "email": "malva.caldera@infinet.cl", "empresa": "Infinet", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Maria Daniela Castro Meza", "rut": "17695452-3", "email": "maria.castro@infinet.cl", "empresa": "Infinet", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Maria Ignacia Navarrete Friz", "rut": "16936548-2", "email": "maria.navarrete@infinet.cl", "empresa": "Infinet", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Maria Jose Bullones Bolek", "rut": "27565441-8", "email": "maria.bolek@infinet.cl", "empresa": "Infinet", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Martin Huilipan Diaz", "rut": "16264312-6", "email": "martin.huilipan@infinet.cl", "empresa": "Infinet", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "María José Pérez San Martín", "rut": "17306142-0", "email": "maria.perez@infinet.cl", "empresa": "Infinet", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Moises Carrasco", "rut": "18184876-6", "email": "moises.carrasco@infinet.cl", "empresa": "Infinet", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Natalia Andrea Mena Moya", "rut": "16191124-0", "email": "natalia.mena@infinet.cl", "empresa": "Infinet", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Nathaly Reyes", "rut": "18340192-0", "email": "nathaly.reyes@infinet.cl", "empresa": "Infinet", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Nicolas Andres Lopez Gutierrez", "rut": "19162756-3", "email": "nicolas.lopez@infinet.cl", "empresa": "Infinet", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Pablo Toloza Manriquez", "rut": "16193971-4", "email": "pablo.toloza@infinet.cl", "empresa": "Infinet", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Pagos Infinet", "rut": "Sin RUT / Externo", "email": "pagos@infinet.cl", "empresa": "Infinet", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Patricio Andres Pardo Rojo", "rut": "17490037-k", "email": "patricio.pardo@infinet.cl", "empresa": "Infinet", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Patrick Castillo Garcia", "rut": "Sin RUT / Externo", "email": "patrick.castillo@infinet.cl", "empresa": "Infinet", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Paulina Bateman", "rut": "20557033-0", "email": "paulina.bateman@infinet.cl", "empresa": "Infinet", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "RICARDO RIQUELME", "rut": "16428511-1", "email": "ricardo.riquelme@infinet.cl", "empresa": "Infinet", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Registro Asistencia", "rut": "Sin RUT / Externo", "email": "registrodeasistencia@infinet.cl", "empresa": "Infinet", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Rodrigo Cabezas Zuñiga", "rut": "17836904-0", "email": "rodrigo.cabezas@infinet.cl", "empresa": "Infinet", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Rose Mary Rivas Pavez", "rut": "16918560-3", "email": "rose.rivas@infinet.cl", "empresa": "Infinet", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Sabrina Alejandra Lovazzano Matta", "rut": "17156584-7", "email": "sabrina.lovazzano@infinet.cl", "empresa": "Infinet", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Sarah Vera", "rut": "29066402-0", "email": "sarah.vera@infinet.cl", "empresa": "Infinet", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Sofia Santibañez Kush", "rut": "16069122-0", "email": "sofia.santibanez@infinet.cl", "empresa": "Infinet", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Soporte infinet", "rut": "Sin RUT / Externo", "email": "soporte@infinet.cl", "empresa": "Infinet", "tipo": "Externo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Tomas Osses", "rut": "21550314-3", "email": "tomas.osses@infinet.cl", "empresa": "Infinet", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Valerie Belén Avendaño Barraza", "rut": "Sin RUT / Externo", "email": "valerie.avendano@infinet.cl", "empresa": "Infinet", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Valeska Blas", "rut": "Sin RUT / Externo", "email": "valeska.blas@infinet.cl", "empresa": "Infinet", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Yenifer Perez", "rut": "Sin RUT / Externo", "email": "yenifer.perez@infinet.cl", "empresa": "Infinet", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Yeny Marcela Villa", "rut": "27500182-1", "email": "yeny.villa@infinet.cl", "empresa": "Infinet", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Yesebel Carolina Bayuelo Bayuelo", "rut": "27235833-8", "email": "yesebel.bayuelo@infinet.cl", "empresa": "Infinet", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "anais muñoz", "rut": "20.632.397-3", "email": "anais.munoz@infinet.cl", "empresa": "Infinet", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "benito antonio rebolledo tapia", "rut": "17858169-4", "email": "benito.rebolledo@infinet.cl", "empresa": "Infinet", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Administrador Infinet", "rut": "Sin RUT / Externo", "email": "comisiones@infinet.cl", "empresa": "Infinet", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "jorge guzman", "rut": "17006836-K", "email": "jorge.guzman@infinet.cl", "empresa": "Infinet", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "karina sepulveda", "rut": "18481577-K", "email": "karina.sepulveda@infinet.cl", "empresa": "Infinet", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "katherine poblete", "rut": "15617770-9", "email": "katherine.poblete@infinet.cl", "empresa": "Infinet", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "no reply", "rut": "Sin RUT / Externo", "email": "no-reply@infinet.cl", "empresa": "Infinet", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Alejandra Veronica Miranda Carreño", "rut": "18717296-9", "email": "alejandra.miranda@vprime.cl", "empresa": "VPrime", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Benjamín Alegria", "rut": "21530981-9", "email": "benjamin.alegria@vprime.cl", "empresa": "VPrime", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Camila Rivera", "rut": "18548640-0", "email": "camila.rivera@vprime.cl", "empresa": "VPrime", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Camila Aracelly Torrejon Pizarro", "rut": "20187801-2", "email": "camila.torrejon@vprime.cl", "empresa": "VPrime", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Capacitaciones VPrime", "rut": "Sin RUT / Externo", "email": "capacitaciones@vprime.cl", "empresa": "VPrime", "tipo": "Externo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Carlos González", "rut": "20553185-8", "email": "carlos.gonzalez@vprime.cl", "empresa": "VPrime", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Carmen Beatriz Ramirez Garcia", "rut": "25836888-6", "email": "carmen.ramirez@vprime.cl", "empresa": "VPrime", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Charlotte Fabiana Donoso Jofre", "rut": "14584291-3", "email": "charlotte.donoso@vprime.cl", "empresa": "VPrime", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Cotizaciones VPrime", "rut": "Sin RUT / Externo", "email": "cotizaciones@vprime.cl", "empresa": "VPrime", "tipo": "Externo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Cristina Andrea Fuentes Álvarez", "rut": "16088939-K", "email": "cristina.fuentes@vprime.cl", "empresa": "VPrime", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Detalle Comisional VPrime", "rut": "Sin RUT / Externo", "email": "detallecomisional@vprime.cl", "empresa": "VPrime", "tipo": "Externo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Diego Jose Robles Vivanco", "rut": "13550552-8", "email": "diego.robles@vprime.cl", "empresa": "VPrime", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Elizabeth Georgette Fuentes Lagos", "rut": "13755665-0", "email": "elizabeth.fuentes@vprime.cl", "empresa": "VPrime", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Emilia Sandoval", "rut": "21082855-9", "email": "emilia.sandoval@vprime.cl", "empresa": "VPrime", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Empresa vprime", "rut": "Sin RUT / Externo", "email": "empresa@vprime.cl", "empresa": "VPrime", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Felipe Ruiz", "rut": "Sin RUT / Externo", "email": "felipe.ruiz@vprime.cl", "empresa": "VPrime", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Fernanda Pacheco", "rut": "17745861-9", "email": "fernanda.pacheco@vprime.cl", "empresa": "VPrime", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Fernanda Eliana Stein Hernandez", "rut": "16700115-7", "email": "fernanda.stein@vprime.cl", "empresa": "VPrime", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Francisco Ignacio Muñoz Gutierrez", "rut": "20534374-1", "email": "francisco.munoz@vprime.cl", "empresa": "VPrime", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Franni Pineda", "rut": "Sin RUT / Externo", "email": "franni.pineda@vprime.cl", "empresa": "VPrime", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Giovanni Perez Inzunza", "rut": "17186241-8", "email": "giovanni.perez@vprime.cl", "empresa": "VPrime", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Gustavo Andres Rodriguez Maureira", "rut": "16746668-0", "email": "gustavo.rodriguez@vprime.cl", "empresa": "VPrime", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Isidora Elizabeth Ibañez Carrera", "rut": "21445345-2", "email": "isidora.ibanez@vprime.cl", "empresa": "VPrime", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Jennifer Solange Vera Silva", "rut": "18242852-3", "email": "jennifer.vera@vprime.cl", "empresa": "VPrime", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Jessica Romina Arias Rojas", "rut": "15353603-3", "email": "jessica.arias@vprime.cl", "empresa": "VPrime", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Josfel Romero", "rut": "27218312-0", "email": "josfel.romero@vprime.cl", "empresa": "VPrime", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Laura Alegria", "rut": "18458636-3", "email": "laura.alegria@vprime.cl", "empresa": "VPrime", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Laura Ortiz López", "rut": "26647176-9", "email": "laura.ortiz@vprime.cl", "empresa": "VPrime", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Lorena Salas Valdez", "rut": "9981186-2", "email": "lorena.salas@vprime.cl", "empresa": "VPrime", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Luis Manuel Huenchuleo Llevul", "rut": "13929365-7", "email": "luis.huenchuleo@vprime.cl", "empresa": "VPrime", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Manuel Alejandro Sanchez Avalos", "rut": "15404835-9", "email": "manuel.sanchez@vprime.cl", "empresa": "VPrime", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Maria Angel Hernandez Galindo", "rut": "27086839-8", "email": "maria.hernandez@vprime.cl", "empresa": "VPrime", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Maria Jose Coelho Orellana", "rut": "13696171-3", "email": "maria.coelho@vprime.cl", "empresa": "VPrime", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Marianny Guevara Silva", "rut": "26837748-4", "email": "marianny.guevara@vprime.cl", "empresa": "VPrime", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Mario Pacheco", "rut": "21690097-9", "email": "mario.pacheco@vprime.cl", "empresa": "VPrime", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Michael Albert Herrera Venegas", "rut": "16692567-3", "email": "michael.herrera@vprime.cl", "empresa": "VPrime", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Michel Antonieta Rodriguez Pino", "rut": "16709924-6", "email": "michel.rodriguez@vprime.cl", "empresa": "VPrime", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Monica Maldonado", "rut": "15711937-0", "email": "monica.maldonado@vprime.cl", "empresa": "VPrime", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Monica Cordova", "rut": "12909803-1", "email": "monica.cordova@vprime.cl", "empresa": "VPrime", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Monica Guillermina Soto Aedo", "rut": "16030189-9", "email": "monica.soto@vprime.cl", "empresa": "VPrime", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Nicolas Felipe Álvarez Álvarez", "rut": "19035866-6", "email": "nicolas.alvarez@vprime.cl", "empresa": "VPrime", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Nicolas Hernán Toledo Rojas", "rut": "16547786-3", "email": "nicolas.toledo@vprime.cl", "empresa": "VPrime", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Nicole Contreras", "rut": "16911762-4", "email": "nicole.contreras@vprime.cl", "empresa": "VPrime", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Norma Bravo", "rut": "13085261-0", "email": "norma.bravo@vprime.cl", "empresa": "VPrime", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Pablo Andrés De La Quintana Appelgreen", "rut": "13465660-3", "email": "pablo.delaquintana@vprime.cl", "empresa": "VPrime", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "pagos vprime", "rut": "Sin RUT / Externo", "email": "pagos@vprime.cl", "empresa": "VPrime", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Paloma Macarena Gomez Silva", "rut": "19058215-9", "email": "paloma.gomez@vprime.cl", "empresa": "VPrime", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Patricio Andrés Pardo Rojo", "rut": "17490037-k", "email": "patricio.pardo@vprime.cl", "empresa": "VPrime", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Patrick Castillo Garcia", "rut": "Sin RUT / Externo", "email": "patrick.castillo@vprime.cl", "empresa": "VPrime", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Paz Evelyn Ormeño Mansilla", "rut": "18691985-8", "email": "paz.ormeno@vprime.cl", "empresa": "VPrime", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Priscila Walker Mera", "rut": "15426020-K", "email": "priscila.walker@vprime.cl", "empresa": "VPrime", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Registro Asistencia", "rut": "Sin RUT / Externo", "email": "registrodeasistencia@vprime.cl", "empresa": "VPrime", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Rene Salinas Ojeda", "rut": "17516105-8", "email": "rene.salinas@vprime.cl", "empresa": "VPrime", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Rodrigo Vasquez", "rut": "Sin RUT / Externo", "email": "rodrigo.vasquez@vprime.cl", "empresa": "VPrime", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Sebastián Araya", "rut": "17663981-4", "email": "sebastian.araya@vprime.cl", "empresa": "VPrime", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Sebastián Felipe Correa Nieto", "rut": "18669826-6", "email": "sebastian.correa@vprime.cl", "empresa": "VPrime", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Sergio Labbe", "rut": "13900698-4", "email": "sergio.labbe@vprime.cl", "empresa": "VPrime", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Sofía Carvajal", "rut": "20952748-0", "email": "sofia.carvajal@vprime.cl", "empresa": "VPrime", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Solanda Lopez", "rut": "26498270-7", "email": "solanda.lopez@vprime.cl", "empresa": "VPrime", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "soporte vprime", "rut": "Sin RUT / Externo", "email": "soporte@vprime.cl", "empresa": "VPrime", "tipo": "Externo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Valentina Martinez", "rut": "18668344-7", "email": "valentina.martinez@vprime.cl", "empresa": "VPrime", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Valeria Ramirez", "rut": "19707819-7", "email": "valeria.ramirez@vprime.cl", "empresa": "VPrime", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Valeria Constanza Arratia Bahamondes", "rut": "18613074-K", "email": "valeria.arratia@vprime.cl", "empresa": "VPrime", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Valerie Belén Avendaño Barraza", "rut": "Sin RUT / Externo", "email": "valerie.avendano@vprime.cl", "empresa": "VPrime", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Valeska Blas", "rut": "Sin RUT / Externo", "email": "valeska.blas@vprime.cl", "empresa": "VPrime", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Víctor Calvio", "rut": "19317127-3", "email": "victor.calvio@vprime.cl", "empresa": "VPrime", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Ximena Andrea Olivares Nuñez", "rut": "12031046-1", "email": "ximena.olivares@vprime.cl", "empresa": "VPrime", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Yasna Karina Leal Carvajal", "rut": "17923232-4", "email": "yasna.leal@vprime.cl", "empresa": "VPrime", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Yenifer Perez", "rut": "Sin RUT / Externo", "email": "yenifer.perez@vprime.cl", "empresa": "VPrime", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}, {"nombre": "Yonathan Patricio Millan Mancilla", "rut": "19817637-0", "email": "yonathan.millan@vprime.cl", "empresa": "VPrime", "tipo": "Ejecutivo", "licencia": "Microsoft 365 Empresa Básico"}];
 
+    let directoryUsersMemoryCache = null;
+
     function loadDirectoryUsers() {
+        if (Array.isArray(directoryUsersMemoryCache)) return directoryUsersMemoryCache;
         try {
             const raw = localStorage.getItem('company_directory_users');
             if (raw) {
                 const parsed = JSON.parse(raw);
                 if (Array.isArray(parsed) && parsed.length >= DEFAULT_DIRECTORY_USERS.length) {
-                    return parsed;
+                    directoryUsersMemoryCache = parsed;
+                    return directoryUsersMemoryCache;
                 }
             }
         } catch(e) {
             console.error('Error loading directory users:', e);
         }
         saveDirectoryUsers(DEFAULT_DIRECTORY_USERS);
-        return DEFAULT_DIRECTORY_USERS;
+        directoryUsersMemoryCache = DEFAULT_DIRECTORY_USERS;
+        return directoryUsersMemoryCache;
     }
 
     function saveDirectoryUsers(users) {
+        directoryUsersMemoryCache = users;
         try {
             localStorage.setItem('company_directory_users', JSON.stringify(users));
         } catch(e) {
@@ -113,27 +120,29 @@ document.addEventListener('DOMContentLoaded', () => {
                     
                     const merged = Array.from(map.values());
                     
-                    try {
-                        localStorage.setItem('company_directory_users', JSON.stringify(merged));
-                    } catch(e) {}
+                    saveDirectoryUsers(merged);
                     
-                    if (typeof renderDirectoryPage === 'function') {
+                    const directoryPageVisible = document.getElementById('page-usuarios')?.classList.contains('active-page');
+                    const directoryTabVisible = document.getElementById('user-tab-directorio-content')?.style.display !== 'none';
+                    if (typeof renderDirectoryPage === 'function' && directoryPageVisible && directoryTabVisible) {
                         renderDirectoryPage();
                     }
 
-                    // Subir a Supabase los usuarios locales que no existían allí (Sincronización inicial)
+                    // Subir faltantes por lotes para evitar cientos de peticiones individuales.
                     if (usersToUpload.length > 0) {
                         let successCount = 0;
-                        for (const u of usersToUpload) {
+                        const batchSize = 100;
+                        for (let index = 0; index < usersToUpload.length; index += batchSize) {
+                            const batch = usersToUpload.slice(index, index + batchSize);
                             try {
-                                const { error } = await supabase.from('directorio_usuarios').upsert([u], { onConflict: 'email' });
+                                const { error } = await supabase.from('directorio_usuarios').upsert(batch, { onConflict: 'email' });
                                 if (error) {
-                                    console.warn('Error subiendo a Supabase:', u.email, error.message);
+                                    console.warn('Error sincronizando lote de colaboradores:', error.message);
                                 } else {
-                                    successCount++;
+                                    successCount += batch.length;
                                 }
                             } catch(err) {
-                                console.warn('Excepción subiendo usuario a Supabase:', u.email, err);
+                                console.warn('Excepción sincronizando lote de colaboradores:', err);
                             }
                         }
                         console.log(`Sincronizados ${successCount} de ${usersToUpload.length} usuarios locales a Supabase.`);
@@ -143,6 +152,53 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.warn('Error en fetchDirectoryUsersFromSupabase:', err);
             }
         }
+    }
+
+    const TICKET_OFFICES_BY_COMPANY = {
+        'T-Sales': [
+            'Latadia 4602, Las Condes',
+            'Agustinas 641, oficina 501, Santiago',
+            'Calle Doce Norte 996, Viña del Mar'
+        ],
+        'VPrime': [
+            'Eliodoro Yáñez 2318, Providencia',
+            'Agustinas 641, oficina 501, Santiago'
+        ],
+        'Infinet': [
+            'Fanor Velasco 85, oficina 201, Santiago'
+        ]
+    };
+
+    function updateTicketOfficeOptions(companyName) {
+        const officeSelect = document.getElementById('ticket-office');
+        if (!officeSelect) return;
+
+        const companyKey = Object.keys(TICKET_OFFICES_BY_COMPANY).find(
+            key => normalizeStr(key) === normalizeStr(companyName)
+        ) || 'Infinet';
+        const offices = TICKET_OFFICES_BY_COMPANY[companyKey];
+        const previousOffice = officeSelect.value;
+
+        officeSelect.innerHTML = '';
+        if (offices.length > 1) {
+            const placeholder = document.createElement('option');
+            placeholder.value = '';
+            placeholder.textContent = `Selecciona una sede de ${companyKey}`;
+            placeholder.disabled = true;
+            placeholder.selected = !offices.includes(previousOffice);
+            officeSelect.appendChild(placeholder);
+        }
+
+        offices.forEach(office => {
+            const option = document.createElement('option');
+            option.value = office;
+            option.textContent = office;
+            option.selected = office === previousOffice || offices.length === 1;
+            officeSelect.appendChild(option);
+        });
+
+        officeSelect.dataset.company = companyKey;
+        officeSelect.setAttribute('aria-label', `Sede de ${companyKey}`);
     }
 
     function selectCompanyCard(companyName) {
@@ -163,32 +219,48 @@ document.addEventListener('DOMContentLoaded', () => {
             targetCard.style.borderColor = 'var(--accent-blue)';
             const badge = targetCard.querySelector('.company-check-badge');
             if (badge) badge.style.display = 'flex';
+            updateTicketOfficeOptions(targetCard.getAttribute('data-company'));
         }
     }
 
 
     let supabaseRolesTableOk = true;
+    let userRolesCache = [];
+    let userRolesCacheAt = 0;
+    let userRolesFetchInFlight = null;
 
     async function fetchUserRolesFromSupabase() {
+        if (userRolesFetchInFlight) return userRolesFetchInFlight;
+        if (Date.now() - userRolesCacheAt < 30000) return userRolesCache;
+
         if (!useLocalFallback && supabase) {
-            try {
-                const { data, error } = await supabase
-                    .from('user_roles')
-                    .select('*');
-                if (error) {
-                    if (error.code === '42P01' || (error.message && error.message.includes('does not exist'))) {
+            userRolesFetchInFlight = (async () => {
+                try {
+                    const { data, error } = await supabase
+                        .from('user_roles')
+                        .select('*');
+                    if (error) {
+                        if (error.code === '42P01' || (error.message && error.message.includes('does not exist'))) {
+                            supabaseRolesTableOk = false;
+                        }
+                        throw error;
+                    }
+                    supabaseRolesTableOk = true;
+                    userRolesCache = data || [];
+                    userRolesCacheAt = Date.now();
+                    return userRolesCache;
+                } catch (err) {
+                    console.warn('Error fetching roles from Supabase, using local fallback:', err);
+                    if (err.code === '42P01' || (err.message && err.message.includes('does not exist'))) {
                         supabaseRolesTableOk = false;
                     }
-                    throw error;
+                    userRolesCacheAt = Date.now();
+                    return userRolesCache;
+                } finally {
+                    userRolesFetchInFlight = null;
                 }
-                supabaseRolesTableOk = true;
-                return data || [];
-            } catch (err) {
-                console.warn('Error fetching roles from Supabase, using local fallback:', err);
-                if (err.code === '42P01' || (err.message && err.message.includes('does not exist'))) {
-                    supabaseRolesTableOk = false;
-                }
-            }
+            })();
+            return userRolesFetchInFlight;
         }
         return [];
     }
@@ -201,6 +273,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     .upsert({ email: email.toLowerCase().trim(), role: role }, { onConflict: 'email' });
                 if (error) throw error;
                 supabaseRolesTableOk = true;
+                const normalizedEmail = email.toLowerCase().trim();
+                const cachedIndex = userRolesCache.findIndex(item => (item.email || '').toLowerCase() === normalizedEmail);
+                if (cachedIndex >= 0) userRolesCache[cachedIndex] = { ...userRolesCache[cachedIndex], role };
+                else userRolesCache.push({ email: normalizedEmail, role });
+                userRolesCacheAt = Date.now();
                 return { success: true };
             } catch (err) {
                 console.error('Error updating role in Supabase:', err);
@@ -233,9 +310,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 localUsers.push(defUser);
             } else {
                 if (!exists.password) exists.password = defUser.password;
-                if (exists.baseCreados === undefined) exists.baseCreados = defUser.baseCreados;
-                if (exists.baseAsignados === undefined) exists.baseAsignados = defUser.baseAsignados;
-                if (exists.baseResueltos === undefined) exists.baseResueltos = defUser.baseResueltos;
                 if (defUser.role) exists.role = defUser.role;
             }
         });
@@ -330,17 +404,40 @@ document.addEventListener('DOMContentLoaded', () => {
             const modVal = getVal(/Modalidad:\s*([^|\]]+)/i);
             if (modVal && !meta.modalidad) meta.modalidad = modVal;
 
-            const clientPart = getVal(/Cliente:\s*([^\]]+)/i);
+            const clientPart = getVal(/Cliente:\s*([^|\]\n]+)/i);
             if (clientPart && !meta.cliente_nombre) {
-                const clientMatch = clientPart.match(/^([^(]+)(?:\(([^)]+)\))?\s*-\s*([^\s]+)/);
-                if (clientMatch) {
-                    meta.cliente_nombre = clientMatch[1].trim();
-                    meta.cliente_rut = clientMatch[2] ? clientMatch[2].trim() : '';
-                    meta.cliente_email = clientMatch[3] ? clientMatch[3].trim() : '';
-                } else {
-                    meta.cliente_nombre = clientPart.trim();
+                let cleanClient = clientPart.trim().replace(/\s*-\s*$/, '').trim();
+                const emailMatch = cleanClient.match(/-\s*([^\s]+@[^\s]+)$/i);
+                if (emailMatch) {
+                    meta.cliente_email = emailMatch[1].trim();
+                    cleanClient = cleanClient.slice(0, emailMatch.index).trim();
                 }
+                const rutMatch = cleanClient.match(/\(([^)]*)\)/);
+                if (rutMatch && rutMatch[1].trim()) meta.cliente_rut = rutMatch[1].trim();
+                cleanClient = cleanClient.replace(/\([^)]*\)/g, '').replace(/\s*-\s*$/, '').trim();
+                meta.cliente_nombre = cleanClient || ticket.usuario_nombre || '';
             }
+        }
+
+        // Limpiar metadatos antiguos y completar el colaborador desde el directorio.
+        if (meta.cliente_nombre) {
+            meta.cliente_nombre = meta.cliente_nombre
+                .split('|')[0]
+                .replace(/\([^)]*\)\s*-?\s*$/, '')
+                .replace(/\s*-\s*$/, '')
+                .trim();
+        }
+        const normalizeIdentityRut = value => String(value || '').toLowerCase().replace(/[^0-9k]/g, '');
+        const directoryMatch = loadDirectoryUsers().find(user =>
+            (meta.cliente_email && normalizeStr(user.email) === normalizeStr(meta.cliente_email)) ||
+            (meta.cliente_rut && normalizeIdentityRut(user.rut) === normalizeIdentityRut(meta.cliente_rut)) ||
+            (meta.cliente_nombre && normalizeStr(user.nombre) === normalizeStr(meta.cliente_nombre))
+        );
+        if (directoryMatch) {
+            if (!meta.cliente_nombre) meta.cliente_nombre = directoryMatch.nombre || '';
+            if (!meta.cliente_rut) meta.cliente_rut = directoryMatch.rut || '';
+            if (!meta.cliente_email) meta.cliente_email = directoryMatch.email || '';
+            if (!meta.empresa) meta.empresa = directoryMatch.empresa || '';
         }
 
         // Final fallbacks
@@ -348,9 +445,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!meta.telefono) meta.telefono = 'No proporcionado';
         if (!meta.dispositivo || meta.dispositivo === 'ninguno') meta.dispositivo = 'Ninguno / Otro';
         if (!meta.modalidad) meta.modalidad = 'Online';
-        if (!meta.cliente_nombre) meta.cliente_nombre = ticket.usuario_nombre || 'S/A';
-        if (!meta.cliente_rut) meta.cliente_rut = ticket.usuario_rut || 'S/A';
-        if (!meta.cliente_email) meta.cliente_email = ticket.usuario_email || 'S/A';
+        const hasClientIdentity = Boolean(meta.cliente_nombre || meta.cliente_rut || meta.cliente_email);
+        if (!meta.cliente_nombre) meta.cliente_nombre = !hasClientIdentity ? (ticket.usuario_nombre || 'S/A') : 'S/A';
+        if (!meta.cliente_rut) meta.cliente_rut = !hasClientIdentity ? (ticket.usuario_rut || 'S/A') : 'S/A';
+        if (!meta.cliente_email) meta.cliente_email = !hasClientIdentity ? (ticket.usuario_email || 'S/A') : 'S/A';
 
         return meta;
     }
@@ -406,11 +504,19 @@ document.addEventListener('DOMContentLoaded', () => {
     async function fetchTickets() {
         if (!useLocalFallback && supabase) {
             try {
-                const { data, error } = await supabase
-                    .from('tickets')
-                    .select('*')
-                    .order('created_at', { ascending: false });
-                if (error) throw error;
+                const data = [];
+                const pageSize = 1000;
+                for (let from = 0; ; from += pageSize) {
+                    const { data: page, error } = await supabase
+                        .from('tickets')
+                        .select('*')
+                        .order('created_at', { ascending: false })
+                        .range(from, from + pageSize - 1);
+                    if (error) throw error;
+                    const rows = Array.isArray(page) ? page : [];
+                    data.push(...rows);
+                    if (rows.length < pageSize) break;
+                }
                 
                 // Merge local updates (like assignments or status changes that failed on Supabase)
                 const localUpdates = JSON.parse(localStorage.getItem('ticket_updates')) || {};
@@ -935,8 +1041,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (targetPageId === 'page-crear-ticket') {
             prefillTicketClientFields();
         } else if (targetPageId === 'page-usuarios') {
-            renderUsuariosPage();
-            renderDirectoryPage();
+            const rolesTabActive = document.getElementById('tab-btn-roles')?.classList.contains('active');
+            if (rolesTabActive) renderUsuariosPage();
+            else renderDirectoryPage();
         } else if (targetPageId === 'page-panel-m365') {
             if (typeof renderM365Panel === 'function') {
                 renderM365Panel();
@@ -1243,14 +1350,73 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentTicketPage = 1;
     let currentTicketScope = 'mis-tickets'; // 'mis-tickets' | 'todos'
     const ticketsPerPage = 10;
+    let refreshTicketsInFlight = null;
 
     async function refreshTickets() {
-        allTicketsCached = await fetchTickets();
-        updateStats(allTicketsCached);
-        updateFilterCounts(allTicketsCached);
-        applyTicketsFilterAndSearch();
-        renderAttentionTicketsTable(allTicketsCached);
-        renderTechniciansTables(allTicketsCached);
+        if (refreshTicketsInFlight) return refreshTicketsInFlight;
+
+        refreshTicketsInFlight = (async () => {
+            allTicketsCached = await fetchTickets();
+            updateStats(allTicketsCached);
+            updateFilterCounts(allTicketsCached);
+            applyTicketsFilterAndSearch();
+            renderAttentionTicketsTable(allTicketsCached);
+            renderTechniciansTables(allTicketsCached);
+            return allTicketsCached;
+        })();
+
+        try {
+            return await refreshTicketsInFlight;
+        } finally {
+            refreshTicketsInFlight = null;
+        }
+    }
+
+    function technicianIdentityMatches(value, technician) {
+        const candidate = normalizeStr(value);
+        if (!candidate) return false;
+
+        const fullName = normalizeStr(technician.nombre);
+        const email = normalizeStr(technician.email);
+        const emailUser = email.split('@')[0];
+        const nameParts = fullName.split(/\s+/).filter(Boolean);
+        const firstName = nameParts[0] || '';
+        const lastName = nameParts[nameParts.length - 1] || '';
+
+        return candidate === fullName ||
+            candidate === email ||
+            candidate === emailUser ||
+            (firstName && lastName && candidate.includes(firstName) && candidate.includes(lastName));
+    }
+
+    function getTechnicianTicketMetrics(tickets, technician) {
+        const source = Array.isArray(tickets) ? tickets : [];
+        const assigned = source.filter(ticket => {
+            const meta = extractMetadata(ticket);
+            return technicianIdentityMatches(ticket.tecnico_asignado || meta.tecnico_asignado, technician);
+        });
+        const resolved = source.filter(ticket => {
+            if (normalizeStr(ticket.estado) !== 'resuelto') return false;
+            const meta = extractMetadata(ticket);
+            const assignedTo = ticket.tecnico_asignado || meta.tecnico_asignado;
+            return assignedTo
+                ? technicianIdentityMatches(assignedTo, technician)
+                : technicianIdentityMatches(ticket.resuelto_por, technician);
+        });
+
+        const assignedTickets = new Set(assigned);
+        const resolvedAssigned = resolved.filter(ticket => assignedTickets.has(ticket)).length;
+        const pending = Math.max(0, assigned.length - resolvedAssigned);
+        const resolutionRate = assigned.length > 0
+            ? Math.round((resolvedAssigned / assigned.length) * 100)
+            : 0;
+
+        return {
+            assigned: assigned.length,
+            resolved: resolved.length,
+            pending,
+            resolutionRate
+        };
     }
 
     function renderTechniciansTables(tickets) {
@@ -1264,49 +1430,28 @@ document.addEventListener('DOMContentLoaded', () => {
                 email: 'omar.galvez@t-sales.cl',
                 initials: 'OG',
                 bgClass: 'bg-indigo',
-                role: 'Administrador / Soporte',
-                baseResueltos: 398,
-                tiempoProm: '4m 12s',
-                slaPct: '98%',
-                satisfaccion: '4.9'
+                role: 'Administrador / Soporte'
             },
             {
                 nombre: 'Felipe Olivares',
                 email: 'felipe.olivares@t-sales.cl',
                 initials: 'FO',
                 bgClass: 'bg-blue',
-                role: 'Administrador / Soporte',
-                baseResueltos: 388,
-                tiempoProm: '5m 03s',
-                slaPct: '96%',
-                satisfaccion: '4.8'
+                role: 'Administrador / Soporte'
             },
             {
                 nombre: 'Belfor Aburto',
                 email: 'belfor.aburto@t-sales.cl',
                 initials: 'BA',
                 bgClass: 'bg-purple',
-                role: 'Administrador TI',
-                baseResueltos: 6,
-                tiempoProm: '3m 45s',
-                slaPct: '99%',
-                satisfaccion: '5.0'
+                role: 'Administrador TI'
             }
         ];
 
-        const techStats = team.map(tech => {
-            const nameLower = tech.nombre.toLowerCase().trim();
-            const resueltosNuevos = (tickets || []).filter(t => 
-                (t.resuelto_por || '').toLowerCase().trim() === nameLower ||
-                (t.estado === 'resuelto' && (t.tecnico_asignado || '').toLowerCase().trim() === nameLower)
-            ).length;
-
-            return {
-                ...tech,
-                resueltos: tech.baseResueltos + resueltosNuevos,
-                estado: 'En línea'
-            };
-        });
+        const techStats = team.map(tech => ({
+            ...tech,
+            ...getTechnicianTicketMetrics(tickets, tech)
+        })).sort((a, b) => b.resolved - a.resolved || b.assigned - a.assigned);
 
         if (dashTbody) {
             dashTbody.innerHTML = techStats.map(t => `
@@ -1315,10 +1460,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         <div class="tech-avatar-mini ${t.bgClass}">${t.initials}</div>
                         <span class="tech-name">${escapeHtml(t.nombre)}</span>
                     </td>
-                    <td class="val-bold">${t.resueltos}</td>
-                    <td>${t.tiempoProm}</td>
-                    <td class="text-positive font-bold">${t.slaPct}</td>
-                    <td><span class="star-rating"><i class="fas fa-star"></i> ${t.satisfaccion}</span></td>
+                    <td>${t.assigned}</td>
+                    <td class="val-bold">${t.resolved}</td>
+                    <td>${t.pending}</td>
+                    <td class="text-positive font-bold">${t.resolutionRate}%</td>
                 </tr>
             `).join('');
         }
@@ -1333,13 +1478,33 @@ document.addEventListener('DOMContentLoaded', () => {
                             <small style="color: var(--text-secondary);">${escapeHtml(t.email)}</small>
                         </div>
                     </td>
-                    <td class="val-bold">${t.resueltos}</td>
-                    <td>${t.tiempoProm}</td>
-                    <td class="text-positive font-bold">${t.slaPct}</td>
-                    <td><span class="star-rating"><i class="fas fa-star"></i> ${t.satisfaccion}</span></td>
-                    <td><span class="status-badge status-resuelto"><i class="fas fa-circle" style="font-size: 0.5rem; margin-right: 4px;"></i> ${t.estado}</span></td>
+                    <td>${t.assigned}</td>
+                    <td class="val-bold">${t.resolved}</td>
+                    <td>${t.pending}</td>
+                    <td class="text-positive font-bold">${t.resolutionRate}%</td>
+                    <td><span class="status-badge ${t.assigned > 0 ? 'status-resuelto' : 'status-espera'}">${t.assigned > 0 ? 'Con actividad' : 'Sin actividad'}</span></td>
                 </tr>
             `).join('');
+        }
+
+        const highlighted = techStats[0];
+        if (highlighted) {
+            const avatar = document.getElementById('featured-tech-avatar');
+            const name = document.getElementById('featured-tech-name');
+            const role = document.getElementById('featured-tech-role');
+            const resolved = document.getElementById('featured-tech-resolved');
+            const assigned = document.getElementById('featured-tech-assigned');
+            const rate = document.getElementById('featured-tech-rate');
+            if (avatar) {
+                avatar.textContent = highlighted.initials;
+                avatar.className = `tech-avatar-mini ${highlighted.bgClass}`;
+                avatar.style.cssText = 'width: 72px; height: 72px; font-size: 1.8rem; margin: 0 auto 16px; box-shadow: 0 0 25px rgba(97,62,234,0.4);';
+            }
+            if (name) name.textContent = highlighted.nombre;
+            if (role) role.textContent = 'Mayor cantidad de tickets resueltos';
+            if (resolved) resolved.textContent = highlighted.resolved;
+            if (assigned) assigned.textContent = highlighted.assigned;
+            if (rate) rate.textContent = `${highlighted.resolutionRate}%`;
         }
     }
 
@@ -1404,8 +1569,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const openTickets = tickets.filter(t => t.estado === 'abierto' || t.estado === 'en progreso' || t.estado === 'en espera');
         const unassignedTickets = openTickets.filter(t => !t.tecnico_asignado);
 
-        if (statsOpen) statsOpen.textContent = openTickets.length || 5;
-        if (statsUnassigned) statsUnassigned.textContent = `${unassignedTickets.length || 3} sin asignar`;
+        if (statsOpen) statsOpen.textContent = openTickets.length;
+        if (statsUnassigned) statsUnassigned.textContent = `${unassignedTickets.length} sin asignar`;
         
         let myOpenTickets = openTickets;
         if (currentSession) {
@@ -1605,7 +1770,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const priorityBadge = priorityBadges[ticket.prioridad.toLowerCase()] || priorityBadges['media'];
 
             const deleteBtnHtml = (currentSession && currentSession.role === 'admin') 
-                ? `<button class="action-btn action-delete" title="Eliminar ticket" style="background-color: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); margin-left: 4px;"><i class="fas fa-trash-alt"></i></button>`
+                ? `<button type="button" class="action-btn action-delete" title="Eliminar ticket" aria-label="Eliminar ticket"><i class="fas fa-trash-alt"></i></button>`
                 : '';
 
             const showTakeBtn = !ticket.tecnico_asignado && currentSession && (currentSession.role === 'admin' || currentSession.role === 'technician');
@@ -1641,7 +1806,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td class="ticket-time">${formatRelativeTime(ticket.created_at)}</td>
                 <td class="ticket-actions">
                     ${takeBtnHtml}
-                    <button class="action-btn action-view" title="Ver ticket"><i class="fas fa-eye"></i></button>
+                    <button type="button" class="action-btn action-view" title="Ver detalles del ticket" aria-label="Ver detalles del ticket"><i class="fas fa-eye"></i></button>
                     ${deleteBtnHtml}
                 </td>
             `;
@@ -1880,11 +2045,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const nameLower = user.nombre.toLowerCase().trim();
             const emailLower = user.email.toLowerCase().trim();
 
-            const baseCreados = user.baseCreados !== undefined ? user.baseCreados : (nameLower.includes('belfor') ? 10 : (nameLower.includes('felipe') ? 334 : (nameLower.includes('omar') ? 362 : 0)));
-            const baseAsignados = user.baseAsignados !== undefined ? user.baseAsignados : (nameLower.includes('belfor') ? 0 : (nameLower.includes('felipe') ? 393 : (nameLower.includes('omar') ? 398 : 0)));
-            const baseResueltos = user.baseResueltos !== undefined ? user.baseResueltos : (nameLower.includes('belfor') ? 6 : (nameLower.includes('felipe') ? 388 : (nameLower.includes('omar') ? 398 : 0)));
-
-            const ticketsCreados = baseCreados + allTicketsCached.filter(t => {
+            const ticketsCreados = allTicketsCached.filter(t => {
                 const meta = extractMetadata(t);
                 const uName = (t.usuario_nombre || '').toLowerCase().trim();
                 const cName = (meta.cliente_nombre || '').toLowerCase().trim();
@@ -1892,15 +2053,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 const cEmail = (meta.cliente_email || '').toLowerCase().trim();
                 return uName === nameLower || cName === nameLower || uEmail === emailLower || cEmail === emailLower;
             }).length;
-
-            const ticketsAsignados = baseAsignados + allTicketsCached.filter(t => 
-                (t.tecnico_asignado || '').toLowerCase().trim() === nameLower
-            ).length;
-
-            const ticketsResueltos = baseResueltos + allTicketsCached.filter(t => 
-                (t.resuelto_por || '').toLowerCase().trim() === nameLower || 
-                (t.estado === 'resuelto' && (t.tecnico_asignado || '').toLowerCase().trim() === nameLower)
-            ).length;
+            const technicianMetrics = getTechnicianTicketMetrics(allTicketsCached, user);
+            const ticketsAsignados = technicianMetrics.assigned;
+            const ticketsResueltos = technicianMetrics.resolved;
 
             const initials = user.nombre.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
             const roleBadge = user.role === 'admin' 
@@ -1953,11 +2108,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const nameLower = user.nombre.toLowerCase().trim();
                 const emailLower = user.email.toLowerCase().trim();
 
-                const baseCreados = user.baseCreados !== undefined ? user.baseCreados : (nameLower.includes('belfor') ? 10 : (nameLower.includes('felipe') ? 334 : (nameLower.includes('omar') ? 362 : 0)));
-                const baseAsignados = user.baseAsignados !== undefined ? user.baseAsignados : (nameLower.includes('belfor') ? 0 : (nameLower.includes('felipe') ? 393 : (nameLower.includes('omar') ? 398 : 0)));
-                const baseResueltos = user.baseResueltos !== undefined ? user.baseResueltos : (nameLower.includes('belfor') ? 6 : (nameLower.includes('felipe') ? 388 : (nameLower.includes('omar') ? 398 : 0)));
-
-                const ticketsCreados = baseCreados + allTicketsCached.filter(t => {
+                const ticketsCreados = allTicketsCached.filter(t => {
                     const meta = extractMetadata(t);
                     const uName = (t.usuario_nombre || '').toLowerCase().trim();
                     const cName = (meta.cliente_nombre || '').toLowerCase().trim();
@@ -1965,15 +2116,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     const cEmail = (meta.cliente_email || '').toLowerCase().trim();
                     return uName === nameLower || cName === nameLower || uEmail === emailLower || cEmail === emailLower;
                 }).length;
-
-                const ticketsAsignados = baseAsignados + allTicketsCached.filter(t => 
-                    (t.tecnico_asignado || '').toLowerCase().trim() === nameLower
-                ).length;
-
-                const ticketsResueltos = baseResueltos + allTicketsCached.filter(t => 
-                    (t.resuelto_por || '').toLowerCase().trim() === nameLower || 
-                    (t.estado === 'resuelto' && (t.tecnico_asignado || '').toLowerCase().trim() === nameLower)
-                ).length;
+                const technicianMetrics = getTechnicianTicketMetrics(allTicketsCached, user);
+                const ticketsAsignados = technicianMetrics.assigned;
+                const ticketsResueltos = technicianMetrics.resolved;
 
                 const initials = user.nombre.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
                 const roleBadge = user.role === 'admin' 
@@ -2063,7 +2208,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     await renderUsuariosPage();
                     
                     // Update main layout access
-                    applySession(currentSession);
+                    applySession(currentSession, false);
                 }
             });
         });
@@ -2284,8 +2429,12 @@ document.addEventListener('DOMContentLoaded', () => {
             card.style.borderColor = 'var(--accent-blue)';
             const badge = card.querySelector('.company-check-badge');
             if (badge) badge.style.display = 'flex';
+            updateTicketOfficeOptions(card.getAttribute('data-company'));
         });
     });
+
+    const initialCompanyCard = document.querySelector('.company-card.active');
+    if (initialCompanyCard) updateTicketOfficeOptions(initialCompanyCard.getAttribute('data-company'));
 
     // Listener para Estado Inicial del Ticket
     const ticketStatusSelect = document.getElementById('ticket-status-select');
@@ -2509,6 +2658,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function openTicketDetailModal(ticket) {
         activeTicketId = ticket.id;
+
+        // Mostrar el panel antes de cargar la conversación remota.
+        const modal = document.getElementById('ticket-detail-modal');
+        if (modal) {
+            const profileModal = document.getElementById('modal-perfil-colaborador');
+            modal.classList.toggle('ticket-over-profile', profileModal?.style.display === 'flex');
+            modal.style.display = 'flex';
+        }
         
         const meta = extractMetadata(ticket);
 
@@ -2567,6 +2724,32 @@ document.addEventListener('DOMContentLoaded', () => {
             prioBadge.innerHTML = `<span class="p-dot"></span> Prioridad ${p.charAt(0).toUpperCase() + p.slice(1)}`;
         }
 
+        // Resumen operativo: solo usa información real almacenada en el ticket.
+        const summaryStatus = document.getElementById('ticket-summary-status');
+        const summaryOwner = document.getElementById('ticket-summary-owner');
+        const summaryAge = document.getElementById('ticket-summary-age');
+        const summaryUpdated = document.getElementById('ticket-summary-updated');
+        const summaryResolution = document.getElementById('ticket-summary-resolution');
+        const stateText = ticket.estado || 'abierto';
+        const stateLabel = stateText.charAt(0).toUpperCase() + stateText.slice(1);
+        if (summaryStatus) {
+            summaryStatus.textContent = stateLabel;
+            summaryStatus.dataset.state = stateText.toLowerCase().replace(/\s+/g, '-');
+        }
+        if (summaryOwner) summaryOwner.textContent = ticket.tecnico_asignado || meta.tecnico_asignado || 'Sin asignar';
+        if (summaryAge) summaryAge.textContent = ticket.created_at ? formatRelativeTime(ticket.created_at) : 'Sin fecha';
+        const lastActivity = ticket.updated_at || ticket.fecha_resolucion || ticket.created_at;
+        if (summaryUpdated) summaryUpdated.textContent = lastActivity ? `Actualizado ${formatRelativeTime(lastActivity).toLowerCase()}` : 'Sin actualizaciones';
+        if (summaryResolution) {
+            const resolutionText = ticket.resolucion || ticket.resolucion_nota || '';
+            const isResolved = stateText.toLowerCase() === 'resuelto' || stateText.toLowerCase() === 'cerrado';
+            summaryResolution.classList.toggle('has-resolution', Boolean(resolutionText));
+            summaryResolution.innerHTML = `
+                <i class="fas ${isResolved ? 'fa-check-circle' : 'fa-info-circle'}"></i>
+                <div><span>Resolución</span><strong>${escapeHtml(resolutionText || (isResolved ? 'Resuelto sin una nota de resolución.' : 'Pendiente de resolución.'))}</strong></div>
+            `;
+        }
+
         // 1. Lógica de Sugerencias de Solución por IA
         const aiDiag = document.getElementById('modal-ai-diagnosis');
         const aiStepsList = document.getElementById('modal-ai-steps-list');
@@ -2584,7 +2767,18 @@ document.addEventListener('DOMContentLoaded', () => {
             { text: "Base de Conocimientos TI", cat: "general" }
         ];
 
-        if (contentLower.includes('vpn') || contentLower.includes('globalprotect') || contentLower.includes('portal')) {
+        if (contentLower.includes('cambio') && (contentLower.includes('nombre') || contentLower.includes('correo') || contentLower.includes('mail'))) {
+            diagText = "Solicitud de actualización de identidad o dirección principal de correo. Es necesario validar el alcance antes de modificar la cuenta.";
+            steps = [
+                "Confirmar con el solicitante el nombre actual, el nuevo nombre y la dirección requerida.",
+                "Revisar si el cambio afecta el nombre visible, el alias o el nombre principal de inicio de sesión.",
+                "Aplicar el cambio, validar el acceso y comprobar el envío y recepción de correo."
+            ];
+            kbLinks = [
+                { text: "Administración de cuentas M365", cat: "cuenta" },
+                { text: "Configuración de correo", cat: "outlook" }
+            ];
+        } else if (contentLower.includes('vpn') || contentLower.includes('globalprotect') || contentLower.includes('portal')) {
             diagText = "Fallo de negociación de túnel SSL/TLS o credenciales expiradas en portal de Palo Alto Networks.";
             steps = [
                 "Verificar conectividad a Internet del equipo y portal https://vpn.t-sales.cl.",
@@ -2595,7 +2789,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 { text: "Configurar GlobalProtect VPN", cat: "vpn" },
                 { text: "MFA y Autenticación M365", cat: "contraseñas" }
             ];
-        } else if (contentLower.includes('outlook') || contentLower.includes('correo') || contentLower.includes('mail') || contentLower.includes('ost')) {
+        } else if (contentLower.includes('outlook') || contentLower.includes('ost')) {
             diagText = "Posible corrupción en archivo local de datos OST o desincronización con Exchange Online / M365.";
             steps = [
                 "Iniciar Outlook en modo seguro (`outlook.exe /safe`) para descartar complementos COM.",
@@ -2647,14 +2841,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         if (aiSimilarLinks) {
             aiSimilarLinks.innerHTML = kbLinks.map(l => `
-                <span class="ai-link-pill" onclick="openKbCategory('${l.cat}')">
+                <button type="button" class="ai-link-pill" onclick="openKbCategory('${l.cat}')">
                     <i class="fas fa-book"></i> ${escapeHtml(l.text)}
-                </span>
-            `).join('') + `
-                <span class="ai-link-pill" onclick="alert('Ticket anterior #TK-1039 con solución similar aplicado exitosamente.')">
-                    <i class="fas fa-check-circle" style="color: var(--accent-green);"></i> #TK-1039 (Resuelto)
-                </span>
-            `;
+                </button>
+            `).join('');
         }
 
         // 2. Lógica del Contexto del Usuario Solicitante
@@ -2667,25 +2857,58 @@ document.addEventListener('DOMContentLoaded', () => {
         const userOS = document.getElementById('modal-user-ctx-so');
         const userPastTickets = document.getElementById('modal-user-past-tickets');
 
+        const cleanIdentity = value => normalizeStr(value).replace(/[^a-z0-9k@.]+/g, '');
+        const directoryUser = loadDirectoryUsers().find(user =>
+            (meta.cliente_email && normalizeStr(user.email) === normalizeStr(meta.cliente_email)) ||
+            (meta.cliente_rut && cleanIdentity(user.rut) === cleanIdentity(meta.cliente_rut)) ||
+            (meta.cliente_nombre && normalizeStr(user.nombre) === normalizeStr(meta.cliente_nombre))
+        );
+        let storedEquipments = Array.isArray(allEquiposCached) ? allEquiposCached : [];
+        if (storedEquipments.length === 0) {
+            try { storedEquipments = JSON.parse(localStorage.getItem('local_equipos') || '[]'); } catch (error) {}
+        }
+        const userEquipment = storedEquipments.find(eq =>
+            (meta.cliente_email && normalizeStr(eq.usuario_email) === normalizeStr(meta.cliente_email)) ||
+            (meta.cliente_rut && cleanIdentity(eq.usuario_rut) === cleanIdentity(meta.cliente_rut)) ||
+            (meta.cliente_nombre && normalizeStr(eq.usuario_nombre || eq.asignado) === normalizeStr(meta.cliente_nombre))
+        );
+
         if (userAvatar) userAvatar.textContent = userInit;
-        if (userCompany) userCompany.textContent = meta.empresa || 'T-Sales';
-        if (userRole) userRole.textContent = meta.cargo || 'Ejecutivo Comercial';
-        if (userDevice) userDevice.textContent = meta.dispositivo || 'Notebook Dell Latitude 5420';
-        if (userOS) userOS.textContent = meta.so || 'Windows 11 Pro';
+        if (userCompany) userCompany.textContent = directoryUser?.empresa || meta.empresa || 'Sin información';
+        if (userRole) userRole.textContent = directoryUser?.tipo || 'Sin información';
+        if (userDevice) {
+            const storedDeviceName = userEquipment
+                ? (userEquipment.nombre_codigo || userEquipment.hostname || [userEquipment.marca, userEquipment.modelo].filter(Boolean).join(' '))
+                : '';
+            userDevice.textContent = storedDeviceName || (meta.dispositivo !== 'Ninguno / Otro' ? meta.dispositivo : '') || 'Sin equipo asociado';
+        }
+        if (userOS) userOS.textContent = userEquipment?.sistema_operativo || 'Sin información';
 
         if (userPastTickets) {
-            userPastTickets.innerHTML = `
-                <div class="past-ticket-item" onclick="alert('Abriendo ticket anterior #TK-1024')">
-                    <span class="pt-id">#TK-1024</span>
-                    <span class="pt-title">Configuración de firma de correo</span>
-                    <span class="pt-status status-resuelto">Resuelto</span>
-                </div>
-                <div class="past-ticket-item" onclick="alert('Abriendo ticket anterior #TK-0988')">
-                    <span class="pt-id">#TK-0988</span>
-                    <span class="pt-title">Instalación de Teams y Office</span>
-                    <span class="pt-status status-resuelto">Resuelto</span>
-                </div>
-            `;
+            const previousTickets = (allTicketsCached || []).filter(previous => {
+                if (String(previous.id) === String(ticket.id)) return false;
+                const previousMeta = extractMetadata(previous);
+                return (meta.cliente_email && normalizeStr(previousMeta.cliente_email) === normalizeStr(meta.cliente_email)) ||
+                    (meta.cliente_rut && cleanIdentity(previousMeta.cliente_rut) === cleanIdentity(meta.cliente_rut)) ||
+                    (meta.cliente_nombre && normalizeStr(previousMeta.cliente_nombre) === normalizeStr(meta.cliente_nombre));
+            }).slice(0, 3);
+
+            userPastTickets.innerHTML = previousTickets.length
+                ? previousTickets.map(previous => `
+                    <button type="button" class="past-ticket-item" data-ticket-id="${escapeHtml(String(previous.id))}">
+                        <span class="pt-id">${escapeHtml(previous.codigo || `#${previous.id}`)}</span>
+                        <span class="pt-title">${escapeHtml(previous.asunto || 'Sin asunto')}</span>
+                        <span class="pt-status status-${escapeHtml((previous.estado || 'abierto').toLowerCase().replace(/\s+/g, '-'))}">${escapeHtml(previous.estado || 'Abierto')}</span>
+                    </button>
+                `).join('')
+                : '<div class="past-tickets-empty"><i class="fas fa-inbox"></i><span>Sin tickets anteriores</span></div>';
+
+            userPastTickets.querySelectorAll('[data-ticket-id]').forEach(button => {
+                button.addEventListener('click', () => {
+                    const previous = (allTicketsCached || []).find(item => String(item.id) === button.dataset.ticketId);
+                    if (previous) openTicketDetailModal(previous);
+                });
+            });
         }
 
         // 3. Lógica de la Línea de Tiempo de Resolución
@@ -2711,6 +2934,20 @@ document.addEventListener('DOMContentLoaded', () => {
         if (stepResuelto) {
             stepResuelto.className = (tState === 'resuelto') ? 't-step active' : 't-step';
         }
+        const createdTime = document.getElementById('t-step-creado-time');
+        const assignedTime = document.getElementById('t-step-asignado-time');
+        const respondedTime = document.getElementById('t-step-respondido-time');
+        const solutionTime = document.getElementById('t-step-solucion-time');
+        const resolvedTime = document.getElementById('t-step-resuelto-time');
+        const toTime = value => {
+            const date = value ? new Date(value) : null;
+            return date && !isNaN(date) ? date.toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' }) : '--:--';
+        };
+        if (createdTime) createdTime.textContent = toTime(ticket.created_at);
+        if (assignedTime) assignedTime.textContent = ticket.tecnico_asignado ? 'Asignado' : 'Pendiente';
+        if (respondedTime) respondedTime.textContent = (tState === 'en progreso' || tState === 'resuelto') ? 'Registrada' : 'Pendiente';
+        if (solutionTime) solutionTime.textContent = tState === 'resuelto' ? 'Aplicada' : 'Pendiente';
+        if (resolvedTime) resolvedTime.textContent = tState === 'resuelto' ? toTime(ticket.fecha_resolucion || ticket.updated_at) : 'Pendiente';
 
         const replyInput = document.getElementById('modal-reply-input');
         if (replyInput) {
@@ -2802,10 +3039,13 @@ document.addEventListener('DOMContentLoaded', () => {
             if (statusSelect) statusSelect.disabled = true;
         }
 
-        await loadRepliesList(ticket.id);
-
-        const modal = document.getElementById('ticket-detail-modal');
-        if (modal) modal.style.display = 'flex';
+        loadRepliesList(ticket.id).catch(error => {
+            console.warn('No se pudo cargar la conversación del ticket:', error);
+            const repliesList = document.getElementById('modal-replies-list');
+            if (repliesList && String(activeTicketId) === String(ticket.id)) {
+                repliesList.innerHTML = '<div class="reply-bubble system-message">No fue posible cargar la conversación. Puedes seguir revisando el ticket.</div>';
+            }
+        });
     }
 
     function getCategoryLabel(catCode) {
@@ -2825,6 +3065,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         list.innerHTML = '<div class="reply-bubble system-message"><i class="fas fa-spinner fa-spin"></i> Cargando conversación...</div>';
         const replies = await fetchReplies(ticketId);
+
+        // Evita que una respuesta tardía reemplace la conversación de otro ticket.
+        if (String(activeTicketId) !== String(ticketId)) return;
 
         list.innerHTML = '';
         if (replies.length === 0) {
@@ -2862,16 +3105,27 @@ document.addEventListener('DOMContentLoaded', () => {
     const modalCloseBtn = document.getElementById('modal-close-btn');
     const ticketModal = document.getElementById('ticket-detail-modal');
 
+    const closeTicketDetailModal = () => {
+        if (!ticketModal) return;
+        ticketModal.style.display = 'none';
+        ticketModal.classList.remove('ticket-over-profile');
+        activeTicketId = null;
+    };
+
     if (modalCloseBtn && ticketModal) {
-        modalCloseBtn.addEventListener('click', () => {
-            ticketModal.style.display = 'none';
-            activeTicketId = null;
-        });
+        modalCloseBtn.addEventListener('click', closeTicketDetailModal);
 
         ticketModal.addEventListener('click', (e) => {
             if (e.target === ticketModal) {
-                ticketModal.style.display = 'none';
-                activeTicketId = null;
+                closeTicketDetailModal();
+            }
+        });
+
+        document.addEventListener('keydown', event => {
+            if (event.key === 'Escape' && ticketModal.style.display === 'flex') {
+                event.preventDefault();
+                event.stopImmediatePropagation();
+                closeTicketDetailModal();
             }
         });
     }
@@ -2940,10 +3194,6 @@ document.addEventListener('DOMContentLoaded', () => {
             navigateToPage('page-crear-ticket');
         });
     }
-
-    // Inicializar carga de tickets
-    refreshTickets();
-
 
     // ============================================
     // MOCK DATA: BASE DE CONOCIMIENTOS (TUTORIALES)
@@ -3699,6 +3949,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     let allEquiposCached = [];
+    let refreshEquiposInFlight = null;
     let currentEquipFilterCompany = 'todas';
     let currentEquipFilterTab = 'todos';
     let currentEquipSearch = '';
@@ -3794,9 +4045,20 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function refreshEquipos() {
-        allEquiposCached = await fetchEquipos();
-        updateEquipStats(allEquiposCached);
-        applyEquipFilters();
+        if (refreshEquiposInFlight) return refreshEquiposInFlight;
+
+        refreshEquiposInFlight = (async () => {
+            allEquiposCached = await fetchEquipos();
+            updateEquipStats(allEquiposCached);
+            applyEquipFilters();
+            return allEquiposCached;
+        })();
+
+        try {
+            return await refreshEquiposInFlight;
+        } finally {
+            refreshEquiposInFlight = null;
+        }
     }
 
     function updateEquipStats(equipos) {
@@ -3821,8 +4083,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 totalIngresos = Array.isArray(arr) ? arr.filter(i => i.estado !== 'completado').length : 0;
             }
         } catch(e) {}
-        if (totalIngresos === 0) totalIngresos = 5;
-
         if (totalEl) totalEl.textContent = totalEquipos;
         if (activosEl) activosEl.textContent = totalActivos;
         if (mantenimientoEl) mantenimientoEl.textContent = totalMantenimiento;
@@ -6659,9 +6919,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // ============================================
     // SISTEMA DE ROLES Y CONTROL DE ACCESO (SESSION)
     // ============================================
-    let currentSession = null;
-
-    function applySession(session) {
+    function applySession(session, refreshData = true) {
         if (!session) return;
         currentSession = session;
         
@@ -6716,26 +6974,9 @@ document.addEventListener('DOMContentLoaded', () => {
             if (belforPanel) belforPanel.style.display = 'none';
         }
 
-        // Forzar recarga segura de listados
-        try {
-            refreshTickets();
-        } catch(err) {
-            console.error('Error al refrescar tickets:', err);
-        }
-
-        try {
-            refreshEquipos();
-        } catch(err) {
-            console.error('Error al refrescar equipos:', err);
-        }
-
-        // Si es admin, refrescar la vista de usuarios
-        if (session.role === 'admin') {
-            try {
-                renderUsuariosPage();
-            } catch(err) {
-                console.error('Error al renderizar usuarios:', err);
-            }
+        if (refreshData) {
+            refreshTickets().catch(err => console.error('Error al refrescar tickets:', err));
+            refreshEquipos().catch(err => console.error('Error al refrescar equipos:', err));
         }
 
         // Configurar vista de Chat según rol
@@ -7891,9 +8132,6 @@ document.addEventListener('DOMContentLoaded', () => {
     setupSystemStatusListeners();
     updateLastRefreshText();
 
-    // Inicializar inventario
-    refreshEquipos();
-
     // Cargar sesión guardada de inmediato
     const savedSession = localStorage.getItem('session_soporte');
     if (savedSession) {
@@ -8850,28 +9088,6 @@ document.addEventListener('DOMContentLoaded', () => {
         applyProfilePasswordState(Boolean(passwordValue));
     }
 
-    async function authorizeProfilePasswordAction() {
-        if (!currentSession || !currentSession.email) {
-            alert('Debes iniciar sesión como administrador para gestionar contraseñas.');
-            return false;
-        }
-        const adminPass = prompt(`Autorización requerida.\nIngresa la contraseña del administrador (${currentSession.nombre}):`);
-        if (!adminPass) return false;
-        const validAdmin = await authenticateUser(currentSession.email, adminPass);
-        if (!validAdmin) {
-            alert('Contraseña de administrador incorrecta.');
-            return false;
-        }
-        const adminPin = prompt(`Ingresa tu PIN de seguridad de Administrador (${currentSession.nombre}):`);
-        if (!adminPin) return false;
-        const validPin = await verifyAdminPinFromSupabase(currentSession.email, adminPin.trim());
-        if (!validPin) {
-            alert('PIN de administrador incorrecto. Acceso denegado.');
-            return false;
-        }
-        return true;
-    }
-
     async function saveProfilePassword(email, newPassword) {
         const users = loadDirectoryUsers();
         const userIndex = users.findIndex(u => normalizeStr(u.email) === normalizeStr(email));
@@ -9147,8 +9363,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     document.getElementById('perfil-equipos-badge').textContent = userEquipos.length;
 
                     // Buscar Tickets
-                    let allTickets = [];
-                    try { allTickets = await fetchTickets(); } catch(e) {
+                    let allTickets = Array.isArray(allTicketsCached) ? allTicketsCached : [];
+                    try {
+                        if (allTickets.length === 0) allTickets = await fetchTickets();
+                    } catch(e) {
                         console.warn('No se pudieron consultar los tickets para el perfil:', e);
                         try { allTickets = JSON.parse(localStorage.getItem('local_tickets') || '[]'); } catch(ignore) {}
                     }
@@ -9182,22 +9400,39 @@ document.addEventListener('DOMContentLoaded', () => {
                     const ticketsContainer = document.getElementById('perfil-tickets-container');
                     if (ticketsContainer) {
                         if (userTickets.length > 0) {
-                            ticketsContainer.innerHTML = userTickets.slice(0, 10).map(t => {
+                            const visibleUserTickets = userTickets.slice(0, 10);
+                            ticketsContainer.innerHTML = visibleUserTickets.map((t, index) => {
                                 const tDate = new Date(t.createdAt || t.created_at || t.fecha || 0);
                                 const dateStr = !isNaN(tDate) ? tDate.toLocaleDateString('es-CL') : '-';
                                 const ticketTitle = t.issue || t.asunto || t.titulo || t.subject || 'Sin descripción';
                                 const ticketStatus = t.status || t.estado || 'Abierto';
+                                const ticketPriority = t.prioridad || t.priority || 'Prioridad sin registrar';
                                 return `
-                                <div class="profile-list-item profile-ticket-item">
+                                <div class="profile-list-item profile-ticket-item" role="button" tabindex="0" data-profile-ticket-index="${index}" aria-label="Abrir ticket: ${escapeHtml(ticketTitle)}">
                                     <div class="profile-item-icon"><i class="fas fa-ticket-alt"></i></div>
                                     <div class="profile-item-copy">
-                                        <strong>Ticket #${escapeHtml(t.id || t.ticket_id || '?')} · ${escapeHtml(ticketTitle)}</strong>
-                                        <span>${escapeHtml(t.prioridad || t.priority || 'Prioridad sin registrar')}</span>
+                                        <strong>${escapeHtml(ticketTitle)}</strong>
+                                        <span>${escapeHtml(ticketPriority)}</span>
                                     </div>
                                     <div class="profile-item-meta"><b>${escapeHtml(ticketStatus)}</b><small>${dateStr}</small></div>
                                 </div>
                                 `;
                             }).join('');
+
+                            const openProfileTicket = item => {
+                                const selectedTicket = visibleUserTickets[Number(item.dataset.profileTicketIndex)];
+                                if (!selectedTicket) return;
+                                openTicketDetailModal(selectedTicket);
+                            };
+                            ticketsContainer.querySelectorAll('[data-profile-ticket-index]').forEach(item => {
+                                item.addEventListener('click', () => openProfileTicket(item));
+                                item.addEventListener('keydown', event => {
+                                    if (event.key === 'Enter' || event.key === ' ') {
+                                        event.preventDefault();
+                                        openProfileTicket(item);
+                                    }
+                                });
+                            });
                         } else {
                             ticketsContainer.innerHTML = '<div class="profile-list-empty"><span><i class="fas fa-ticket-alt"></i>No hay tickets asociados a este colaborador.</span></div>';
                         }
@@ -9372,10 +9607,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const companyFilter = document.getElementById('directory-company-filter');
         const typeFilter = document.getElementById('directory-type-filter');
 
+        let directorySearchTimer = null;
         if (searchInput) {
             searchInput.addEventListener('input', () => {
                 directoryCurrentPage = 1;
-                renderDirectoryPage();
+                clearTimeout(directorySearchTimer);
+                directorySearchTimer = setTimeout(renderDirectoryPage, 160);
             });
         }
 
@@ -9547,9 +9784,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     return;
                 }
 
-                const authorized = await authorizeProfilePasswordAction();
-                if (!authorized) return;
-
                 const originalButton = savePasswordBtn.innerHTML;
                 savePasswordBtn.disabled = true;
                 savePasswordBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
@@ -9654,7 +9888,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        renderDirectoryPage();
+        // El directorio se renderiza al abrir la sección, no durante la carga inicial.
     }
 
     // ============================================
@@ -12312,7 +12546,14 @@ document.addEventListener('DOMContentLoaded', () => {
         setupClientAutocomplete();
         setupTicketUserModeTabs();
         initDirectoryModule();
-        fetchDirectoryUsersFromSupabase();
+        const syncDirectoryInBackground = () => fetchDirectoryUsersFromSupabase().catch(error => {
+            console.warn('No se pudo sincronizar el directorio en segundo plano:', error);
+        });
+        if ('requestIdleCallback' in window) {
+            window.requestIdleCallback(syncDirectoryInBackground, { timeout: 1500 });
+        } else {
+            setTimeout(syncDirectoryInBackground, 300);
+        }
         initM365Module();
         initComprasModule();
         initKioskOnboardingModule();
