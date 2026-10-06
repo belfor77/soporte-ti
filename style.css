@@ -8240,3 +8240,33 @@ input:checked + .slider:before {
 
 
 
+
+/* Corrección de la fecha de creación desde el detalle del ticket. */
+.ticket-creation-date-editor {
+    grid-column: 1 / -1;
+    border-top: 1px solid var(--border-color);
+    padding-top: 14px;
+}
+.ticket-creation-date-editor[hidden] { display: none; }
+.ticket-creation-date-editor label {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+.ticket-creation-date-controls { display: flex; flex-wrap: wrap; gap: 10px; }
+.ticket-creation-date-controls input,
+.ticket-creation-date-controls button {
+    padding: 9px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font: inherit;
+    font-size: 0.85rem;
+    color: var(--text-primary);
+    background: var(--bg-card);
+}
+.ticket-creation-date-controls input { min-width: 0; color-scheme: dark; }
+.ticket-creation-date-controls button { background: var(--accent-purple); color: white; cursor: pointer; }
+.ticket-creation-date-controls button:disabled { opacity: 0.6; cursor: wait; }
+#modal-creation-date-feedback { display: block; margin-top: 8px; font-size: 0.8rem; color: var(--text-secondary); }

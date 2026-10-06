@@ -2655,9 +2655,97 @@ document.addEventListener('DOMContentLoaded', () => {
     // 6. DETALLES Y RESPUESTAS DEL TICKET (MODAL)
     // ============================================
     let activeTicketId = null;
+    let activeTicketCreatedAt = null;
+
+    function canEditTicketCreationDate() {
+        return currentSession && ['admin', 'technician'].includes(currentSession.role);
+    }
+
+    function creationDateInputValue(timestamp) {
+        const date = new Date(timestamp);
+        if (Number.isNaN(date.getTime())) return '';
+        return `${String(date.getFullYear()).padStart(4, '0')}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+    }
+
+    function correctedCreationTimestamp(value, originalTimestamp) {
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) throw new Error('Selecciona una fecha válida.');
+        const [year, month, day] = value.split('-').map(Number);
+        const date = new Date(originalTimestamp);
+        if (Number.isNaN(date.getTime())) throw new Error('El ticket no tiene una fecha de creación válida.');
+        // Cambiar el día local conservando la hora original y su conversión a UTC.
+        date.setFullYear(year, month - 1, day);
+        if (creationDateInputValue(date) !== value) throw new Error('Selecciona una fecha válida.');
+        return date.toISOString();
+    }
+
+    async function saveTicketCreationDate(ticketId, createdAt) {
+        if (!canEditTicketCreationDate()) throw new Error('No tienes permisos para cambiar esta fecha.');
+        if (!useLocalFallback && supabase) {
+            const { data, error } = await supabase.from('tickets')
+                .update({ created_at: createdAt }).eq('id', ticketId).select('id, created_at').single();
+            if (error) throw error;
+            if (!data) throw new Error('No se pudo guardar la fecha del ticket.');
+            // Retirar solo la corrección de fecha pendiente; conservar los otros cambios locales.
+            const updates = JSON.parse(localStorage.getItem('ticket_updates')) || {};
+            if (updates[ticketId]) {
+                delete updates[ticketId].created_at;
+                if (!Object.keys(updates[ticketId]).length) delete updates[ticketId];
+                localStorage.setItem('ticket_updates', JSON.stringify(updates));
+            }
+            return data.created_at;
+        }
+        const tickets = JSON.parse(localStorage.getItem('local_tickets')) || [];
+        const ticket = tickets.find(item => String(item.id) === String(ticketId));
+        if (!ticket) throw new Error('No se encontró el ticket para guardar la fecha.');
+        ticket.created_at = createdAt;
+        localStorage.setItem('local_tickets', JSON.stringify(tickets));
+        return createdAt;
+    }
+
+    const creationDateForm = document.getElementById('modal-creation-date-form');
+    if (creationDateForm) {
+        creationDateForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            if (!activeTicketId || !canEditTicketCreationDate()) return;
+            const ticketId = activeTicketId;
+            const input = document.getElementById('modal-creation-date-input');
+            const button = document.getElementById('modal-creation-date-save');
+            const feedback = document.getElementById('modal-creation-date-feedback');
+            if (button.disabled || !creationDateForm.reportValidity()) return;
+            try {
+                const timestamp = correctedCreationTimestamp(input.value, activeTicketCreatedAt);
+                button.disabled = true;
+                feedback.textContent = 'Guardando fecha…';
+                const savedTimestamp = await saveTicketCreationDate(ticketId, timestamp);
+                if (String(activeTicketId) === String(ticketId)) {
+                    activeTicketCreatedAt = savedTimestamp;
+                    input.value = creationDateInputValue(savedTimestamp);
+                    document.getElementById('modal-ticket-fecha').textContent = formatDate(savedTimestamp);
+                    document.getElementById('ticket-summary-age').textContent = formatRelativeTime(savedTimestamp);
+                    document.getElementById('t-step-creado-time').textContent = new Date(savedTimestamp).toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' });
+                    feedback.textContent = 'Fecha de creación actualizada.';
+                }
+                await refreshTickets();
+            } catch (error) {
+                console.error('Error al guardar la fecha de creación:', error);
+                if (String(activeTicketId) === String(ticketId)) feedback.textContent = 'No se pudo guardar la fecha. ' + (error.message || 'Intenta nuevamente.');
+            } finally {
+                if (String(activeTicketId) === String(ticketId)) button.disabled = false;
+            }
+        });
+    }
+
 
     async function openTicketDetailModal(ticket) {
         activeTicketId = ticket.id;
+        activeTicketCreatedAt = ticket.created_at;
+        if (creationDateForm) {
+            creationDateForm.hidden = !canEditTicketCreationDate();
+            document.getElementById('modal-creation-date-input').value = creationDateInputValue(ticket.created_at);
+            document.getElementById('modal-creation-date-save').disabled = false;
+            document.getElementById('modal-creation-date-feedback').textContent = '';
+        }
+
 
         // Mostrar el panel antes de cargar la conversación remota.
         const modal = document.getElementById('ticket-detail-modal');

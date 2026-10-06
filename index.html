@@ -3590,6 +3590,14 @@
                             <span class="meta-label">Técnico Asignado:</span>
                             <span id="modal-ticket-tecnico-badge" class="meta-val" style="font-weight: bold; color: var(--accent-blue);">Sin asignar</span>
                         </div>
+                        <form id="modal-creation-date-form" class="ticket-creation-date-editor" hidden>
+                            <label for="modal-creation-date-input">Cambiar fecha de creación</label>
+                            <div class="ticket-creation-date-controls">
+                                <input type="date" id="modal-creation-date-input" required aria-describedby="modal-creation-date-feedback">
+                                <button type="submit" id="modal-creation-date-save"><i class="fas fa-calendar-check" aria-hidden="true"></i> Guardar fecha</button>
+                            </div>
+                            <span id="modal-creation-date-feedback" role="status" aria-live="polite"></span>
+                        </form>
                     </div>
 
                     <!-- Descripción principal -->
