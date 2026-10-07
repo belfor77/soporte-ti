@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Soportes - Centro de Soporte - Mi Empresa</title>
-    <link rel="stylesheet" href="style.css?v=4.1">
+    <link rel="stylesheet" href="style.css?v=4.7">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 </head>
@@ -27,51 +27,56 @@
                 <button id="sidebar-close-btn" class="sidebar-close-btn" aria-label="Cerrar menú"><i class="fas fa-times"></i></button>
             </div>
 
+            <button type="button" id="sidebar-toggle-btn" class="sidebar-toggle-btn" aria-controls="main-sidebar" aria-expanded="true" aria-label="Contraer menú lateral" title="Contraer menú lateral">
+                <i class="fas fa-chevron-left" aria-hidden="true"></i>
+                <span>Contraer menú</span>
+            </button>
+
             <nav class="sidebar-nav">
                 <!-- INICIO -->
                 <div class="nav-group-title">INICIO</div>
                 <ul>
-                    <li class="active" id="nav-inicio"><a href="#" data-page="page-inicio"><i class="fas fa-home"></i> Inicio</a></li>
+                    <li class="active" id="nav-inicio"><a href="#" data-page="page-inicio"><i class="fas fa-home"></i><span class="nav-label">Inicio</span></a></li>
                 </ul>
 
                 <!-- SOPORTE -->
                 <div class="nav-group-title">SOPORTE</div>
                 <ul>
-                    <li id="nav-mis-tickets"><a href="#" data-page="page-mis-tickets" data-scope="mis-tickets"><i class="fas fa-ticket-alt"></i> Mis Tickets <span class="nav-badge" id="sidebar-badge-mis-tickets">5</span></a></li>
-                    <li id="nav-todos-tickets"><a href="#" data-page="page-mis-tickets" data-scope="todos"><i class="fas fa-layer-group"></i> Todos los Tickets</a></li>
-                    <li id="nav-crear-ticket"><a href="#" data-page="page-crear-ticket"><i class="fas fa-plus-square"></i> Crear Ticket</a></li>
-                    <li id="nav-sla"><a href="#" data-page="page-sla"><i class="fas fa-shield-alt"></i> SLA</a></li>
+                    <li id="nav-mis-tickets"><a href="#" data-page="page-mis-tickets" data-scope="mis-tickets"><i class="fas fa-ticket-alt"></i><span class="nav-label">Mis Tickets <span class="nav-badge" id="sidebar-badge-mis-tickets">5</span></span></a></li>
+                    <li id="nav-todos-tickets"><a href="#" data-page="page-mis-tickets" data-scope="todos"><i class="fas fa-layer-group"></i><span class="nav-label">Todos los Tickets</span></a></li>
+                    <li id="nav-crear-ticket"><a href="#" data-page="page-crear-ticket"><i class="fas fa-plus-square"></i><span class="nav-label">Crear Ticket</span></a></li>
+                    <li id="nav-sla"><a href="#" data-page="page-sla"><i class="fas fa-shield-alt"></i><span class="nav-label">SLA</span></a></li>
                 </ul>
 
                 <!-- CONOCIMIENTO -->
                 <div class="nav-group-title">CONOCIMIENTO</div>
                 <ul>
-                    <li id="nav-base-conocimientos"><a href="#" data-page="page-tutoriales"><i class="fas fa-book"></i> Base de Conocimientos</a></li>
-                    <li id="nav-faq"><a href="#" data-page="page-faq"><i class="fas fa-question-circle"></i> Preguntas Frecuentes</a></li>
+                    <li id="nav-base-conocimientos"><a href="#" data-page="page-tutoriales"><i class="fas fa-book"></i><span class="nav-label">Base de Conocimientos</span></a></li>
+                    <li id="nav-faq"><a href="#" data-page="page-faq"><i class="fas fa-question-circle"></i><span class="nav-label">Preguntas Frecuentes</span></a></li>
                 </ul>
 
                 <!-- ORGANIZACIÓN -->
                 <div class="nav-group-title">ORGANIZACIÓN</div>
                 <ul>
-                    <li id="nav-usuarios"><a href="#" data-page="page-usuarios"><i class="fas fa-users"></i> Usuarios</a></li>
-                    <li id="nav-equipos"><a href="#" data-page="page-base-conocimientos"><i class="fas fa-desktop"></i> Equipos</a></li>
-                    <li id="nav-kiosk-pc"><a href="#" id="btn-open-kiosk-from-nav" style="color: #34d399;"><i class="fas fa-laptop-code" style="color: #34d399;"></i> ⚡ Kiosko Diagnóstico <span class="badge" style="background: rgba(16, 185, 129, 0.15); color: #34d399; padding: 2px 6px; border-radius: 4px; font-size: 0.65rem; font-weight: 700;">PIN</span></a></li>
-                    <li id="nav-compras"><a href="#" data-page="page-compras"><i class="fas fa-shopping-bag"></i> Compras TI <span class="badge new-badge" style="background: var(--accent-blue); color: white; padding: 2px 6px; border-radius: 10px; font-size: 0.7rem; margin-left: 8px;">NUEVO</span></a></li>
+                    <li id="nav-usuarios"><a href="#" data-page="page-usuarios"><i class="fas fa-users"></i><span class="nav-label">Usuarios</span></a></li>
+                    <li id="nav-equipos"><a href="#" data-page="page-base-conocimientos"><i class="fas fa-desktop"></i><span class="nav-label">Equipos</span></a></li>
+                    <li id="nav-kiosk-pc"><a href="#" id="btn-open-kiosk-from-nav" style="color: #34d399;"><i class="fas fa-laptop-code" style="color: #34d399;"></i><span class="nav-label">⚡ Kiosko Diagnóstico <span class="badge" style="background: rgba(16, 185, 129, 0.15); color: #34d399; padding: 2px 6px; border-radius: 4px; font-size: 0.65rem; font-weight: 700;">PIN</span></span></a></li>
+                    <li id="nav-compras"><a href="#" data-page="page-compras"><i class="fas fa-shopping-bag"></i><span class="nav-label">Compras TI <span class="badge new-badge" style="background: var(--accent-blue); color: white; padding: 2px 6px; border-radius: 10px; font-size: 0.7rem; margin-left: 8px;">NUEVO</span></span></a></li>
                 </ul>
 
                 <!-- ANALÍTICA -->
                 <div class="nav-group-title">ANALÍTICA</div>
                 <ul>
-                    <li id="nav-dashboard"><a href="#" data-page="page-inicio"><i class="fas fa-chart-pie"></i> Dashboard</a></li>
-                    <li id="nav-tecnicos"><a href="#" data-page="page-tecnicos"><i class="fas fa-user-tie"></i> Técnicos</a></li>
-                    <li id="nav-reportes"><a href="#" data-page="page-reportes"><i class="fas fa-chart-line"></i> Reportes</a></li>
+                    <li id="nav-dashboard"><a href="#" data-page="page-inicio"><i class="fas fa-chart-pie"></i><span class="nav-label">Dashboard</span></a></li>
+                    <li id="nav-tecnicos"><a href="#" data-page="page-tecnicos"><i class="fas fa-user-tie"></i><span class="nav-label">Técnicos</span></a></li>
+                    <li id="nav-reportes"><a href="#" data-page="page-reportes"><i class="fas fa-chart-line"></i><span class="nav-label">Reportes</span></a></li>
                 </ul>
 
                 <!-- OPERACIONES -->
                 <div class="nav-group-title">OPERACIONES</div>
                 <ul>
-                    <li id="nav-estado"><a href="#" data-page="page-estado"><i class="fas fa-server"></i> Estado del Sistema</a></li>
-                    <li id="nav-visitas"><a href="#" data-page="page-visitas"><i class="fas fa-calendar-check"></i> Visitas <span class="badge new-badge" style="background: var(--accent-purple); color: white; padding: 2px 6px; border-radius: 10px; font-size: 0.7rem; margin-left: 8px;">NUEVO</span></a></li>
+                    <li id="nav-estado"><a href="#" data-page="page-estado"><i class="fas fa-server"></i><span class="nav-label">Estado del Sistema</span></a></li>
+                    <li id="nav-visitas"><a href="#" data-page="page-visitas"><i class="fas fa-calendar-check"></i><span class="nav-label">Visitas <span class="badge new-badge" style="background: var(--accent-purple); color: white; padding: 2px 6px; border-radius: 10px; font-size: 0.7rem; margin-left: 8px;">NUEVO</span></span></a></li>
                 </ul>
 
                 <!-- ADMINISTRACIÓN M365 (ACCESO CON PIN) -->
@@ -80,17 +85,17 @@
                     <i class="fas fa-lock" style="font-size: 0.65rem; color: var(--accent-purple);" title="Protegido con PIN"></i>
                 </div>
                 <ul>
-                    <li id="nav-panel-tsales"><a href="#" data-page="page-panel-m365" data-company="T-Sales" style="display: flex; align-items: center; justify-content: space-between;"><span style="display: flex; align-items: center; gap: 8px;"><i class="fas fa-building" style="color: #00c9a7;"></i> Panel T-Sales</span> <span class="badge" style="background: rgba(0, 201, 167, 0.15); color: #00c9a7; padding: 2px 6px; border-radius: 4px; font-size: 0.65rem; font-weight: 700;"><i class="fas fa-lock"></i> PIN</span></a></li>
-                    <li id="nav-panel-infinet"><a href="#" data-page="page-panel-m365" data-company="Infinet" style="display: flex; align-items: center; justify-content: space-between;"><span style="display: flex; align-items: center; gap: 8px;"><i class="fas fa-building" style="color: #f59e0b;"></i> Panel INFINET</span> <span class="badge" style="background: rgba(245, 158, 11, 0.15); color: #f59e0b; padding: 2px 6px; border-radius: 4px; font-size: 0.65rem; font-weight: 700;"><i class="fas fa-lock"></i> PIN</span></a></li>
-                    <li id="nav-panel-vprime"><a href="#" data-page="page-panel-m365" data-company="VPrime" style="display: flex; align-items: center; justify-content: space-between;"><span style="display: flex; align-items: center; gap: 8px;"><i class="fas fa-building" style="color: #ef4444;"></i> Panel V PRIME</span> <span class="badge" style="background: rgba(239, 68, 68, 0.15); color: #ef4444; padding: 2px 6px; border-radius: 4px; font-size: 0.65rem; font-weight: 700;"><i class="fas fa-lock"></i> PIN</span></a></li>
+                    <li id="nav-panel-tsales"><a href="#" data-page="page-panel-m365" data-company="T-Sales" style="display: flex; align-items: center; justify-content: space-between;"><i class="fas fa-building" style="color: #00c9a7;"></i><span class="nav-label"><span style="display: flex; align-items: center; gap: 8px;"> Panel T-Sales</span> <span class="badge" style="background: rgba(0, 201, 167, 0.15); color: #00c9a7; padding: 2px 6px; border-radius: 4px; font-size: 0.65rem; font-weight: 700;"><i class="fas fa-lock"></i> PIN</span></span></a></li>
+                    <li id="nav-panel-infinet"><a href="#" data-page="page-panel-m365" data-company="Infinet" style="display: flex; align-items: center; justify-content: space-between;"><i class="fas fa-building" style="color: #f59e0b;"></i><span class="nav-label"><span style="display: flex; align-items: center; gap: 8px;"> Panel INFINET</span> <span class="badge" style="background: rgba(245, 158, 11, 0.15); color: #f59e0b; padding: 2px 6px; border-radius: 4px; font-size: 0.65rem; font-weight: 700;"><i class="fas fa-lock"></i> PIN</span></span></a></li>
+                    <li id="nav-panel-vprime"><a href="#" data-page="page-panel-m365" data-company="VPrime" style="display: flex; align-items: center; justify-content: space-between;"><i class="fas fa-building" style="color: #ef4444;"></i><span class="nav-label"><span style="display: flex; align-items: center; gap: 8px;"> Panel V PRIME</span> <span class="badge" style="background: rgba(239, 68, 68, 0.15); color: #ef4444; padding: 2px 6px; border-radius: 4px; font-size: 0.65rem; font-weight: 700;"><i class="fas fa-lock"></i> PIN</span></span></a></li>
                 </ul>
 
                 <!-- CONFIGURACIÓN -->
                 <div class="nav-group-title">CONFIGURACIÓN</div>
                 <ul>
-                    <li id="nav-categorias"><a href="#" data-page="page-configuracion" data-tab="categorias"><i class="fas fa-tags"></i> Categorías</a></li>
-                    <li id="nav-plantillas"><a href="#" data-page="page-configuracion" data-tab="plantillas"><i class="fas fa-file-code"></i> Plantillas</a></li>
-                    <li id="nav-ajustes"><a href="#" data-page="page-configuracion" data-tab="ajustes"><i class="fas fa-cog"></i> Ajustes</a></li>
+                    <li id="nav-categorias"><a href="#" data-page="page-configuracion" data-tab="categorias"><i class="fas fa-tags"></i><span class="nav-label">Categorías</span></a></li>
+                    <li id="nav-plantillas"><a href="#" data-page="page-configuracion" data-tab="plantillas"><i class="fas fa-file-code"></i><span class="nav-label">Plantillas</span></a></li>
+                    <li id="nav-ajustes"><a href="#" data-page="page-configuracion" data-tab="ajustes"><i class="fas fa-cog"></i><span class="nav-label">Ajustes</span></a></li>
                 </ul>
             </nav>
 
@@ -99,7 +104,7 @@
                     <i class="fas fa-moon"></i>
                     <span>Modo oscuro</span>
                     <label class="switch">
-                        <input type="checkbox" id="mode-toggle" checked>
+                        <input type="checkbox" id="mode-toggle" aria-label="Modo oscuro" checked>
                         <span class="slider round"></span>
                     </label>
                 </div>
@@ -117,6 +122,10 @@
                     </div>
                 </div>
                 
+                <div class="header-brand-logo" role="img" aria-label="Soporte TI">
+                    <span class="brand-soporte">SOPORTE</span><span class="brand-ti">TI</span>
+                </div>
+
                 <!-- Buscador Global Estilo Linear / Raycast -->
                 <div class="search-command-bar" id="header-search-trigger" role="button" tabindex="0" title="Buscar (⌘K o Ctrl+K)">
                     <i class="fas fa-search search-icon"></i>
@@ -371,26 +380,15 @@
                         </div>
                     </section>
 
-                    <!-- 2. Gráfico: Tickets por Día (Creados vs Resueltos) -->
-                    <section class="dash-card dash-card-chart-main">
-                        <div class="dash-card-header">
-                            <div class="dash-card-title-group">
-                                <h3>Tickets por día</h3>
-                                <div class="chart-legend-row">
-                                    <span class="legend-item"><span class="legend-box color-created"></span> Creados</span>
-                                    <span class="legend-item"><span class="legend-box color-resolved"></span> Resueltos</span>
-                                </div>
-                            </div>
-                            <div class="chart-filter-select-wrapper">
-                                <select id="chart-period-select" class="dash-compact-select">
-                                    <option value="30">Últimos 30 días</option>
-                                    <option value="7">Últimos 7 días</option>
-                                    <option value="mes">Este mes</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="chart-canvas-container">
-                            <canvas id="ticketsTimelineChart"></canvas>
+                    <!-- Aplicaciones frecuentes: accesos con iconos -->
+                    <section class="dash-card dash-card-apps" aria-label="Accesos rápidos a aplicaciones">
+                        <div class="dashboard-app-grid">
+                            <button type="button" class="dashboard-app-button app-blue" data-nav-target="nav-mis-tickets" aria-label="Mis Tickets" title="Mis Tickets"><i class="fas fa-ticket-alt" aria-hidden="true"></i></button>
+                            <button type="button" class="dashboard-app-button app-green" data-nav-target="nav-crear-ticket" aria-label="Crear Ticket" title="Crear Ticket"><i class="fas fa-plus" aria-hidden="true"></i></button>
+                            <button type="button" class="dashboard-app-button app-indigo" data-nav-target="nav-todos-tickets" aria-label="Todos los Tickets" title="Todos los Tickets"><i class="fas fa-layer-group" aria-hidden="true"></i></button>
+                            <button type="button" class="dashboard-app-button app-purple" data-nav-target="nav-usuarios" aria-label="Usuarios" title="Usuarios"><i class="fas fa-users" aria-hidden="true"></i></button>
+                            <button type="button" class="dashboard-app-button app-amber" data-nav-target="nav-equipos" aria-label="Equipos" title="Equipos"><i class="fas fa-desktop" aria-hidden="true"></i></button>
+                            <button type="button" class="dashboard-app-button app-teal" data-nav-target="nav-base-conocimientos" aria-label="Base de Conocimientos" title="Base de Conocimientos"><i class="fas fa-book-open" aria-hidden="true"></i></button>
                         </div>
                     </section>
 
@@ -5176,6 +5174,6 @@
             window['pdfjsLib'].GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
         }
     </script>
-    <script src="script.js?v=4.1"></script>
+    <script src="script.js?v=4.6"></script>
 </body>
 </html>

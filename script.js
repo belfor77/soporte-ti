@@ -1,5 +1,65 @@
 document.addEventListener('DOMContentLoaded', () => {
 
+    // Los accesos rápidos usan la navegación existente y respetan sus permisos.
+    function syncQuickAccessButtons() {
+        document.querySelectorAll('.dashboard-app-button').forEach(button => {
+            const nav = document.getElementById(button.dataset.navTarget);
+            button.hidden = !nav || getComputedStyle(nav).display === 'none';
+        });
+    }
+    document.querySelectorAll('.dashboard-app-button').forEach(button => {
+        button.addEventListener('click', () => {
+            const nav = document.getElementById(button.dataset.navTarget);
+            if (!nav || getComputedStyle(nav).display === 'none') return;
+            const link = nav.querySelector('a');
+            if (link) link.click();
+        });
+    });
+
+
+    // Preferencia de la barra lateral de escritorio; el menú móvil conserva su drawer.
+    const sidebarToggleBtn = document.getElementById('sidebar-toggle-btn');
+    const dashboardContainer = document.querySelector('.dashboard-container');
+    const sidebarPreferenceKey = 'support-sidebar-collapsed';
+
+    document.querySelectorAll('.sidebar-nav a').forEach(link => {
+        const label = link.querySelector('.nav-label');
+        if (!label) return;
+        const name = label.cloneNode(true);
+        name.querySelectorAll('.badge, .nav-badge').forEach(badge => badge.remove());
+        const text = name.textContent.replace(/\s+/g, ' ').trim();
+        link.setAttribute('aria-label', text);
+        link.title = text;
+    });
+
+    function setSidebarCollapsed(collapsed) {
+        if (!dashboardContainer || !sidebarToggleBtn) return;
+        dashboardContainer.classList.toggle('sidebar-collapsed', collapsed);
+        sidebarToggleBtn.setAttribute('aria-expanded', String(!collapsed));
+        const label = collapsed ? 'Expandir menú lateral' : 'Contraer menú lateral';
+        sidebarToggleBtn.setAttribute('aria-label', label);
+        sidebarToggleBtn.title = label;
+        sidebarToggleBtn.querySelector('span').textContent = collapsed ? 'Expandir menú' : 'Contraer menú';
+        sidebarToggleBtn.querySelector('i').className = collapsed ? 'fas fa-chevron-right' : 'fas fa-chevron-left';
+    }
+
+    try {
+        setSidebarCollapsed(localStorage.getItem(sidebarPreferenceKey) === 'true');
+    } catch (_) {
+        setSidebarCollapsed(false);
+    }
+    if (sidebarToggleBtn && dashboardContainer) {
+        sidebarToggleBtn.addEventListener('click', () => {
+            const collapsed = !dashboardContainer.classList.contains('sidebar-collapsed');
+            setSidebarCollapsed(collapsed);
+            try {
+                localStorage.setItem(sidebarPreferenceKey, String(collapsed));
+            } catch (_) {
+                // La opción sigue funcionando si el navegador bloquea el almacenamiento.
+            }
+        });
+    }
+
     // ============================================
     // CONFIGURACIÓN E INICIALIZACIÓN DE SUPABASE
     // ============================================
@@ -1121,17 +1181,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const headerThemeBtn = document.getElementById('header-theme-btn');
     const body = document.body;
 
-    function setTheme(isDark) {
-        if (isDark) {
-            body.classList.remove('light-mode');
-            body.classList.add('dark-mode');
-            if (modeToggle) modeToggle.checked = true;
-            if (headerThemeBtn) headerThemeBtn.innerHTML = '<i class="fas fa-moon"></i>';
-        } else {
-            body.classList.remove('dark-mode');
-            body.classList.add('light-mode');
-            if (modeToggle) modeToggle.checked = false;
-            if (headerThemeBtn) headerThemeBtn.innerHTML = '<i class="fas fa-sun" style="color: #f59e0b;"></i>';
+    function setTheme(isDark, persist = true) {
+        body.classList.toggle('dark-mode', isDark);
+        body.classList.toggle('light-mode', !isDark);
+        if (modeToggle) modeToggle.checked = isDark;
+        if (headerThemeBtn) {
+            headerThemeBtn.innerHTML = isDark ? '<i class="fas fa-sun" aria-hidden="true"></i>' : '<i class="fas fa-moon" aria-hidden="true"></i>';
+            const label = isDark ? 'Activar modo claro' : 'Activar modo oscuro';
+            headerThemeBtn.title = label;
+            headerThemeBtn.setAttribute('aria-label', label);
+        }
+        if (persist) {
+            try { localStorage.setItem('support-theme', isDark ? 'dark' : 'light'); } catch (_) {}
         }
         updateDashboardCharts();
     }
@@ -1149,100 +1210,20 @@ document.addEventListener('DOMContentLoaded', () => {
     // ============================================
     // 3. GRÁFICOS CHART.JS DEL DASHBOARD EJECUTIVO
     // ============================================
-    let ticketsTimelineChart = null;
     let priorityDonutChart = null;
     let slaDonutChart = null;
+
+    try {
+        setTheme(localStorage.getItem('support-theme') !== 'light', false);
+    } catch (_) {
+        setTheme(true, false);
+    }
+
 
     function initDashboardCharts() {
         if (typeof Chart === 'undefined') {
             console.warn('Chart.js no está cargado todavía.');
             return;
-        }
-
-        // 1. Gráfico de Tickets por Día (Área con degradado)
-        const timelineCanvas = document.getElementById('ticketsTimelineChart');
-        if (timelineCanvas) {
-            const ctx = timelineCanvas.getContext('2d');
-            
-            // Degradado Azul (Creados)
-            const gradientBlue = ctx.createLinearGradient(0, 0, 0, 200);
-            gradientBlue.addColorStop(0, 'rgba(59, 130, 246, 0.35)');
-            gradientBlue.addColorStop(1, 'rgba(59, 130, 246, 0.0)');
-
-            // Degradado Verde (Resueltos)
-            const gradientGreen = ctx.createLinearGradient(0, 0, 0, 200);
-            gradientGreen.addColorStop(0, 'rgba(16, 185, 129, 0.35)');
-            gradientGreen.addColorStop(1, 'rgba(16, 185, 129, 0.0)');
-
-            const labels30d = ['18 Jul', '21 Jul', '25 Jul', '28 Jul', '1 Ago', '5 Ago', '8 Ago', '12 Ago', '15 Ago', '18 Ago'];
-            const createdData30d = [42, 60, 48, 70, 62, 55, 68, 52, 64, 58];
-            const resolvedData30d = [38, 52, 45, 64, 58, 48, 72, 48, 60, 56];
-
-            ticketsTimelineChart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: labels30d,
-                    datasets: [
-                        {
-                            label: 'Creados',
-                            data: createdData30d,
-                            borderColor: '#3b82f6',
-                            borderWidth: 2.5,
-                            backgroundColor: gradientBlue,
-                            fill: true,
-                            tension: 0.4,
-                            pointRadius: 3,
-                            pointBackgroundColor: '#3b82f6',
-                            pointHoverRadius: 6
-                        },
-                        {
-                            label: 'Resueltos',
-                            data: resolvedData30d,
-                            borderColor: '#10b981',
-                            borderWidth: 2.5,
-                            backgroundColor: gradientGreen,
-                            fill: true,
-                            tension: 0.4,
-                            pointRadius: 3,
-                            pointBackgroundColor: '#10b981',
-                            pointHoverRadius: 6
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    interaction: {
-                        mode: 'index',
-                        intersect: false
-                    },
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            backgroundColor: '#111528',
-                            titleColor: '#94a3b8',
-                            bodyColor: '#f8fafc',
-                            borderColor: 'rgba(255, 255, 255, 0.1)',
-                            borderWidth: 1,
-                            padding: 10,
-                            displayColors: true,
-                            cornerRadius: 8
-                        }
-                    },
-                    scales: {
-                        x: {
-                            grid: { display: false },
-                            ticks: { color: '#64748b', font: { size: 10 } }
-                        },
-                        y: {
-                            min: 0,
-                            max: 100,
-                            grid: { color: 'rgba(255, 255, 255, 0.04)' },
-                            ticks: { color: '#64748b', font: { size: 10 }, stepSize: 20 }
-                        }
-                    }
-                }
-            });
         }
 
         // 2. Gráfico Donut de Prioridad
@@ -1311,34 +1292,31 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        // Selector de período del gráfico
-        const periodSelect = document.getElementById('chart-period-select');
-        if (periodSelect && ticketsTimelineChart) {
-            periodSelect.addEventListener('change', (e) => {
-                const val = e.target.value;
-                if (val === '7') {
-                    ticketsTimelineChart.data.labels = ['12 Ago', '13 Ago', '14 Ago', '15 Ago', '16 Ago', '17 Ago', '18 Ago'];
-                    ticketsTimelineChart.data.datasets[0].data = [45, 52, 60, 48, 64, 58, 50];
-                    ticketsTimelineChart.data.datasets[1].data = [42, 50, 58, 46, 62, 55, 48];
-                } else if (val === 'mes') {
-                    ticketsTimelineChart.data.labels = ['Sem 1', 'Sem 2', 'Sem 3', 'Sem 4'];
-                    ticketsTimelineChart.data.datasets[0].data = [120, 145, 160, 138];
-                    ticketsTimelineChart.data.datasets[1].data = [115, 140, 155, 134];
-                } else {
-                    // 30 días
-                    ticketsTimelineChart.data.labels = ['18 Jul', '21 Jul', '25 Jul', '28 Jul', '1 Ago', '5 Ago', '8 Ago', '12 Ago', '15 Ago', '18 Ago'];
-                    ticketsTimelineChart.data.datasets[0].data = [42, 60, 48, 70, 62, 55, 68, 52, 64, 58];
-                    ticketsTimelineChart.data.datasets[1].data = [38, 52, 45, 64, 58, 48, 72, 48, 60, 56];
-                }
-                ticketsTimelineChart.update();
-            });
-        }
+        updateDashboardCharts();
+
     }
 
     function updateDashboardCharts() {
-        if (ticketsTimelineChart) ticketsTimelineChart.update();
-        if (priorityDonutChart) priorityDonutChart.update();
-        if (slaDonutChart) slaDonutChart.update();
+        const styles = getComputedStyle(body);
+        const textColor = styles.getPropertyValue('--text-secondary').trim();
+        const gridColor = styles.getPropertyValue('--border-subtle').trim();
+        const cardColor = styles.getPropertyValue('--bg-card').trim();
+        const borderColor = styles.getPropertyValue('--border-color').trim();
+        [priorityDonutChart, slaDonutChart].forEach(chart => {
+            if (!chart) return;
+            const tooltip = chart.options.plugins.tooltip;
+            tooltip.backgroundColor = cardColor;
+            tooltip.borderColor = borderColor;
+            tooltip.titleColor = textColor;
+            tooltip.bodyColor = textColor;
+            if (chart.options.scales) {
+                Object.values(chart.options.scales).forEach(axis => {
+                    if (axis.ticks) axis.ticks.color = textColor;
+                    if (axis.grid) axis.grid.color = gridColor;
+                });
+            }
+            chart.update();
+        });
     }
 
     // ============================================
@@ -7061,6 +7039,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (creatorGroup) creatorGroup.style.display = 'none';
             if (belforPanel) belforPanel.style.display = 'none';
         }
+
+        syncQuickAccessButtons();
 
         if (refreshData) {
             refreshTickets().catch(err => console.error('Error al refrescar tickets:', err));
