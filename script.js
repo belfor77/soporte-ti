@@ -3932,41 +3932,26 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
     async function saveEquipo(equipo) {
-        if (!equipo.id) {
-            equipo.id = crypto.randomUUID ? crypto.randomUUID() : ('eq-' + Math.random().toString(36).substr(2, 9));
-        }
-        if (!equipo.created_at) {
-            equipo.created_at = new Date().toISOString();
-        }
-
-        // Guardar localmente siempre (evitando duplicados por id o serial)
-        let equipos = JSON.parse(localStorage.getItem('local_equipos')) || [];
-        const existingIdx = equipos.findIndex(e => 
-            (e.id && e.id === equipo.id) || 
-            (e.serial && equipo.serial && e.serial.trim().toLowerCase() === equipo.serial.trim().toLowerCase())
+        const equipos = JSON.parse(localStorage.getItem('local_equipos')) || [];
+        const serial = String(equipo.serial || '').trim().toLowerCase();
+        const existingIdx = equipos.findIndex(e =>
+            (e.id && e.id === equipo.id) ||
+            (serial && String(e.serial || '').trim().toLowerCase() === serial)
         );
-
-        if (existingIdx !== -1) {
-            equipos[existingIdx] = { ...equipos[existingIdx], ...equipo };
-        } else {
-            equipos.unshift(equipo);
-        }
+        const existing = existingIdx !== -1 ? equipos[existingIdx] : null;
+        // Conservar el ID al volver a importar el mismo serial.
+        equipo.id = existing ? existing.id : (equipo.id || (crypto.randomUUID ? crypto.randomUUID() : ('eq-' + Math.random().toString(36).substr(2, 9))));
+        equipo.created_at = (existing && existing.created_at) || equipo.created_at || new Date().toISOString();
+        const saved = { ...(existing || {}), ...equipo };
+        if (existingIdx !== -1) equipos[existingIdx] = saved;
+        else equipos.unshift(saved);
         localStorage.setItem('local_equipos', JSON.stringify(equipos));
 
         if (!useLocalFallback && supabase) {
-            try {
-                const { data, error } = await supabase
-                    .from('equipos')
-                    .upsert([equipo], { onConflict: 'id' })
-                    .select();
-                if (!error && data && data[0]) {
-                    return data[0];
-                }
-            } catch (err) {
-                console.warn('Supabase upsert failed, stored in LocalStorage:', err);
-            }
+            const result = await adaptiveUpsertEquipos([saved]);
+            return { equipo: saved, synced: result.success, error: result.error || '' };
         }
-        return equipo;
+        return { equipo: saved, synced: false, error: 'Supabase no está conectado.' };
     }
 
     async function updateEquipo(id, updatedFields) {
@@ -4689,6 +4674,31 @@ document.addEventListener('DOMContentLoaded', () => {
         btnAgregarEquipo.addEventListener('click', () => openEquipFormModal());
     }
 
+    function resetEquipInventoryView() {
+        currentEquipFilterCompany = 'todas';
+        currentEquipFilterTab = 'todos';
+        currentEquipSearch = '';
+        currentEquipFilterTipo = 'todos';
+        currentEquipFilterMarca = 'todos';
+        currentEquipFilterEstado = 'todos';
+        currentEquipSortBy = 'recent';
+        currentEquipPage = 1;
+        const search = document.getElementById('equip-search-input');
+        if (search) search.value = '';
+        ['equip-filter-tipo', 'equip-filter-marca', 'equip-filter-estado'].forEach(id => {
+            const select = document.getElementById(id);
+            if (select) select.value = 'todos';
+        });
+        const sort = document.getElementById('equip-sort-by');
+        if (sort) sort.value = 'recent';
+        document.querySelectorAll('#equip-filter-tabs .filter-tab').forEach(tab => {
+            tab.classList.toggle('active', tab.dataset.filter === 'todos');
+        });
+        document.querySelectorAll('#equip-company-tabs .filter-tab').forEach(tab => {
+            tab.classList.toggle('active', tab.dataset.company === 'todas');
+        });
+    }
+
     const crudForm = document.getElementById('equipo-crud-form');
     if (crudForm) {
         crudForm.addEventListener('submit', async (e) => {
@@ -4724,15 +4734,21 @@ document.addEventListener('DOMContentLoaded', () => {
                     await updateEquipo(id, eqData);
                     alert('¡Equipo actualizado con éxito!');
                 } else {
-                    await saveEquipo(eqData);
-                    alert('¡Equipo registrado con éxito!');
+                    const result = await saveEquipo(eqData);
+                    resetEquipInventoryView();
+                    if (result.synced) {
+                        alert('✅ Equipo registrado en el inventario y sincronizado con Supabase.');
+                    } else {
+                        alert('⚠️ El equipo se guardó solo en este navegador.\n\nNo se pudo sincronizar con Supabase: ' + result.error + '\n\nPuedes reintentar con «Sincronizar a Supabase» desde el inventario.');
+                    }
                 }
 
                 if (formModal) formModal.style.display = 'none';
+                if (refreshEquiposInFlight) await refreshEquiposInFlight;
                 await refreshEquipos();
             } catch (err) {
                 console.error(err);
-                alert('Ocurrió un error al guardar la información.');
+                alert('Ocurrió un error al guardar la información: ' + (err.message || String(err)));
             } finally {
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = originalText;
@@ -4962,8 +4978,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Función procesar texto pegado
     function triggerParsePastedText() {
         if (!pasteTextarea) return;
-        const text = pasteTextarea.value.trim();
-        if (!text) {
+        const text = pasteTextarea.value;
+        if (!text.trim()) {
             parsedEquipos = [];
             renderImportPreview([]);
             return;
@@ -4994,8 +5010,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Botón Procesar Texto Pegado
     if (btnParsePastedData && pasteTextarea) {
         btnParsePastedData.addEventListener('click', () => {
-            const text = pasteTextarea.value.trim();
-            if (!text) {
+            const text = pasteTextarea.value;
+            if (!text.trim()) {
                 alert('⚠️ Por favor primero abre tu Excel, copia las celdas (Ctrl + C) y pégalas en este recuadro (Ctrl + V).');
                 return;
             }
@@ -5030,7 +5046,7 @@ document.addEventListener('DOMContentLoaded', () => {
             sistema_operativo: String(eq.sistema_operativo || ''),
             build_windows: String(eq.build_windows || ''),
             licencia_usuario: String(eq.licencia_usuario || 'M365'),
-            fecha_asignacion: String(eq.fecha_asignacion || ''),
+            fecha_asignacion: eq.fecha_asignacion ? String(eq.fecha_asignacion) : null,
             tipo: String(eq.tipo || 'laptop'),
             direccion: String(eq.direccion || ''),
             usuario_windows: String(eq.usuario_windows || ''),
@@ -5047,8 +5063,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         let payload = records.map(cleanEquipoForSupabase);
         const chunkSize = 25;
+        // Una oportunidad por columna y una final para guardar el esquema adaptado.
+        const maxAttempts = Object.keys(payload[0]).length + 1;
+        let lastError = 'No se pudo completar la sincronización de equipos';
 
-        for (let attempt = 0; attempt < 15; attempt++) {
+        for (let attempt = 0; attempt < maxAttempts; attempt++) {
             try {
                 for (let i = 0; i < payload.length; i += chunkSize) {
                     const chunk = payload.slice(i, i + chunkSize);
@@ -5058,8 +5077,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     
                     if (error) {
                         const errMsg = error.message || JSON.stringify(error);
+                        lastError = errMsg;
                         const match = errMsg.match(/Could not find the '([^']+)' column/i);
-                        if (match && match[1]) {
+                        if (match && match[1] && match[1] !== 'id' && payload.some(item => Object.hasOwn(item, match[1]))) {
                             const missingCol = match[1];
                             console.warn(`Columna '${missingCol}' no existe en Supabase. Omitiendo y reintentando automáticamente...`);
                             payload.forEach(item => {
@@ -5079,7 +5099,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 return { success: false, error: err.message || JSON.stringify(err) };
             }
         }
-        return { success: true, count: payload.length };
+        return { success: false, error: lastError };
     }
 
     // Confirmar Importación e Insertar al Inventario
@@ -5098,11 +5118,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 // Preparar equipos con IDs únicos y fechas
                 const readyEquipos = parsedEquipos.map((eq, idx) => {
-                    const id = eq.id || (crypto.randomUUID ? crypto.randomUUID() : `eq-imp-${Date.now()}-${idx}`);
+                    const existing = localList.find(e =>
+                        (eq.id && e.id === eq.id) ||
+                        (eq.serial && e.serial && String(e.serial).trim().toLowerCase() === String(eq.serial).trim().toLowerCase())
+                    );
+                    const id = (existing && existing.id) || eq.id || (crypto.randomUUID ? crypto.randomUUID() : `eq-imp-${Date.now()}-${idx}`);
                     return cleanEquipoForSupabase({
                         ...eq,
                         id,
-                        created_at: eq.created_at || new Date().toISOString()
+                        created_at: (existing && existing.created_at) || eq.created_at || new Date().toISOString()
                     });
                 });
 
@@ -5134,11 +5158,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 }
 
-                alert(`🎉 ¡Se importaron ${readyEquipos.length} equipos con éxito!\n\n` + 
+                alert((supabaseSaved ? `✅ Se importaron ${readyEquipos.length} equipos y se sincronizaron con Supabase.\n\n` : `⚠️ Se guardaron ${readyEquipos.length} equipos solo en este navegador.\n\n`) + 
                       `✅ Guardados en tu Inventario CMDB.\n` + 
                       (supabaseSaved ? `☁️ Sincronizados con la nube de Supabase (visibles para todo tu equipo).` : (supabaseErrDetails ? `⚠️ Nota: Guardado local OK, pendiente en Supabase (${supabaseErrDetails}).` : '')));
                 
                 if (previewModal) previewModal.style.display = 'none';
+                resetEquipInventoryView();
+                if (refreshEquiposInFlight) await refreshEquiposInFlight;
                 await refreshEquipos();
             } catch (err) {
                 console.error('Error al guardar equipos:', err);
@@ -5308,21 +5334,18 @@ document.addEventListener('DOMContentLoaded', () => {
         const lines = text.split('\n');
         
         const getValue = (key) => {
-            const line = lines.find(l => {
-                const cleanLine = l.replace(/^\s*[-=*]+\s*$/, '').trim();
-                return cleanLine.toLowerCase().startsWith(key.toLowerCase());
-            });
-            if (line) {
-                const parts = line.split(':');
-                if (parts.length > 1) {
-                    return parts.slice(1).join(':').trim();
-                }
+            const target = normalizeStr(key);
+            for (const line of lines) {
+                const separator = line.indexOf(':');
+                if (separator === -1) continue;
+                const label = normalizeStr(line.slice(0, separator).replace(/^[\s*=-]+/, ''));
+                if (label === target) return line.slice(separator + 1).trim();
             }
             return '';
         };
 
         const data = {};
-        data.codigo = getValue('Nombre Equipo') || getValue('Nombre') || getValue('Codigo') || '';
+        data.codigo = getValue('Nombre Equipo') || getValue('Nombre del Equipo') || getValue('Nombre') || getValue('Codigo') || '';
         data.usuario_nombre = getValue('Usuario') || '';
         data.usuario_email = getValue('Correo') || getValue('Email') || '';
         data.marca = getValue('Marca') || '';
@@ -5334,7 +5357,7 @@ document.addEventListener('DOMContentLoaded', () => {
         data.so = [so, version, arch].filter(Boolean).join(' ');
 
         data.ram = getValue('RAM Total') || getValue('RAM') || '';
-        data.serial = getValue('Serial') || getValue('S/N') || getValue('Numero de Serie') || '';
+        data.serial = getValue('Serial') || getValue('S/N') || getValue('Numero de Serie') || getValue('Service Tag') || '';
 
         const discoModelo = getValue('Modelo Disco') || getValue('Disco') || '';
         const discoCapacidad = getValue('Capacidad') || getValue('Tamano Disco') || '';
@@ -5347,7 +5370,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function parsePastedExcelText(text) {
         if (!text || !text.trim()) return [];
-        const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+        // Mantener tabulaciones: las celdas vacías también ocupan una columna.
+        const lines = text.replace(/^\uFEFF/, '').split(/\r?\n/).filter(line => line.trim());
         if (lines.length === 0) return [];
 
         const matrix = lines.map(line => {
@@ -5373,8 +5397,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Buscar fila que contiene los encabezados
         for (let i = 0; i < Math.min(5, matrix.length); i++) {
-            const rowStr = (matrix[i] || []).map(c => String(c || '').toLowerCase()).join(' ');
-            if (rowStr.includes('usuario') || rowStr.includes('serial') || rowStr.includes('modelo') || rowStr.includes('correo') || rowStr.includes('marca') || rowStr.includes('rut')) {
+            const rowStr = (matrix[i] || []).map(c => normalizeStr(String(c || ''))).join(' ');
+            if (rowStr.includes('usuario') || rowStr.includes('serial') || rowStr.includes('serie') || rowStr.includes('s/n') || rowStr.includes('modelo') || rowStr.includes('correo') || rowStr.includes('marca') || rowStr.includes('rut')) {
                 headerRowIndex = i;
                 headers = matrix[i].map(h => normalizeStr(String(h || '')));
                 break;
@@ -5386,12 +5410,18 @@ document.addEventListener('DOMContentLoaded', () => {
             return headers.findIndex(h => keywords.some(k => h.includes(k)));
         };
 
-        const idxUser = findCol(['usuario', 'nombre', 'user', 'colaborador', 'persona', 'nombres']);
+        const idxUser = headerRowIndex === -1 ? -1 : headers.findIndex(h =>
+            /^(usuario|nombre|user|colaborador|persona|nombres)$/.test(h) ||
+            /^(nombre (del )?(usuario|colaborador|persona)|usuario asignado|nombre completo)$/.test(h)
+        );
         const idxRut = findCol(['rut', 'r.u.t', 'cedula']);
         const idxEmail = findCol(['correo', 'email', 'mail']);
         const idxEmpresa = findCol(['empresa', 'company', 'propiedad']);
         const idxDireccion = findCol(['direccion', 'sede', 'ubicacion']);
-        const idxEquipo = findCol(['equipo', 'codigo', 'code', 'id', 'no']);
+        const idxEquipo = headerRowIndex === -1 ? -1 : headers.findIndex(h =>
+            /^(equipo|codigo|code|id|no\.?|n[°º]|nombre[_ ]codigo|hostname)$/.test(h) ||
+            /^(nombre (del )?equipo|codigo (del )?equipo|nombre pc)$/.test(h)
+        );
         const idxModelo = findCol(['modelo', 'model']);
         const idxSerial = findCol(['numero de serie', 'serial', 's/n', 'sn', 'serie', 'servial']);
         const idxMarca = findCol(['marca', 'brand', 'fabricante']);
