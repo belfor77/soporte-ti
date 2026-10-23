@@ -3,6 +3,14 @@
 'use strict';
 const Renewal = root.NotebookRenewal || (typeof require === 'function' ? require('./notebook-renewal.js') : null);
 const Quality = root.SupportDataQuality || (typeof require === 'function' ? require('./support-demo-registry.js') : null);
+// Las fechas de tickets no dependen de la carga del módulo de inventario.
+function dateOnly(value){
+ if(!value)return null;
+ const match=String(value).trim().match(/^(\d{4})-(\d{2})-(\d{2})(?:T.*)?$/);
+ if(!match)return null;
+ const d=new Date(Date.UTC(+match[1],+match[2]-1,+match[3]));
+ return d.getUTCFullYear()===+match[1]&&d.getUTCMonth()===+match[2]-1&&d.getUTCDate()===+match[3]?d:null;
+}
 const STORE='support-management-evidence-v1';
 const norm=v=>String(v??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -10,13 +18,13 @@ const dayMs=86400000;
 const chileDateFormatter=new Intl.DateTimeFormat('en-CA',{timeZone:'America/Santiago',year:'numeric',month:'2-digit',day:'2-digit'});
 const keyDate=d=>chileDateFormatter.formatToParts(d).filter(p=>p.type!=='literal').map(p=>[p.type,p.value]).reduce((a,[k,v])=>(a[k]=v,a),{});
 function today(){const p=keyDate(new Date());return `${p.year}-${p.month}-${p.day}`;}
-function date(v){if(!v)return null;if(typeof v==='string'&&(!/^\d{4}-\d{2}-\d{2}(?:T.*)?$/.test(v)||!Renewal.dateOnly(v.slice(0,10))))return null;const d=new Date(v);return Number.isFinite(+d)?d:null;}
+function date(v){if(!v)return null;if(typeof v==='string'&&(!/^\d{4}-\d{2}-\d{2}(?:T.*)?$/.test(v)||!dateOnly(v.slice(0,10))))return null;const d=new Date(v);return Number.isFinite(+d)?d:null;}
 const civilCache=new Map();
 function uncachedCivil(v){if(typeof v==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(v))return validDay(v);const d=date(v);if(!d)return null;const p=keyDate(d);return `${p.year}-${p.month}-${p.day}`;}
 function civil(v){if(typeof v!=='string')return uncachedCivil(v);if(civilCache.has(v))return civilCache.get(v);const result=uncachedCivil(v);if(civilCache.size>=10000)civilCache.clear();civilCache.set(v,result);return result;}
 function civilDay(v){return typeof v==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(v)?v:civil(v);}
-function validDay(v){return Renewal.dateOnly(v)?v:null;}
-function shift(v,n){const d=Renewal.dateOnly(v);d.setUTCDate(d.getUTCDate()+n);return d.toISOString().slice(0,10);}
+function validDay(v){return dateOnly(v)?v:null;}
+function shift(v,n){const d=dateOnly(v);d.setUTCDate(d.getUTCDate()+n);return d.toISOString().slice(0,10);}
 function inPeriod(v,start,end){const d=civilDay(v);return !!d&&d>=start&&d<=end;}
 function company(v){const n=norm(v).replace(/[^a-z0-9]/g,'');return n.includes('tsales')?'T-Sales':n.includes('vprime')?'VPrime':n.includes('infinet')?'Infinet':String(v||'Sin empresa').trim();}
 const money=v=>v===null||v===undefined?'Sin monto':new Intl.NumberFormat('es-CL',{style:'currency',currency:'CLP',maximumFractionDigits:0}).format(v);

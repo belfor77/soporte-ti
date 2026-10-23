@@ -8875,3 +8875,8 @@ body.light-mode {
 @media(max-width:650px){.ops-projects{grid-template-columns:1fr}.ops-times,.ops-renewal{grid-template-columns:1fr}.ticket-page-size{width:100%}}
 .ops-tech-filter {display:flex;align-items:center;gap:12px;flex-wrap:wrap;color:var(--text-secondary);margin:12px 0 20px}
 .ops-tech-filter select {padding:9px 12px;border-radius:8px;border:1px solid var(--border-color);background:var(--bg-card);color:var(--text-primary)}
+
+/* Conservar acceso a todas las columnas al 100 % de zoom. */
+.main-content { min-width: 0; }
+.tickets-table-container { max-width: 100%; overflow-x: auto; }
+#ticket-search-user-dropdown { z-index: 100; max-height: 320px; overflow-y: auto; }

@@ -188,6 +188,7 @@ document.addEventListener('DOMContentLoaded', () => {
         directoryUsersMemoryCache = users;
         try {
             localStorage.setItem('company_directory_users', JSON.stringify(users));
+            document.dispatchEvent(new Event('directory-users-updated'));
         } catch(e) {
             console.error('Error saving directory users:', e);
         }
@@ -2463,8 +2464,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 const originalHtml = btnStepperNext.innerHTML;
                 btnStepperNext.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando Ticket...';
 
+                let ticketSaved = false;
                 try {
                     await saveTicket(subject, category, description, priority, office, phone, device, impact, modality, clientName, clientRut, clientEmail, empresa, assignedTech, status, resolutionNote);
+                    ticketSaved = true;
                     
                     if (status === 'resuelto') {
                         alert('¡Ticket registrado y guardado como RESUELTO con éxito!');
@@ -2492,7 +2495,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (misTicketsTab) misTicketsTab.click();
                 } catch (err) {
                     console.error(err);
-                    alert('Hubo un error al crear el ticket.');
+                    alert(ticketSaved
+                        ? 'El ticket se guardó, pero no se pudo actualizar la vista. Recarga el listado; no vuelvas a crearlo.'
+                        : 'No se pudo guardar el ticket. ' + (err.message || 'Intenta nuevamente.'));
                 } finally {
                     btnStepperNext.disabled = false;
                     btnStepperNext.innerHTML = originalHtml;
@@ -10519,9 +10524,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const users = loadDirectoryUsers();
             userSelect.innerHTML = '<option value="">-- Elige un colaborador o usa el buscador de arriba --</option>';
             
-            const cleanFilter = filterText.toLowerCase().trim();
+            const cleanFilter = normalizeStr(filterText);
             const filteredUsers = cleanFilter
-                ? users.filter(u => (u.nombre || '').toLowerCase().includes(cleanFilter) || (u.rut || '').toLowerCase().includes(cleanFilter) || (u.email || '').toLowerCase().includes(cleanFilter) || (u.empresa || '').toLowerCase().includes(cleanFilter))
+                ? users.filter(u => normalizeStr(u.nombre).includes(cleanFilter) || String(u.rut || '').replace(/[^0-9k]/gi, '').toLowerCase().includes(cleanFilter.replace(/[.\-\s]/g, '')) || normalizeStr(u.email).includes(cleanFilter) || normalizeStr(u.empresa).includes(cleanFilter))
                 : users;
 
             const companies = ['T-Sales', 'Infinet', 'VPrime'];
@@ -10555,6 +10560,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         populateExistingUsersDropdown();
+        document.addEventListener('directory-users-updated', () => {
+            populateExistingUsersDropdown(searchInput?.value || '');
+            if (searchInput?.value) searchInput.dispatchEvent(new Event('input'));
+        });
 
         function applySelectedUser(user) {
             if (!user) return;
@@ -10624,19 +10633,19 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             searchInput.addEventListener('input', () => {
-                const query = searchInput.value.trim().toLowerCase();
-                populateExistingUsersDropdown(query);
+                const query = normalizeStr(searchInput.value);
                 if (query.length < 1) {
                     searchDropdown.style.display = 'none';
                     return;
                 }
                 const allUsers = loadDirectoryUsers();
                 const filtered = allUsers.filter(u => {
-                    const n = (u.nombre || '').toLowerCase();
-                    const r = (u.rut || '').toLowerCase();
-                    const e = (u.email || '').toLowerCase();
-                    const emp = (u.empresa || '').toLowerCase();
-                    return n.includes(query) || r.includes(query) || e.includes(query) || emp.includes(query);
+                    const n = normalizeStr(u.nombre);
+                    const r = String(u.rut || '').replace(/[^0-9k]/gi, '').toLowerCase();
+                    const e = normalizeStr(u.email);
+                    const emp = normalizeStr(u.empresa);
+                    const rutQuery = query.replace(/[.\-\s]/g, '');
+                    return n.includes(query) || (rutQuery && r.includes(rutQuery)) || e.includes(query) || emp.includes(query);
                 }).slice(0, 10);
 
                 renderSearchDropdown(filtered);
@@ -12292,7 +12301,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try { return await managementRefreshInFlight; }
         finally { managementSourcesLoading = false; managementRefreshInFlight = null; renderManagementInsights(); }
     }
-    if (window.SupportInsights) {
+    if (window.SupportInsights && window.NotebookRenewal) {
         supportInsightsPanel = window.SupportInsights.init({
             getData: managementData,
             getSources: () => ({ ...supportDataSources }),
@@ -12314,7 +12323,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    if (window.TiOperations) {
+    if (window.TiOperations && window.NotebookRenewal && supportInsightsPanel) {
         tiOperationsPanel = window.TiOperations.init({getData: managementData,
             getContext: () => supportInsightsPanel?.getReport(),
             getRecords: () => supportInsightsPanel?.getRecords() || {quotes:[]},
@@ -12322,7 +12331,7 @@ document.addEventListener('DOMContentLoaded', () => {
             canEdit: () => ['admin','technician'].includes(currentSession?.role),
             openTicket: openTicketDetailModal, openEquipo: openEquipDetailModal});
     }
-    if (window.TiEvolution) {
+    if (window.TiEvolution && window.NotebookRenewal && supportInsightsPanel) {
         tiEvolutionPanel = window.TiEvolution.init({
             getData: managementData,
             getRecords: () => supportInsightsPanel?.getRecords() || { events: [], quotes: [] },
