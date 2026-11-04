@@ -1,0 +1,16 @@
+ACTUALIZAR TRAZABILIDAD DEL INVENTARIO
+
+1. En Supabase > SQL Editor ejecuta 20261104_inventory_traceability.sql.
+   Habilita lectura del historial del ejecutable para los equipos visibles según los permisos actuales del inventario. No abre escrituras ni modifica registros. No hace falta cambiar claves ni cuentas.
+2. Actualiza en el alojamiento actual de la web estos tres archivos:
+   index.html, script.js, equipment-traceability.js.
+   Conserva el resto de archivos, carpetas y configuración actuales.
+3. Recarga la web y abre Inventario > Trazabilidad del equipo de prueba.
+   Verás responsable anterior, responsable nuevo, fecha/hora y cambios de empresa/sede, si existen en las capturas de ese movimiento.
+
+No es necesario recompilar ni reemplazar el ejecutable.
+Los movimientos ya guardados por él se consultan desde desktop_inventory_history. No se inventan cambios anteriores al inicio de ese historial. Los movimientos del navegador siguen apareciendo en el navegador donde se crearon.
+En modo sin sesión el historial identifica el origen como aplicación de inventario, sin atribuirlo a Omar o Felipe.
+Esta entrega no modifica la forma de registrar cambios hechos desde el formulario de la web: conecta el historial del ejecutable a la trazabilidad existente.
+
+Validación local: pruebas del historial, integración y dependencias del navegador. Consulta de permisos y publicación pendientes de ejecutar en el entorno real. Este ZIP contiene los archivos completos de la copia de trabajo actual.
