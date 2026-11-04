@@ -828,7 +828,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     .eq('id', ticketId);
                 if (error) throw error;
             } catch (err) {
-                console.error('Error deleting ticket from Supabase, using LocalStorage fallback:', err);
+                console.error('No se pudo eliminar el ticket en Supabase:', err);
+                alert('No se pudo eliminar el ticket. Intenta nuevamente; el registro se conserva.');
+                return false;
             }
         }
 
@@ -983,6 +985,7 @@ document.addEventListener('DOMContentLoaded', () => {
         'page-compras': 'nav-compras',
         'page-tecnicos': 'nav-tecnicos',
         'page-reportes': 'nav-reportes',
+        'page-organigrama': 'nav-organigrama',
         'page-estado': 'nav-estado',
         'page-visitas': 'nav-visitas',
         'page-panel-m365': 'nav-panel-tsales',
@@ -1772,8 +1775,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const meta = extractMetadata(ticket);
         const card = document.createElement('div');
         card.className = 'mob-ticket-card';
-        card.setAttribute('role', 'button');
-        card.setAttribute('tabindex', '0');
+        card.setAttribute('role', 'group');
+        card.setAttribute('aria-label', `Ticket ${ticket.codigo || ticket.id}`);
 
         const code = ticket.codigo || `#TI-${ticket.id ? String(ticket.id).slice(-4) : '1024'}`;
         const pKey = ticket.prioridad ? ticket.prioridad.toLowerCase() : 'media';
@@ -1836,14 +1839,84 @@ document.addEventListener('DOMContentLoaded', () => {
                         <span>${dateFormatted}</span>
                     </div>
                 </div>
+                <div class="mob-ticket-actions">
+                    <button type="button" class="mob-ticket-view">Ver detalle</button>
+                    ${canEditTicketDetails(ticket) ? '<button type="button" class="mob-ticket-edit"><i class="fas fa-pen" aria-hidden="true"></i> Editar</button>' : ''}
+                    ${currentSession?.role === 'admin' ? '<button type="button" class="mob-ticket-delete"><i class="fas fa-trash-alt" aria-hidden="true"></i> Eliminar</button>' : ''}
+                </div>
             </div>
         `;
 
+        card.querySelector('.mob-ticket-view').addEventListener('click', event => {
+            event.stopPropagation();
+            openTicketDetailModal(ticket);
+        });
+        card.querySelector('.mob-ticket-edit')?.addEventListener('click', event => {
+            event.stopPropagation();
+            openTicketEditDialog(ticket);
+        });
+        card.querySelector('.mob-ticket-delete')?.addEventListener('click', async event => {
+            event.stopPropagation();
+            const button = event.currentTarget;
+            button.disabled = true;
+            try { await deleteTicket(ticket.id); }
+            finally { button.disabled = false; }
+        });
         card.addEventListener('click', () => {
             openTicketDetailModal(ticket);
         });
 
         return card;
+    }
+
+    function canEditTicketDetails(ticket) {
+        if (!currentSession || !ticket) return false;
+        if (currentSession.role === 'admin') return true;
+        return currentSession.role === 'technician' &&
+            technicianIdentityMatches(ticket.tecnico_asignado, currentSession);
+    }
+
+    function ticketDescriptionParts(description) {
+        const text = String(description || '');
+        const index = text.search(/\[METADATA/i);
+        return index < 0 ? { text, metadata: '' } : { text: text.slice(0, index).trimEnd(), metadata: text.slice(index) };
+    }
+
+    function openTicketEditDialog(ticket) {
+        if (!canEditTicketDetails(ticket)) return;
+        const dialog = document.getElementById('ticket-edit-dialog');
+        const form = document.getElementById('ticket-edit-form');
+        if (!dialog || !form) return;
+        const parts = ticketDescriptionParts(ticket.descripcion);
+        form.elements.asunto.value = ticket.asunto || '';
+        form.elements.descripcion.value = parts.text;
+        form.elements.prioridad.value = normalizeStr(ticket.prioridad || 'media');
+        document.getElementById('ticket-edit-feedback').textContent = '';
+        form.onsubmit = async event => {
+            event.preventDefault();
+            const latest = allTicketsCached.find(row => String(row.id) === String(ticket.id));
+            if (!canEditTicketDetails(latest)) {
+                document.getElementById('ticket-edit-feedback').textContent = 'No tienes permisos para editar este ticket.';
+                return;
+            }
+            const asunto = form.elements.asunto.value.trim();
+            if (!asunto || !form.reportValidity()) return;
+            const button = form.querySelector('[type="submit"]');
+            button.disabled = true;
+            try {
+                const metadata = ticketDescriptionParts(latest.descripcion).metadata;
+                const descripcion = form.elements.descripcion.value.trim() + (metadata ? '\n' + metadata : '');
+                await updateTicketFields(ticket.id, { asunto, descripcion, prioridad: form.elements.prioridad.value });
+                await refreshTickets();
+                const pending = JSON.parse(localStorage.getItem('ticket_updates') || '{}')[ticket.id];
+                if (pending && ['asunto', 'descripcion', 'prioridad'].some(key => key in pending)) {
+                    document.getElementById('ticket-edit-feedback').textContent = 'Guardado en este navegador. La sincronización está pendiente.';
+                } else { dialog.close(); }
+            } catch (error) {
+                document.getElementById('ticket-edit-feedback').textContent = 'No se pudo completar el guardado. Intenta nuevamente.';
+            } finally { button.disabled = false; }
+        };
+        if (!dialog.open) dialog.showModal();
     }
 
     function renderTicketPaginationControls(totalPages) {
@@ -3087,7 +3160,8 @@ document.addEventListener('DOMContentLoaded', () => {
             'software': 'Software y Office',
             'soporte': 'Soporte Técnico'
         };
-        return catMap[catCode.toLowerCase()] || catCode;
+        const code = String(catCode || '').trim();
+        return catMap[code.toLowerCase()] || code || 'Sin categoría';
     }
 
     async function loadRepliesList(ticketId) {
@@ -5794,7 +5868,25 @@ document.addEventListener('DOMContentLoaded', () => {
         return newMov;
     }
 
-    function openSerialHistoryModal(serial) {
+    let serialHistoryRequest = 0;
+
+    async function fetchDesktopInventoryHistory(serial) {
+        if (useLocalFallback || !supabase) throw new Error('La conexión con la base de datos no está disponible.');
+        const rows = [];
+        for (let from = 0; ; from += 500) {
+            const { data, error } = await supabase.from('desktop_inventory_history')
+                .select('id,serial,recorded_at,actor,previous_data,current_data')
+                .ilike('serial', window.EquipmentTraceability.serialPattern(serial))
+                .order('recorded_at', { ascending: false }).order('id', { ascending: false })
+                .range(from, from + 499);
+            if (error) throw error;
+            rows.push(...(data || []));
+            if (!data || data.length < 500) break;
+        }
+        return rows;
+    }
+
+    async function openSerialHistoryModal(serial) {
         if (!serial) {
             alert('Este equipo no tiene un número de serie asignado.');
             return;
@@ -5828,20 +5920,32 @@ document.addEventListener('DOMContentLoaded', () => {
             estadoEl.textContent = getEquipStateLabel(eq.estado);
         }
 
-        const movements = loadEquiposMovements().filter(m => (m.serial || '').trim().toLowerCase() === normSerial.toLowerCase());
+        const request = ++serialHistoryRequest;
+        modal.style.display = 'flex';
+        if (timelineList) timelineList.innerHTML = '<div class="equip-timeline-item">Consultando historial compartido del equipo…</div>';
+        let desktopHistory = [];
+        let historyWarning = '';
+        try {
+            desktopHistory = await fetchDesktopInventoryHistory(normSerial);
+        } catch (error) {
+            console.warn('No se pudo consultar el historial del ejecutable:', error);
+            historyWarning = '<div role="status" style="padding:12px; margin-bottom:12px; border:1px solid #f59e0b; border-radius:8px;">No se pudo consultar el historial compartido. Se muestran solo movimientos de este navegador. Verifica la conexión y la actualización de permisos de trazabilidad.</div>';
+        }
+        if (request !== serialHistoryRequest) return;
+        const movements = window.EquipmentTraceability.combine(loadEquiposMovements(), desktopHistory, normSerial);
 
         if (timelineList) {
             if (movements.length === 0) {
                 timelineList.innerHTML = `
                     <div class="equip-timeline-item dot-green">
                         <div class="equip-timeline-header">
-                            <span class="equip-timeline-action"><i class="fas fa-check-circle" style="color: var(--accent-green);"></i> Registro Inicial en CMDB</span>
+                            <span class="equip-timeline-action"><i class="fas fa-check-circle" style="color: var(--accent-green);"></i> Estado actual del equipo</span>
                             <span class="equip-timeline-date">${formatDate(eq.created_at || new Date())}</span>
                         </div>
                         <div class="equip-timeline-details">
-                            Equipo incorporado al inventario general de Soporte TI. ${eq.usuario_nombre ? `Asignado actualmente a <strong>${escapeHtml(eq.usuario_nombre)}</strong>.` : 'En stock en bodega TI.'}
+                            No hay movimientos disponibles para esta serie. ${eq.usuario_nombre ? `Responsable actual: <strong>${escapeHtml(eq.usuario_nombre)}</strong>.` : 'Sin responsable asignado.'}
                         </div>
-                        <div class="equip-timeline-tech"><i class="fas fa-user-shield"></i> Registrado por: Soporte TI</div>
+                        <div class="equip-timeline-tech"><i class="fas fa-user-shield"></i> Origen: inventario actual</div>
                     </div>
                 `;
             } else {
@@ -5867,7 +5971,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        modal.style.display = 'flex';
+        if (timelineList && historyWarning) timelineList.innerHTML = historyWarning + timelineList.innerHTML;
     }
 
     const btnCloseHistorial = document.getElementById('btn-close-modal-historial');
@@ -8295,6 +8399,7 @@ document.addEventListener('DOMContentLoaded', () => {
         calendarDaysContainer.innerHTML = '';
         selectedDay = null;
         checkRegistrarBtn();
+        renderDayVisitsPanel(null);
 
         const year = date.getFullYear();
         const month = date.getMonth();
@@ -8321,15 +8426,34 @@ document.addEventListener('DOMContentLoaded', () => {
             if (dayOfWeek === 0 || dayOfWeek === 6) dayDiv.classList.add('weekend');
             
             dayDiv.dataset.date = `${year}-${String(month+1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
+            dayDiv.setAttribute('role', 'button');
+            dayDiv.setAttribute('tabindex', '0');
+            dayDiv.setAttribute('aria-pressed', 'false');
             
             dayDiv.innerHTML = `<div class="day-number">${i}</div><div class="visit-container"></div>`;
             
             dayDiv.addEventListener('click', () => {
-                document.querySelectorAll('.calendar-day').forEach(d => d.classList.remove('selected'));
+                document.querySelectorAll('.calendar-day').forEach(d => {
+                    d.classList.remove('selected');
+                    d.setAttribute('aria-pressed', 'false');
+                });
                 dayDiv.classList.add('selected');
+                dayDiv.setAttribute('aria-pressed', 'true');
                 selectedDay = dayDiv.dataset.date;
                 checkRegistrarBtn();
                 renderDayVisitsPanel(selectedDay);
+                if (window.matchMedia('(max-width: 850px)').matches) {
+                    document.getElementById('visitas-dia-panel')?.scrollIntoView({
+                        behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+            dayDiv.addEventListener('keydown', event => {
+                if (event.target === dayDiv && (event.key === 'Enter' || event.key === ' ')) {
+                    event.preventDefault();
+                    dayDiv.click();
+                }
             });
 
             calendarDaysContainer.appendChild(addVisitMarkers(dayDiv, dayDiv.dataset.date));
@@ -8342,6 +8466,13 @@ document.addEventListener('DOMContentLoaded', () => {
         container.innerHTML = '';
         
         const visits = companyRows(cachedVisits).filter(v => v.fecha.startsWith(dateStr));
+        dayDiv.querySelector('.calendar-visit-count')?.remove();
+        const count = document.createElement('span');
+        count.className = 'calendar-visit-count';
+        count.textContent = visits.length ? `${visits.length} ${visits.length === 1 ? 'visita' : 'visitas'}` : '';
+        count.setAttribute('aria-hidden', 'true');
+        dayDiv.appendChild(count);
+        dayDiv.setAttribute('aria-label', `${dateStr}: ${visits.length} ${visits.length === 1 ? 'visita' : 'visitas'}. Ver detalle del día`);
         visits.forEach(v => {
             const mark = document.createElement('div');
             mark.className = 'visit-mark';
@@ -8384,15 +8515,13 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!panel || !list) return;
 
         if (!dateStr) {
-            panel.style.display = 'none';
+            panel.style.display = 'block';
+            if (title) title.textContent = 'Visitas del día';
+            list.innerHTML = '<p class="day-visits-empty">Toca un día del calendario para ver las empresas y los técnicos registrados.</p>';
             return;
         }
 
         const visits = companyRows(cachedVisits).filter(v => v.fecha.startsWith(dateStr));
-        if (visits.length === 0) {
-            panel.style.display = 'none';
-            return;
-        }
 
         const parts = dateStr.split('-');
         const formattedDate = `${parts[2]}/${parts[1]}/${parts[0]}`;
@@ -8401,21 +8530,19 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         list.innerHTML = visits.map((v, idx) => `
-            <div style="display: flex; align-items: center; justify-content: space-between; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; padding: 10px 14px; gap: 12px; flex-wrap: wrap;">
-                <div style="display: flex; align-items: center; gap: 12px;">
-                    <span class="status-badge status-progreso" style="background: rgba(50, 102, 235, 0.15); color: var(--accent-blue); border: 1px solid rgba(50, 102, 235, 0.3); font-weight: 700; font-size: 0.78rem;">
+            <div class="day-visit-row">
+                <div class="day-visit-info">
+                    <span class="day-visit-company">
                         <i class="fas fa-building" style="margin-right: 4px;"></i> ${escapeHtml(v.empresa)}
                     </span>
-                    <div style="display: flex; flex-direction: column;">
-                        <span style="font-size: 0.88rem; font-weight: 600; color: var(--text-primary);">${escapeHtml(v.ubicacion || 'Sucursal')}</span>
-                        <span style="font-size: 0.75rem; color: var(--text-secondary);"><i class="fas fa-user-tie" style="margin-right: 4px; font-size: 0.7rem;"></i> Registrado por: <strong>${escapeHtml(v.nombre_tecnico)}</strong></span>
-                    </div>
+                    <strong class="day-visit-person">${escapeHtml(v.nombre_tecnico || 'Técnico sin registrar')}</strong>
+                    <span class="day-visit-location">${escapeHtml(v.ubicacion || 'Ubicación sin registrar')}</span>
                 </div>
                 <button type="button" class="btn-delete-visita-detail" data-index="${idx}" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.25); color: #ef4444; padding: 6px 12px; border-radius: 6px; font-size: 0.78rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.2s ease;">
                     <i class="fas fa-trash-alt"></i> Eliminar
                 </button>
             </div>
-        `).join('');
+        `).join('') || '<p class="day-visits-empty">No hay visitas registradas para este día.</p>';
 
         list.querySelectorAll('.btn-delete-visita-detail').forEach(btn => {
             btn.addEventListener('click', async () => {
@@ -12344,6 +12471,9 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    if (window.Organigrama) {
+        window.Organigrama.init({getEquipos: () => allEquiposCached, openEquipo: openEquipDetailModal, refresh: refreshEquipos});
+    }
     if (window.CompanyScope) {
         window.CompanyScope.mount();
         document.addEventListener('company-scope-change', () => {

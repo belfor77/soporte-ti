@@ -8880,3 +8880,126 @@ body.light-mode {
 .main-content { min-width: 0; }
 .tickets-table-container { max-width: 100%; overflow-x: auto; }
 #ticket-search-user-dropdown { z-index: 100; max-height: 320px; overflow-y: auto; }
+
+/* Edición de tickets: controles equivalentes en las tarjetas móviles. */
+.mob-ticket-actions { display: flex; gap: 8px; flex-wrap: wrap; padding-top: 10px; border-top: 1px solid var(--border-color); }
+.mob-ticket-actions button, .ticket-edit-actions button { min-height: 44px; padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-sidebar); color: var(--text-primary); font: inherit; cursor: pointer; }
+.mob-ticket-actions .mob-ticket-delete { color: var(--accent-red); }
+.ticket-edit-dialog { margin: auto; width: min(560px, calc(100% - 24px)); max-height: calc(100dvh - 32px); overflow-y: auto; overscroll-behavior: contain; padding: 22px; border: 1px solid var(--border-color); border-radius: 14px; background: var(--bg-card); color: var(--text-primary); }
+.ticket-edit-dialog::backdrop { background: rgb(0 0 0 / .55); }
+.ticket-edit-dialog form, .ticket-edit-dialog label { display: grid; gap: 10px; }
+.ticket-edit-dialog form { gap: 18px; }
+.ticket-edit-dialog :is(input,textarea,select) { width: 100%; min-width: 0; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-main); color: var(--text-primary); font: inherit; }
+.ticket-edit-actions { display: flex; gap: 12px; justify-content: flex-end; }
+.ticket-edit-dialog [type=submit] { background: var(--accent-blue); color: white; }
+.ticket-modal-split-body { min-height: 0; }
+@media (max-width: 850px) {
+    /* Un drawer cerrado no debe proyectar una sombra dentro de la página. */
+    .sidebar:not(.mobile-open) { box-shadow: none !important; visibility: hidden; pointer-events: none; }
+    .light-mode .sidebar.mobile-open { box-shadow: 12px 0 32px rgba(30, 50, 80, .16); }
+    .light-mode .mob-ticket-card { box-shadow: var(--shadow-card); }
+    /* Las siete columnas comparten el ancho; el contenido no ensancha los días. */
+    .calendar-grid { grid-template-columns: repeat(7, minmax(0, 1fr)) !important; min-width: 0; width: 100%; }
+    .calendar-grid > *, .calendar-day .visit-container { min-width: 0; }
+    .calendar-day { padding: 5px 3px; min-height: 76px; overflow-wrap: anywhere; }
+    .calendar-grid > div:not(.calendar-day) { padding-left: 0 !important; padding-right: 0 !important; font-size: .65rem !important; text-align: center; }
+    .calendar-day .visit-mark { display: flex; width: 100%; padding: 3px 2px; gap: 2px; white-space: normal; font-size: .55rem; }
+    .calendar-day .visit-mark > span { min-width: 0; overflow-wrap: anywhere; flex-wrap: wrap; }
+    .calendar-day .visit-tech { font-size: .55rem; overflow-wrap: anywhere; }
+    /* Un solo scroll incluye contenido y respuesta; Safari usa la altura visible. */
+    #ticket-detail-modal { height: 100dvh; width: 100%; padding: max(8px, env(safe-area-inset-top)) 8px max(8px, env(safe-area-inset-bottom)) !important; align-items: center !important; overflow: hidden; }
+    #ticket-detail-modal .modal-ticket-detail-card { display: block; width: 100% !important; max-height: calc(100dvh - 32px - env(safe-area-inset-top) - env(safe-area-inset-bottom)) !important; overflow-y: auto !important; overflow-x: hidden; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; border-radius: 14px !important; }
+    #ticket-detail-modal .ticket-modal-split-body { display: block; overflow: visible; flex: none; }
+    #ticket-detail-modal .modal-header { padding: 14px; align-items: flex-start; gap: 10px; }
+    #ticket-detail-modal .modal-title-area { min-width: 0; }
+    #ticket-detail-modal .modal-title-area > div { flex-wrap: wrap; }
+    #ticket-detail-modal .modal-close-btn { flex-shrink: 0; min-width: 44px; min-height: 44px; }
+    #ticket-detail-modal .ticket-status-timeline-bar { flex-shrink: 0; min-height: 76px; }
+    #ticket-detail-modal .t-step { flex-shrink: 0; }
+    #ticket-detail-modal .ticket-user-sidebar-col { margin-top: 18px; min-width: 0; }
+    #ticket-detail-modal #modal-assignment-box { flex-wrap: wrap; }
+    #ticket-detail-modal .modal-footer { padding: 14px; position: static; }
+    #ticket-detail-modal .reply-input-group { flex-direction: column; }
+    #ticket-detail-modal .reply-input-group textarea { width: 100%; min-height: 90px; }
+    #ticket-detail-modal .reply-submit-btn { min-height: 44px; }
+}
+
+/* En móvil, el calendario resume y el detalle conserva los nombres completos. */
+.calendar-visit-count { display: none; }
+.day-visit-row { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 10px; padding: 16px; }
+.day-visit-info { display: grid; gap: 6px; min-width: 0; flex: 1; }
+.day-visit-company { color: var(--accent-blue); font-size: .8rem; font-weight: 600; }
+.day-visit-person { font-size: 1rem; color: var(--text-primary); overflow-wrap: anywhere; }
+.day-visit-location, .day-visits-empty { color: var(--text-secondary); font-size: .85rem; line-height: 1.5; overflow-wrap: anywhere; }
+#visitas-dia-panel { scroll-margin-top: 18px; }
+.calendar-day:focus-visible { outline: 3px solid var(--accent-blue); outline-offset: -3px; }
+@media(max-width:850px) {
+    .calendar-container { padding: 14px !important; }
+    .calendar-day { min-height: 66px; padding: 8px 2px; align-items: center; justify-content: flex-start; gap: 5px; }
+    .calendar-day .day-number { font-size: .95rem; margin: 0; }
+    .calendar-day .visit-container { display: none; }
+    .calendar-visit-count { display: block; color: var(--accent-blue); font-size: .6rem; font-weight: 650; text-align: center; }
+    .calendar-visit-count:empty { display: none; }
+    .calendar-day.selected { background: color-mix(in srgb, var(--accent-blue) 12%, var(--bg-card)); box-shadow: inset 0 0 0 2px var(--accent-blue); }
+    #visitas-dia-panel { padding: 14px !important; margin-bottom: 80px; }
+    .day-visit-row { align-items: flex-start; position: relative; }
+    .day-visit-company { min-height: 36px; padding-right: 92px; display: flex; align-items: center; }
+    .day-visit-person { font-size: 1.05rem; }
+    .btn-delete-visita-detail { min-height: 44px; position: absolute; top: 10px; right: 12px; }
+}
+/* Organigrama: árbol de empresas, jefaturas y personas. */
+.org-view-switch { display:flex;gap:10px;margin:18px 0; }
+.org-view-switch button,.org-map-tools button,.org-dialog-close { background:var(--bg-card);color:var(--text-primary);border:1px solid var(--border-color);border-radius:9px;padding:10px 14px;cursor:pointer; }
+.org-view-switch button[aria-pressed="true"] { background:rgba(59,130,246,.2);border-color:var(--accent-blue); }
+.org-map { border:1px solid var(--border-color);border-radius:18px;overflow:hidden;background:var(--bg-main); }
+.org-map[hidden],.org-tree[hidden] { display:none; }
+.org-map:fullscreen { width:100%;height:100%;border-radius:0; }
+.org-map-tools { display:flex;align-items:center;gap:8px;padding:14px;flex-wrap:wrap;background:var(--bg-card);border-bottom:1px solid var(--border-color); }
+.org-map-tools>span { font-size:11px;letter-spacing:2px;color:var(--accent-blue);font-weight:800;margin-right:auto; }
+.org-map-zoom { font-size:12px;min-width:38px;text-align:center; }
+.org-map-hint { margin:0;padding:12px 18px;font-size:12px;color:var(--text-secondary); }
+.org-map-viewport { height:680px;min-height:480px;overflow:hidden;position:relative;touch-action:none;cursor:grab;background-image:radial-gradient(circle,rgba(123,145,190,.23) 1px,transparent 1px);background-size:24px 24px; }
+.org-map:fullscreen .org-map-viewport { height:calc(100vh - 125px); }
+.org-map-viewport:active { cursor:grabbing; }
+.org-map-world { position:absolute;left:0;top:0;transform-origin:0 0;will-change:transform; }
+.org-map-lines { position:absolute;left:0;top:0;overflow:visible;pointer-events:none; }
+.org-map-lines path { fill:none;stroke:var(--accent-blue);stroke-width:2;opacity:.38; }
+.org-map-node { position:absolute;transform:translate(-50%,-50%);width:150px;text-align:center; }
+.org-map-node>button:first-child { width:150px;height:150px;border-radius:50%;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:5px;padding:15px 12px;box-sizing:border-box;background:var(--bg-card);color:var(--text-primary);border:2px solid #465ca0;box-shadow:0 8px 30px rgba(0,0,0,.18);cursor:pointer;transition:background .15s,box-shadow .15s; }
+.org-map-node>button:first-child:hover,.org-map-node.is-selected>button:first-child { background:var(--bg-card-hover);box-shadow:0 0 0 7px rgba(96,165,250,.12);border-color:var(--accent-blue); }
+.org-map-node strong { font-size:10px;line-height:1.35;overflow-wrap:anywhere;max-width:125px; }
+.org-map-node small { font-size:9px;color:var(--text-secondary); }
+.org-map-initials { font-size:14px;font-weight:800;color:var(--accent-blue); }
+.org-map-node-meta { font-size:9px;color:var(--text-secondary); }
+.org-map-company { width:180px; }.org-map-company>button:first-child { width:180px;height:180px;border:3px solid var(--accent-blue);background:var(--bg-card); }.org-map-company strong { font-size:20px; }.org-map-company .org-map-initials { font-size:29px; }
+.org-map-person { width:130px; }.org-map-person>button:first-child { width:130px;height:130px;border-color:#259f91; }.org-map-person strong { font-size:9px; }.org-map-person .org-map-initials { color:#2dd4bf; }
+.org-map-person-info { margin-top:7px;font-size:10px;border:1px solid var(--border-color);border-radius:20px;background:var(--bg-card);color:var(--text-secondary);padding:5px 10px;cursor:pointer; }
+.org-person-dialog { color:var(--text-primary);background:var(--bg-card);border:1px solid var(--border-color);border-radius:20px;width:min(520px,calc(100vw - 32px));max-height:85vh;overflow:auto;padding:28px;box-sizing:border-box; }.org-person-dialog::backdrop { background:rgba(0,0,0,.65);backdrop-filter:blur(5px); }.org-dialog-close { float:right; }.org-dialog-content { clear:both;overflow-wrap:anywhere; }.org-dialog-content h2 { font-size:21px;line-height:1.5;margin-top:14px; }.org-dialog-content>p { font-size:13px;color:var(--text-secondary);line-height:1.6; }
+@media(max-width:650px){.org-map-tools{gap:6px;padding:10px}.org-map-tools>span{width:100%;margin-bottom:6px}.org-map-tools button{font-size:11px;padding:9px}.org-map-viewport{height:65vh;min-height:480px}.org-map-hint{font-size:11px}}
+#page-organigrama { color:var(--text-primary); }
+.org-hero { padding:32px; border:1px solid var(--border-color); border-radius:20px; background:linear-gradient(120deg,rgba(59,130,246,.17),rgba(20,184,166,.08)); margin-bottom:24px; }
+.org-eyebrow { color:var(--accent-blue); font-size:11px; letter-spacing:2px; font-weight:800; }
+.org-hero h1 { font-size:36px; margin:12px 0; }
+.org-hero p,.org-help,.org-status,.org-hero small { color:var(--text-secondary); line-height:1.6; }
+.org-toolbar { display:flex; flex-wrap:wrap; align-items:end; gap:12px; }
+.org-toolbar label { display:grid; gap:8px; font-size:12px; color:var(--text-secondary); min-width:0; }
+.org-toolbar input,.org-toolbar select { width:100%; min-width:0; box-sizing:border-box; }
+.org-toolbar label:first-child { flex:1; min-width:220px; }
+.org-toolbar input,.org-toolbar select,.org-toolbar button,.org-device button { border:1px solid var(--border-color); border-radius:10px; padding:12px; background:var(--bg-card); color:var(--text-primary); font:inherit; }
+.org-toolbar button,.org-device button { cursor:pointer; }
+#page-organigrama :focus-visible { outline:3px solid var(--accent-blue); outline-offset:3px; }
+.org-status { font-size:12px; margin:14px 0; }
+.org-kpis { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; }
+.org-kpis>div { padding:20px; border:1px solid var(--border-color); border-radius:14px; background:var(--bg-card); display:grid; gap:6px; }
+.org-kpis strong { font-size:30px; }.org-kpis span { color:var(--text-secondary); font-size:13px; }
+.org-help { font-size:13px; margin:20px 0; }
+.org-company-branch { margin:28px 0; }.org-company-branch h2 { font-size:21px; display:flex; gap:12px; align-items:center; }.org-company-branch h2 small { font-size:12px; font-weight:400; color:var(--text-secondary); }
+.org-supervisors { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,370px),1fr)); align-items:start; gap:18px; border-left:2px solid var(--border-color); padding-left:20px; margin-top:18px; }
+.org-supervisor { border:1px solid var(--border-color); border-top:3px solid var(--accent-blue); border-radius:14px; background:var(--bg-card); overflow:hidden; }
+.org-supervisor>summary,.org-person>summary { display:flex; align-items:center; gap:12px; padding:18px; cursor:pointer; list-style:none; }
+.org-supervisor summary::-webkit-details-marker,.org-person summary::-webkit-details-marker { display:none; }
+.org-supervisor summary strong,.org-supervisor summary small { display:block; overflow-wrap:anywhere; }.org-supervisor summary strong { font-size:13px; line-height:1.5; }.org-supervisor summary small { font-size:10px; color:var(--text-secondary); line-height:1.8; }
+.org-avatar { display:grid; place-items:center; flex-shrink:0; width:36px; height:36px; border-radius:12px; background:rgba(59,130,246,.12); color:var(--accent-blue); font-size:12px; font-weight:700; }.org-leader { background:rgba(20,184,166,.13); color:#14b8a6; font-size:24px; }
+.org-chevron { margin-left:auto; }.org-supervisor[open]>summary .org-chevron,.org-person[open]>summary .org-chevron { transform:rotate(180deg); }
+.org-members { margin:0 14px 14px 28px; padding-left:12px; border-left:2px solid var(--border-color); }.org-person { border-top:1px solid var(--border-color); }.org-person>summary { padding:14px 0; }.org-person-body,.org-leader-info { font-size:12px; line-height:1.7; padding:0 16px 16px; }.org-leader-info>summary { cursor:pointer; color:var(--accent-blue); }.org-device { display:flex; gap:12px; padding:14px; margin-top:10px; background:rgba(59,130,246,.06); border:1px solid var(--border-color); border-radius:12px; overflow-wrap:anywhere; }.org-device p { margin:4px 0; }.org-device small,.org-no-device { color:var(--text-secondary); }.org-device button { font-size:12px; padding:8px; margin-top:8px; }.org-empty { padding:40px; text-align:center; color:var(--text-secondary); }
+@media(max-width:650px){.org-kpis{grid-template-columns:repeat(2,1fr)}.org-hero{padding:22px}.org-hero h1{font-size:28px}.org-toolbar label{width:100%}.org-supervisors{padding-left:10px}.org-toolbar button{flex:1}.org-members{margin-left:12px}}

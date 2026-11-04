@@ -1,0 +1,25 @@
+{
+  "date": "2026-10-27",
+  "checks": [
+    {
+      "id": "local-equipment-overwritten",
+      "confirmed": true,
+      "detail": "Una edición local pendiente vuelve al valor antiguo de la nube al consultar."
+    },
+    {
+      "id": "equipment-delete-success-on-error",
+      "confirmed": true,
+      "detail": "deleteEquipo devuelve true aunque Supabase responda con error."
+    },
+    {
+      "id": "offline-reply-hidden-online",
+      "confirmed": true,
+      "detail": "Una lectura remota exitosa vacía oculta la respuesta conservada en local_replies."
+    },
+    {
+      "id": "required-role-ignored",
+      "confirmed": true,
+      "detail": "authenticateUser devuelve un técnico aunque requiredRole sea admin."
+    }
+  ]
+}
